@@ -3,6 +3,11 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const passport = require("passport");
+const dotenv = require('dotenv');
+dotenv.config({path: __dirname + '/.env'});
+
+console.log(__dirname + '/.env')
 
 const RESTv1 = require("./rest/v1/middleware");
 
@@ -21,6 +26,15 @@ app.all("*", function (req, res, next) {
 app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(require('express-session')({
+  secret: process.env.SESSION_SECRET,
+  resave: true,
+  saveUninitialized: true
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 //API v1 route.
 

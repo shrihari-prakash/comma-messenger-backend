@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const authGoogle = require("./routes/auth/google");
 
 router.get("/helloWorld", (req, res, next) => {
   return res.status(200).json({
@@ -7,5 +8,8 @@ router.get("/helloWorld", (req, res, next) => {
     message: "Hello world!",
   });
 });
+
+router.use("/auth", authGoogle);
+
 
 module.exports = router;
