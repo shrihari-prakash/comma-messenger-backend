@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const MongoClient = require("mongodb").MongoClient;
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -49,14 +50,29 @@ async function postAuthenticate(req, res) {
   let email = req.user.emails[0].value;
   let displayPictureURL = req.user.photos[0].value;
 
+  let user = {
+    name: fullName, //object
+    email: email,
+    display_picture: displayPictureURL,
+  };
+
+  // Connect to the db
+  MongoClient.connect("mongodb://" + process.env.MONGO_HOST, function (err, client) {
+    if (err) throw err;
+
+    var db = client.db("comma");
+
+    db.collection("users").insertOne(user, { w: 1 }, function (err, result) {
+      if (err) throw err;
+      console.log(result);
+      client.close();
+    });
+  });
+
   return res.status(200).json({
     status: "SUCCESS",
     message: "Login success",
-    user_data: {
-      name: fullName,//object
-      email: email,
-      display_picture: displayPictureURL
-    },
+    user_data: user,
   });
 }
 
