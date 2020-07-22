@@ -1,4 +1,6 @@
 # comma-js
+![Comma JS Logo](/branding-assets/logo.png)
+
 Chat application based on NodeJS and React
 
 **How to Run?**
@@ -8,6 +10,7 @@ Chat application based on NodeJS and React
 * Install all the dependencies by running `npm install`.
 * Execute command `npm start app.js`.
 * Comma JS server should now be running on port `26103`.
+
 **Sample `.env` file:**
 
 ```
