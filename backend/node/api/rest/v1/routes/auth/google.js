@@ -57,14 +57,14 @@ async function postAuthenticate(req, res) {
   };
 
   // Connect to the db
-  MongoClient.connect("mongodb://" + process.env.MONGO_HOST, function (err, client) {
+  MongoClient.connect("mongodb://" + process.env.MONGO_HOST, { useUnifiedTopology: true }, function (err, client) {
     if (err) throw err;
 
     var db = client.db("comma");
 
     db.collection("users").insertOne(user, { w: 1 }, function (err, result) {
       if (err) throw err;
-      console.log(result);
+      let insertedUserId = user._id;
       client.close();
     });
   });
