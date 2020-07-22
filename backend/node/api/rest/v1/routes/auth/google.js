@@ -55,24 +55,62 @@ async function postAuthenticate(req, res) {
     email: email,
     display_picture: displayPictureURL,
   };
-
   // Connect to the db
-  MongoClient.connect("mongodb://" + process.env.MONGO_HOST, { useUnifiedTopology: true }, function (err, client) {
-    if (err) throw err;
-
-    var db = client.db("comma");
-
-    db.collection("users").insertOne(user, { w: 1 }, function (err, result) {
+  MongoClient.connect(
+    "mongodb://" + process.env.MONGO_HOST,
+    { useUnifiedTopology: true },
+    async function (err, client) {
       if (err) throw err;
-      let insertedUserId = user._id;
-      client.close();
-    });
-  });
 
-  return res.status(200).json({
-    status: "SUCCESS",
-    message: "Login success",
-    user_data: user,
+      var db = client.db("comma");
+
+      checkExistingUser(db, email)
+        .then((existingUser) => {
+          if (typeof existingUser === "boolean" && existingUser === false) {
+            db.collection("users").insertOne(user, { w: 1 }, function (
+              err,
+              result
+            ) {
+              if (err) throw err;
+              let insertedUserId = user._id;
+              client.close();
+
+              return res.status(200).json({
+                status: "SUCCESS",
+                message: "Account Created.",
+                user_data: user,
+              });
+            });
+          } else {
+            return res.status(200).json({
+              status: "SUCCESS",
+              message: "Login success.",
+              user_data: existingUser,
+            });
+          }
+        })
+        .catch((err) => {
+          return res.status(500).json({
+            status: "ERR",
+            reason: "Internal Server Error.",
+          });
+        });
+    }
+  );
+}
+
+function checkExistingUser(db, email) {
+  return new Promise((resolve, reject) => {
+    db.collection("users").findOne({ email: email }, function (err, user) {
+      if (err) reject(err);
+      else {
+        if (!user) {
+          resolve(false);
+        } else {
+          resolve(user);
+        }
+      }
+    });
   });
 }
 
