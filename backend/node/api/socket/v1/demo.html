@@ -9,9 +9,38 @@
     var socket = io("http://localhost:26398", {
       path: "/api/socket/communicate",
     });
-    socket.on('testEvent', function(data){document.write(data.description)});
+    socket.on("_messageIn", function (data) {
+      document.getElementById("messages").innerHTML += data.message + "</br>";
+    });
+
+    function connect() {
+      socket.emit("_connect", {
+        id: document.getElementById("my_id").value,
+      });
+    }
+
+    function sendMessage() {
+      socket.emit("_messageOut", {
+        receiver_id: document.getElementById("other_id").value,
+        content: document.getElementById("content").value,
+      });
+    }
   </script>
   <body>
-    Hello world
+    <input
+      type="button"
+      value="Connect"
+      id="connect"
+      onclick="connect()"
+    /><br />
+    Send a message:<br />
+    <label for="my_id">Your ID:</label><br />
+    <input type="text" id="my_id" name="my_id" /><br />
+    <label for="other_id">Reciever ID:</label><br />
+    <input type="text" id="other_id" name="other_id" /><br />
+    <label for="content">Message:</label><br />
+    <input type="text" id="content" name="content" /><br /><br />
+    <input type="submit" value="Submit" id="submit" onclick="sendMessage()" />
+    <div id="messages"></div>
   </body>
 </html>
