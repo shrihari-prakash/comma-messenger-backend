@@ -5,11 +5,16 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const passport = require("passport");
 const dotenv = require('dotenv');
+
 dotenv.config({path: __dirname + '/.env'});
 
-console.log(__dirname + '/.env')
-
 const RESTv1 = require("./rest/v1/middleware");
+const cache = require('./utils/cacheManager');
+const cacheManager = new cache.cacheManager();
+
+cacheManager.init();
+cacheManager.putUserToken("token_1", "user_1")
+console.log(cacheManager.getUserIdFromToken("token_1"));
 
 /* app.use(cors()); */
 //we need to allow requests from outside our own domain.
