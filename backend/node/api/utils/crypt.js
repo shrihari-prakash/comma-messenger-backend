@@ -1,11 +1,13 @@
 // Nodejs encryption with CTR
 const crypto = require("crypto");
 const algorithm = "aes-256-cbc";
-const key = process.env.CRYPT_KEY;
-const iv = process.env.CRYPT_IV;
+
 const dotenv = require("dotenv");
 
 dotenv.config({ path: __dirname + "/.env" });
+
+const key = process.env.CRYPT_KEY;
+const iv = process.env.CRYPT_IV;
 
 function crypt() {
   this.encrypt = (text) => {
