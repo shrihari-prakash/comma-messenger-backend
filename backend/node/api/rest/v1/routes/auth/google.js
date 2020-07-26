@@ -109,7 +109,7 @@ async function postAuthenticate(req, res) {
           console.log(err)
           return res.status(500).json({
             status: "ERR",
-            reason: "Internal Server Error.",
+            reason: "INTERNAL_SERVER_ERROR",
             insight: err
           });
         });
