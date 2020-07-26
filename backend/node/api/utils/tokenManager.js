@@ -1,4 +1,6 @@
 const MongoClient = require("mongodb").MongoClient;
+const userMgr = require("./dbUtils/userManager");
+const userManager = new userMgr.userManager();
 
 function tokenManager() {
   var randomizer = function () {
@@ -6,69 +8,82 @@ function tokenManager() {
   };
 
   var dateHash = function () {
-    (+new Date()).toString(36); // "iepii89m"
+    return (+new Date()).toString(36);
   };
 
   var token = function () {
-    return randomizer() + randomizer() + dateHash(); // to make it longer
+    return randomizer() + randomizer() + randomizer() + "_" + dateHash();
   };
 
-  var checkExistingUser = function (db, email) {
+  this.generate = (userId, cacheManager) => {
     return new Promise((resolve, reject) => {
-      db.collection("users").findOne({ email: email }, function (err, user) {
-        if (err) reject(err);
-        else {
-          if (!user) {
-            resolve(false);
-          } else {
-            resolve(user);
-          }
+      MongoClient.connect(
+        "mongodb://" + process.env.MONGO_HOST,
+        { useUnifiedTopology: true },
+        async function (err, client) {
+          if (err) reject(err);
+
+          var db = client.db("comma");
+
+          let now = new Date();
+          let tomorrow = now.setDate(now.getDate() + 1);
+          let insertToken = token();
+
+          let tokenObject = {
+            user_id: userId,
+            token: insertToken,
+            date_added: now,
+            date_expiry: tomorrow,
+          };
+
+          db.collection("tokens").insertOne(tokenObject, { w: 1 }, function (
+            err,
+            result
+          ) {
+            if (err) reject(err);
+            client.close();
+            cacheManager.putUserToken(insertToken, userId);
+            resolve(insertToken);
+          });
         }
-      });
+      );
     });
   };
 
-  this.generate = (emailId) => {
-    // Connect to the db
-    MongoClient.connect(
-      "mongodb://" + process.env.MONGO_HOST,
-      { useUnifiedTopology: true },
-      async function (err, client) {
-        if (err) throw err;
+  this.verify = (token, cacheManager) => {
+    return new Promise((resolve, reject) => {
+      let userId = cacheManager.getUserIdFromToken(token);
 
-        var db = client.db("comma");
+      if (userId) {
+        resolve(userId);
+      } else {
+        MongoClient.connect(
+          "mongodb://" + process.env.MONGO_HOST,
+          { useUnifiedTopology: true },
+          async function (err, client) {
+            if (err) reject(err);
 
-        checkExistingUser(db, email)
-          .then((existingUser) => {
-            if (typeof existingUser !== "boolean" && existingUser !== false) {
+            var db = client.db("comma");
 
-              let now = new Date();
-              let insertToken = token();
-              let tokenObject = {
-                user_id: existingUser._id,
-                token: insertToken,
-                date_added: now,
-                date_expiry: now.setDate(date.getDate() + 1),
-              };
-
-              db.collection("tokens").insertOne(
-                tokenObject,
-                { w: 1 },
-                function (err, result) {
-                  if (err) throw err;
-                  client.close();
-                  return insertToken;
+            db.collection("tokens").findOne({ token: token }, function (
+              err,
+              tokenObject
+            ) {
+              if (err) reject(err);
+              else {
+                if (!tokenObject) {
+                  resolve(false);
+                } else {
+                  resolve(tokenObject);
                 }
-              );
-              
-            } else {
-              return false;
-            }
-          })
-          .catch((err) => {
-            return false;
-          });
+              }
+            });
+          }
+        );
       }
-    );
+    });
   };
 }
+
+module.exports = new tokenManager();
+module.exports.tokenManager = tokenManager;

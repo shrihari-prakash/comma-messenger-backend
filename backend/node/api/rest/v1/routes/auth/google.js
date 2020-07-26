@@ -3,6 +3,9 @@ const router = express.Router();
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const MongoClient = require("mongodb").MongoClient;
+const tokenMgr = require("../../../../utils/tokenManager");
+const tokenManager = new tokenMgr.tokenManager();
+const app = require("../../../../apiServer");
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -75,24 +78,36 @@ async function postAuthenticate(req, res) {
               let insertedUserId = user._id;
               client.close();
 
-              return res.status(200).json({
-                status: "SUCCESS",
-                message: "Account Created.",
-                user_data: user,
-              });
+              tokenManager
+                .generate(insertedUserId, req.app.get("cacheManager"))
+                .then((insertToken) => {
+                  return res.status(200).json({
+                    status: "SUCCESS",
+                    message: "Account Created.",
+                    user_data: user,
+                    token: insertToken,
+                  });
+                });
             });
           } else {
-            return res.status(200).json({
-              status: "SUCCESS",
-              message: "Login success.",
-              user_data: existingUser,
-            });
+            tokenManager
+              .generate(existingUser._id, req.app.get("cacheManager"))
+              .then((insertToken) => {
+                return res.status(200).json({
+                  status: "SUCCESS",
+                  message: "Login success.",
+                  user_data: existingUser,
+                  token: insertToken,
+                });
+              });
           }
         })
         .catch((err) => {
+          console.log(err)
           return res.status(500).json({
             status: "ERR",
             reason: "Internal Server Error.",
+            insight: err
           });
         });
     }

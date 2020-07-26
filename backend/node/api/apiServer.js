@@ -16,6 +16,8 @@ cacheManager.init();
 cacheManager.putUserToken("token_1", "user_1")
 console.log(cacheManager.getUserIdFromToken("token_1"));
 
+app.set("cacheManager", cacheManager);
+
 /* app.use(cors()); */
 //we need to allow requests from outside our own domain.
 app.all("*", function (req, res, next) {
