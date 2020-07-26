@@ -26,7 +26,7 @@ function tokenManager() {
           var db = client.db("comma");
 
           let now = new Date();
-          let tomorrow = now.setDate(now.getDate() + 1);
+          let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
           let insertToken = token();
 
           let tokenObject = {

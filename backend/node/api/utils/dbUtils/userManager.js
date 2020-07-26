@@ -1,5 +1,3 @@
-const MongoClient = require("mongodb").MongoClient;
-
 function userManager() {
   this.checkExistingUser = function (db, email) {
     return new Promise((resolve, reject) => {

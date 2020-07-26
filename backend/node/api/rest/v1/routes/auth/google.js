@@ -3,9 +3,12 @@ const router = express.Router();
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const MongoClient = require("mongodb").MongoClient;
+
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
-const app = require("../../../../apiServer");
+
+const userMgr = require("../../../../utils/dbUtils/userManager");
+const userManager = new userMgr.userManager();
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -67,7 +70,7 @@ async function postAuthenticate(req, res) {
 
       var db = client.db("comma");
 
-      checkExistingUser(db, email)
+      userManager.checkExistingUser(db, email)
         .then((existingUser) => {
           if (typeof existingUser === "boolean" && existingUser === false) {
             db.collection("users").insertOne(user, { w: 1 }, function (
@@ -112,21 +115,6 @@ async function postAuthenticate(req, res) {
         });
     }
   );
-}
-
-function checkExistingUser(db, email) {
-  return new Promise((resolve, reject) => {
-    db.collection("users").findOne({ email: email }, function (err, user) {
-      if (err) reject(err);
-      else {
-        if (!user) {
-          resolve(false);
-        } else {
-          resolve(user);
-        }
-      }
-    });
-  });
 }
 
 module.exports = router;
