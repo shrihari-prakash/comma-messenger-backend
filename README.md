@@ -26,6 +26,10 @@ MONGO_HOST=localhost:27017
 
 #URL of client web page
 CLIENT_URL=http://127.0.0.1:5500
+
+#Encryption
+CRYPT_KEY=YourEncryptionKey
+CRYPT_IV=YourEncryptionIV
 ```
 
 **Frontend:**
