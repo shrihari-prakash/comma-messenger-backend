@@ -74,7 +74,18 @@ function tokenManager() {
                 if (!tokenObject) {
                   resolve(false);
                 } else {
-                  resolve(tokenObject);
+                  let now = new Date();
+                  let tomorrow = new Date(
+                    new Date().setDate(now.getDate() + 1)
+                  );
+                  db.collection("tokens").updateOne(
+                    { _id: tokenObject._id },
+                    { $set: { date_expiry: tomorrow } },
+                    function (err) {
+                      if (err) resolve(false);
+                      else resolve(tokenObject);
+                    }
+                  );
                 }
               }
             });
