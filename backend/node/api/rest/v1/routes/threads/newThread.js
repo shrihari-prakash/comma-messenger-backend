@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const MongoClient = require("mongodb").MongoClient;
 
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
@@ -27,7 +26,9 @@ async function createThread(req, res) {
 
   let cacheManager = req.app.get("cacheManager");
 
-  let loggerInUser = await tokenManager.verify(authToken, cacheManager);
+  let db = req.app.get("mongoInstance");
+
+  let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
 
   if (!loggerInUser)
     return res.status(404).json({
@@ -43,58 +44,42 @@ async function createThread(req, res) {
       insight: "The email address provided is not valid.",
     });
 
-  MongoClient.connect(
-    "mongodb://" + process.env.MONGO_HOST,
-    { useUnifiedTopology: true },
-    async function (err, client) {
-      if (err)
-        return res.status(500).json({
-          status: "ERR",
-          reason: "INTERNAL_SERVER_ERROR",
-          insight: err,
-        });
+  userManager.checkExistingUser(db, req.query.email).then((receiver) => {
+    if (typeof receiver === "boolean" && receiver === false) {
+      return res.status(404).json({
+        status: "ERR",
+        reason: "INVALID_RECIPIENT",
+        insight: "Provided reveiver account does not exist.",
+      });
+    } else {
+      let threadObject = {
+        thread_participants: [loggerInUser.user_id, receiver._id],
+        tabs: [],
+        date_created: new Date(),
+      };
 
-      var db = client.db("comma");
-
-      userManager.checkExistingUser(db, req.query.email).then((receiver) => {
-        if (typeof receiver === "boolean" && receiver === false) {
-          return res.status(404).json({
-            status: "ERR",
-            reason: "INVALID_RECIPIENT",
-            insight: "Provided reveiver account does not exist.",
-          });
-        } else {
-          let threadObject = {
-            thread_participants: [loggerInUser.user_id, receiver._id],
-            tabs: [],
-            date_created: new Date(),
-          };
-
-          //Insert into threads and push the inserted thread _id into array of threads in users.
-          db.collection("threads").insertOne(threadObject, { w: 1 }, function (
-            err,
-            result
-          ) {
+      //Insert into threads and push the inserted thread _id into array of threads in users.
+      db.collection("threads").insertOne(threadObject, { w: 1 }, function (
+        err,
+        result
+      ) {
+        if (err) throw err;
+        let insertedThreadId = threadObject._id;
+        db.collection("users").updateMany(
+          { _id: { $in: [loggerInUser.user_id, receiver._id] } },
+          { $push: { threads: insertedThreadId } },
+          function (err, result) {
             if (err) throw err;
-            let insertedThreadId = threadObject._id;
-            db.collection("users").updateMany(
-              { _id: { $in: [loggerInUser.user_id, receiver._id] } },
-              { $push: { threads: insertedThreadId } },
-              function (err, result) {
-                if (err) throw err;
-                client.close();
-                return res.status(200).json({
-                  status: "SUCCESS",
-                  message: "Thread created.",
-                  thread_id: insertedThreadId,
-                });
-              }
-            );
-          });
-        }
+            return res.status(200).json({
+              status: "SUCCESS",
+              message: "Thread created.",
+              thread_id: insertedThreadId,
+            });
+          }
+        );
       });
     }
-  );
+  });
 }
 
 function validateEmail(email) {

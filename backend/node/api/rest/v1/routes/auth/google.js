@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const MongoClient = require("mongodb").MongoClient;
 
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
@@ -60,62 +59,54 @@ async function postAuthenticate(req, res) {
     name: fullName, //object
     email: email,
     display_picture: displayPictureURL,
-    threads: []
+    threads: [],
   };
-  // Connect to the db
-  MongoClient.connect(
-    "mongodb://" + process.env.MONGO_HOST,
-    { useUnifiedTopology: true },
-    async function (err, client) {
-      if (err) throw err;
 
-      var db = client.db("comma");
+  let db = req.app.get("mongoInstance");
 
-      userManager.checkExistingUser(db, email)
-        .then((existingUser) => {
-          if (typeof existingUser === "boolean" && existingUser === false) {
-            db.collection("users").insertOne(user, { w: 1 }, function (
-              err,
-              result
-            ) {
-              if (err) throw err;
-              let insertedUserId = user._id;
-              client.close();
+  userManager
+    .checkExistingUser(db, email)
+    .then((existingUser) => {
+      if (typeof existingUser === "boolean" && existingUser === false) {
+        db.collection("users").insertOne(user, { w: 1 }, function (
+          err,
+          result
+        ) {
+          if (err) throw err;
+          let insertedUserId = user._id;
 
-              tokenManager
-                .generate(insertedUserId, req.app.get("cacheManager"))
-                .then((insertToken) => {
-                  return res.status(200).json({
-                    status: "SUCCESS",
-                    message: "Account Created.",
-                    user_data: user,
-                    token: insertToken,
-                  });
-                });
-            });
-          } else {
-            tokenManager
-              .generate(existingUser._id, req.app.get("cacheManager"))
-              .then((insertToken) => {
-                return res.status(200).json({
-                  status: "SUCCESS",
-                  message: "Login success.",
-                  user_data: existingUser,
-                  token: insertToken,
-                });
+          tokenManager
+            .generate(db, insertedUserId, req.app.get("cacheManager"))
+            .then((insertToken) => {
+              return res.status(200).json({
+                status: "SUCCESS",
+                message: "Account Created.",
+                user_data: user,
+                token: insertToken,
               });
-          }
-        })
-        .catch((err) => {
-          console.log(err)
-          return res.status(500).json({
-            status: "ERR",
-            reason: "INTERNAL_SERVER_ERROR",
-            insight: err
-          });
+            });
         });
-    }
-  );
+      } else {
+        tokenManager
+          .generate(db, existingUser._id, req.app.get("cacheManager"))
+          .then((insertToken) => {
+            return res.status(200).json({
+              status: "SUCCESS",
+              message: "Login success.",
+              user_data: existingUser,
+              token: insertToken,
+            });
+          });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({
+        status: "ERR",
+        reason: "INTERNAL_SERVER_ERROR",
+        insight: err,
+      });
+    });
 }
 
 module.exports = router;

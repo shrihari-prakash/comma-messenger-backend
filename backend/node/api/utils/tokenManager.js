@@ -1,7 +1,3 @@
-const MongoClient = require("mongodb").MongoClient;
-const userMgr = require("./dbUtils/userManager");
-const userManager = new userMgr.userManager();
-
 function tokenManager() {
   var randomizer = function () {
     return Math.random().toString(36).substr(2); // remove `0.`
@@ -15,82 +11,59 @@ function tokenManager() {
     return randomizer() + randomizer() + randomizer() + "_" + dateHash();
   };
 
-  this.generate = (userId, cacheManager) => {
+  this.generate = (db, userId, cacheManager) => {
     return new Promise((resolve, reject) => {
-      MongoClient.connect(
-        "mongodb://" + process.env.MONGO_HOST,
-        { useUnifiedTopology: true },
-        async function (err, client) {
-          if (err) reject(err);
+      let now = new Date();
+      let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
+      let insertToken = token();
 
-          var db = client.db("comma");
+      let tokenObject = {
+        user_id: userId,
+        token: insertToken,
+        date_added: now,
+        date_expiry: tomorrow,
+      };
 
-          let now = new Date();
-          let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
-          let insertToken = token();
-
-          let tokenObject = {
-            user_id: userId,
-            token: insertToken,
-            date_added: now,
-            date_expiry: tomorrow,
-          };
-
-          db.collection("tokens").insertOne(tokenObject, { w: 1 }, function (
-            err,
-            result
-          ) {
-            if (err) reject(err);
-            client.close();
-            cacheManager.putUserToken(insertToken, userId);
-            resolve(insertToken);
-          });
-        }
-      );
+      db.collection("tokens").insertOne(tokenObject, { w: 1 }, function (
+        err,
+        result
+      ) {
+        if (err) reject(err);
+        cacheManager.putUserToken(insertToken, userId);
+        resolve(insertToken);
+      });
     });
   };
 
-  this.verify = (token, cacheManager) => {
+  this.verify = (db, token, cacheManager) => {
     return new Promise((resolve, reject) => {
       let userId = cacheManager.getUserIdFromToken(token);
 
       if (userId) {
         resolve(userId);
       } else {
-        MongoClient.connect(
-          "mongodb://" + process.env.MONGO_HOST,
-          { useUnifiedTopology: true },
-          async function (err, client) {
-            if (err) reject(err);
-
-            var db = client.db("comma");
-
-            db.collection("tokens").findOne({ token: token }, function (
-              err,
-              tokenObject
-            ) {
-              if (err) reject(err);
-              else {
-                if (!tokenObject) {
-                  resolve(false);
-                } else {
-                  let now = new Date();
-                  let tomorrow = new Date(
-                    new Date().setDate(now.getDate() + 1)
-                  );
-                  db.collection("tokens").updateOne(
-                    { _id: tokenObject._id },
-                    { $set: { date_expiry: tomorrow } },
-                    function (err) {
-                      if (err) resolve(false);
-                      else resolve(tokenObject);
-                    }
-                  );
+        db.collection("tokens").findOne({ token: token }, function (
+          err,
+          tokenObject
+        ) {
+          if (err) reject(err);
+          else {
+            if (!tokenObject) {
+              resolve(false);
+            } else {
+              let now = new Date();
+              let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
+              db.collection("tokens").updateOne(
+                { _id: tokenObject._id },
+                { $set: { date_expiry: tomorrow } },
+                function (err) {
+                  if (err) resolve(false);
+                  else resolve(tokenObject);
                 }
-              }
-            });
+              );
+            }
           }
-        );
+        });
       }
     });
   };
