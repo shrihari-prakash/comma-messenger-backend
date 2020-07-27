@@ -80,7 +80,6 @@ async function createThread(req, res) {
             db.collection("users").updateMany(
               { _id: { $in: [loggerInUser.user_id, receiver._id] } },
               { $push: { threads: insertedThreadId } },
-              { multi: true },
               function (err, result) {
                 if (err) throw err;
                 client.close();
