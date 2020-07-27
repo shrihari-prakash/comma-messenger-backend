@@ -70,18 +70,27 @@ async function createThread(req, res) {
             date_created: new Date(),
           };
 
+          //Insert into threads and push the inserted thread _id into array of threads in users.
           db.collection("threads").insertOne(threadObject, { w: 1 }, function (
             err,
             result
           ) {
             if (err) throw err;
-            let insertedThreadId = result._id;
-            client.close();
-            return res.status(200).json({
-              status: "SUCCESS",
-              message: "Thread created.",
-              thread_id: insertedThreadId,
-            });
+            let insertedThreadId = threadObject._id;
+            db.collection("users").updateMany(
+              { _id: { $in: [loggerInUser.user_id, receiver._id] } },
+              { $push: { threads: insertedThreadId } },
+              { multi: true },
+              function (err, result) {
+                if (err) throw err;
+                client.close();
+                return res.status(200).json({
+                  status: "SUCCESS",
+                  message: "Thread created.",
+                  thread_id: insertedThreadId,
+                });
+              }
+            );
           });
         }
       });

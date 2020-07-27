@@ -60,6 +60,7 @@ async function postAuthenticate(req, res) {
     name: fullName, //object
     email: email,
     display_picture: displayPictureURL,
+    threads: []
   };
   // Connect to the db
   MongoClient.connect(
