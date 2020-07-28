@@ -12,6 +12,13 @@ router.post("/", async function (req, res) {
 });
 
 async function createThread(req, res) {
+  
+  if (!req.header("authorization"))
+    return res.status(403).json({
+      status: "ERR",
+      reason: errorBuilder.buildReason("unauthorized"),
+      insight: errorBuilder.buildInsight("unauthorized"),
+    });
   let authToken = req
     .header("authorization")
     .slice(7, req.header("authorization").length)
@@ -62,32 +69,35 @@ async function createThread(req, res) {
           reason: errorBuilder.buildReason("invalid", "THREAD_ID"),
           insight: errorBuilder.buildInsight("invalid", "thread id"),
         });
+
+      let tabObject = {
+        tab_name: tabDetails.tab_name,
+        thread_id: ObjectId(tabDetails.thread_id),
+        messages: [],
+        date_created: new Date(),
+      };
+      //Insert into tabs and push the inserted tab _id into array of tabs in threads.
+      db.collection("tabs").insertOne(tabObject, { w: 1 }, function (
+        err,
+        result
+      ) {
+        if (err) throw err;
+        let insertedTabId = tabObject._id;
+        db.collection("threads").updateOne(
+          { _id: ObjectId(tabDetails.thread_id) },
+          { $push: { tabs: insertedTabId } },
+          function (err, result) {
+            if (err) throw err;
+            return res.status(200).json({
+              status: "SUCCESS",
+              message: "Tab created.",
+              tab_id: insertedTabId,
+            });
+          }
+        );
+      });
     }
   );
-
-  let tabObject = {
-    tab_name: tabDetails.tab_name,
-    thread_id: ObjectId(tabDetails.thread_id),
-    messages: [],
-    date_created: new Date(),
-  };
-  //Insert into tabs and push the inserted tab _id into array of tabs in threads.
-  db.collection("tabs").insertOne(tabObject, { w: 1 }, function (err, result) {
-    if (err) throw err;
-    let insertedTabId = tabObject._id;
-    db.collection("threads").updateOne(
-      { _id: ObjectId(tabDetails.thread_id) },
-      { $push: { tabs: insertedTabId } },
-      function (err, result) {
-        if (err) throw err;
-        return res.status(200).json({
-          status: "SUCCESS",
-          message: "Tab created.",
-          tab_id: insertedTabId,
-        });
-      }
-    );
-  });
 }
 
 module.exports = router;

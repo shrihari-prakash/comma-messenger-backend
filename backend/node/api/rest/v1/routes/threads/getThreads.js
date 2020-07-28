@@ -12,6 +12,13 @@ router.get("/", async function (req, res) {
 });
 
 async function getThreads(req, res) {
+  if (!req.header("authorization"))
+    return res.status(403).json({
+      status: "ERR",
+      reason: errorBuilder.buildReason("unauthorized"),
+      insight: errorBuilder.buildInsight("unauthorized"),
+    });
+
   let authToken = req
     .header("authorization")
     .slice(7, req.header("authorization").length)
@@ -36,59 +43,76 @@ async function getThreads(req, res) {
       reason: errorBuilder.buildReason("unauthorized"),
       insight: errorBuilder.buildInsight("unauthorized"),
     });
-
-  db.collection("users").findOne(
-    {
-      _id: ObjectId(loggerInUser.user_id),
-    },
-    function (err, userObject) {
-      console.log(userObject);
-      db.collection("threads")
-        .aggregate([
-          {
-            $match: {
-              _id: {
-                $in: userObject.threads,
+  try {
+    db.collection("users").findOne(
+      {
+        _id: ObjectId(loggerInUser.user_id),
+      },
+      function (err, userObject) {
+        db.collection("threads")
+          .aggregate([
+            {
+              $match: {
+                _id: {
+                  $in: userObject.threads,
+                },
               },
             },
-          },
-          {
-            $lookup: {
-              from: "users",
-              let: {
-                participants: "$thread_participants",
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $in: ["$_id", "$$participants"],
+            {
+              $lookup: {
+                from: "users",
+                let: {
+                  participants: "$thread_participants",
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $in: ["$_id", "$$participants"],
+                      },
                     },
                   },
-                },
-                {
-                  $project: {
-                    _id: 1,
-                    email: 1,
-                    name: 1,
+                  {
+                    $project: {
+                      _id: 1,
+                      email: 1,
+                      name: 1,
+                    },
                   },
-                },
-              ],
-              as: "thread_participants",
+                ],
+                as: "thread_participants",
+              },
             },
-          },
-        ])
-        .toArray(function (err, result) {
-          if (err) throw err;
-          console.log(result);
-          return res.status(200).json({
-            status: "SUCCESS",
-            message: "Threads Retrieved.",
-            threads: result,
+          ])
+          .toArray(function (err, result) {
+            if (err)
+              return res.status(500).json({
+                status: "ERR",
+                reason: errorBuilder.buildReason("isr"),
+                insight: errorBuilder.buildInsight("isr", err),
+              });
+            if (!result)
+              return res.status(200).json({
+                status: "SUCCESS",
+                message: "No threads to retrieve.",
+                result: [],
+              });
+            console.log(result);
+            return res.status(200).json({
+              status: "SUCCESS",
+              message: "Threads Retrieved.",
+              result: result,
+            });
           });
-        });
-    }
-  );
+      }
+    );
+  } catch (e) {
+    return res.status(500).json({
+      status: "ERR",
+      reason: errorBuilder.buildReason("isr"),
+      insight: errorBuilder.buildInsight("isr", e),
+    });
+  }
 }
 
 module.exports = router;

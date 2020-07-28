@@ -15,6 +15,9 @@ module.exports = {
       case "unauthorized":
         _reason = "UNAUTHORIZED";
         break;
+      case "isr":
+        _reason = "INTERNAL_SERVER_ERROR";
+        break;
       default:
         _reason = "UNKNOWN_ERROR";
         break;
@@ -37,6 +40,9 @@ module.exports = {
         break;
       case "unauthorized":
         _insight = "You are not authorized to performed this action.";
+        break;
+      case "isr":
+        _insight = insightEntity;
         break;
       default:
         _insight = "An unknown error occured while processing your request.";

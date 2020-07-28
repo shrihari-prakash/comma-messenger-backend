@@ -14,6 +14,13 @@ router.get("/", async function (req, res) {
 });
 
 async function createThread(req, res) {
+  if (!req.header("authorization"))
+    return res.status(403).json({
+      status: "ERR",
+      reason: errorBuilder.buildReason("unauthorized"),
+      insight: errorBuilder.buildInsight("unauthorized"),
+    });
+
   let authToken = req
     .header("authorization")
     .slice(7, req.header("authorization").length)
@@ -40,7 +47,7 @@ async function createThread(req, res) {
     });
 
   if (!req.query.email || !validateEmail(req.query.email))
-    return res.status(403).json({
+    return res.status(400).json({
       status: "ERR",
       reason: errorBuilder.buildReason("invalid", "EMAIL_ADDRESS"),
       insight: errorBuilder.buildInsight("invalid", "email address"),
@@ -59,27 +66,34 @@ async function createThread(req, res) {
         tabs: [],
         date_created: new Date(),
       };
-
-      //Insert into threads and push the inserted thread _id into array of threads in users.
-      db.collection("threads").insertOne(threadObject, { w: 1 }, function (
-        err,
-        result
-      ) {
-        if (err) throw err;
-        let insertedThreadId = threadObject._id;
-        db.collection("users").updateMany(
-          { _id: { $in: [loggerInUser.user_id, receiver._id] } },
-          { $push: { threads: insertedThreadId } },
-          function (err, result) {
-            if (err) throw err;
-            return res.status(200).json({
-              status: "SUCCESS",
-              message: "Thread created.",
-              thread_id: insertedThreadId,
-            });
-          }
-        );
-      });
+      try {
+        //Insert into threads and push the inserted thread _id into array of threads in users.
+        db.collection("threads").insertOne(threadObject, { w: 1 }, function (
+          err,
+          result
+        ) {
+          if (err) throw err;
+          let insertedThreadId = threadObject._id;
+          db.collection("users").updateMany(
+            { _id: { $in: [loggerInUser.user_id, receiver._id] } },
+            { $push: { threads: insertedThreadId } },
+            function (err, result) {
+              if (err) throw err;
+              return res.status(200).json({
+                status: "SUCCESS",
+                message: "Thread created.",
+                thread_id: insertedThreadId,
+              });
+            }
+          );
+        });
+      } catch (e) {
+        return res.status(500).json({
+          status: "ERR",
+          reason: errorBuilder.buildReason("isr"),
+          insight: errorBuilder.buildInsight("isr", e),
+        });
+      }
     }
   });
 }
