@@ -5,6 +5,8 @@ var ObjectId = require("mongodb").ObjectID;
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
 
+const errorBuilder = require("../../../../utils/responseErrorBuilder");
+
 router.get("/", async function (req, res) {
   getThreads(req, res);
 });
@@ -18,8 +20,8 @@ async function getThreads(req, res) {
   if (!authToken)
     return res.status(403).json({
       status: "ERR",
-      reason: "UNAUTHORIZED",
-      insight: "Authorization token was not found in the request.",
+      reason: errorBuilder.buildReason("unauthorized"),
+      insight: errorBuilder.buildInsight("unauthorized"),
     });
 
   let cacheManager = req.app.get("cacheManager");
@@ -31,8 +33,8 @@ async function getThreads(req, res) {
   if (!loggerInUser)
     return res.status(404).json({
       status: "ERR",
-      reason: "NO_USER",
-      insight: "No user exists for the provided session.",
+      reason: errorBuilder.buildReason("unauthorized"),
+      insight: errorBuilder.buildInsight("unauthorized"),
     });
 
   db.collection("users").findOne(

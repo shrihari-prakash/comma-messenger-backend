@@ -7,6 +7,8 @@ const tokenManager = new tokenMgr.tokenManager();
 const userMgr = require("../../../../utils/dbUtils/userManager");
 const userManager = new userMgr.userManager();
 
+const errorBuilder = require("../../../../utils/responseErrorBuilder");
+
 router.get("/", async function (req, res) {
   createThread(req, res);
 });
@@ -20,8 +22,8 @@ async function createThread(req, res) {
   if (!authToken)
     return res.status(403).json({
       status: "ERR",
-      reason: "UNAUTHORIZED",
-      insight: "Authorization token was not found in the request.",
+      reason: errorBuilder.buildReason("unauthorized"),
+      insight: errorBuilder.buildInsight("unauthorized"),
     });
 
   let cacheManager = req.app.get("cacheManager");
@@ -33,23 +35,23 @@ async function createThread(req, res) {
   if (!loggerInUser)
     return res.status(404).json({
       status: "ERR",
-      reason: "NO_USER",
-      insight: "No user exists for the provided session.",
+      reason: errorBuilder.buildReason("notFound", "USER"),
+      insight: errorBuilder.buildInsight("notFound", "user"),
     });
 
   if (!req.query.email || !validateEmail(req.query.email))
     return res.status(403).json({
       status: "ERR",
-      reason: "INVALID_RECIPIENT",
-      insight: "The email address provided is not valid.",
+      reason: errorBuilder.buildReason("invalid", "EMAIL_ADDRESS"),
+      insight: errorBuilder.buildInsight("invalid", "email address"),
     });
 
   userManager.checkExistingUser(db, req.query.email).then((receiver) => {
     if (typeof receiver === "boolean" && receiver === false) {
       return res.status(404).json({
         status: "ERR",
-        reason: "INVALID_RECIPIENT",
-        insight: "Provided reveiver account does not exist.",
+        reason: errorBuilder.buildReason("notFound", "RECIPIENT"),
+        insight: errorBuilder.buildInsight("notFound", "recipient"),
       });
     } else {
       let threadObject = {
