@@ -38,14 +38,14 @@ async function getThreads(req, res) {
   let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
 
   if (!loggerInUser)
-    return res.status(404).json({
+    return res.status(403).json({
       status: "ERR",
       reason: errorBuilder.buildReason("unauthorized"),
       insight: errorBuilder.buildInsight("unauthorized"),
     });
 
   if (!req.query.thread_id)
-    return res.status(403).json({
+    return res.status(400).json({
       status: "ERR",
       reason: errorBuilder.buildReason("empty", "THREAD_ID"),
       insight: errorBuilder.buildInsight("empty", "thread id"),
