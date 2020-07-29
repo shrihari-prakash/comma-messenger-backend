@@ -13,14 +13,22 @@
       document.getElementById("messages").innerHTML += data.message + "</br>";
     });
 
+    socket.on("_success", function (data) {
+      document.getElementById("messages").innerHTML += "Message " + data.message_id + " has been delivered successfully.</br>";
+    });
+
     function connect() {
       socket.emit("_connect", {
-        id: document.getElementById("my_id").value,
+        token: document.getElementById("my_id").value,
       });
     }
 
     function sendMessage() {
+
       socket.emit("_messageOut", {
+        id: Math.floor((Math.random() * 1000000) + 1),
+        token: document.getElementById("my_id").value,
+        tab_id: "5f205dc1ea21697d582c640f",
         receiver_id: document.getElementById("other_id").value,
         content: document.getElementById("content").value,
       });
@@ -34,7 +42,7 @@
       onclick="connect()"
     /><br />
     Send a message:<br />
-    <label for="my_id">Your ID:</label><br />
+    <label for="my_id">Your Token:</label><br />
     <input type="text" id="my_id" name="my_id" /><br />
     <label for="other_id">Reciever ID:</label><br />
     <input type="text" id="other_id" name="other_id" /><br />
