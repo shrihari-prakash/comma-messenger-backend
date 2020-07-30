@@ -10,7 +10,7 @@
       path: "/api/socket/communicate",
     });
     socket.on("_messageIn", function (data) {
-      document.getElementById("messages").innerHTML += data.message + "</br>";
+      document.getElementById("messages").innerHTML += JSON.stringify(data) + "</br>";
     });
 
     socket.on("_success", function (data) {

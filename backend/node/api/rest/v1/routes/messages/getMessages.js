@@ -44,15 +44,15 @@ async function getThreads(req, res) {
       insight: errorBuilder.buildInsight("unauthorized"),
     });
 
-  if (!req.query.thread_id)
+  if (!req.query.tab_id)
     return res.status(400).json({
       status: "ERR",
-      reason: errorBuilder.buildReason("empty", "THREAD_ID"),
-      insight: errorBuilder.buildInsight("empty", "thread id"),
+      reason: errorBuilder.buildReason("empty", "TAB_ID"),
+      insight: errorBuilder.buildInsight("empty", "tab id"),
     });
   try {
     db.collection("threads").findOne(
-      { _id: ObjectId(req.query.thread_id) },
+      { tabs: { $in: [ObjectId(req.query.tab_id)] } },
       function (err, threadObject) {
         if (err)
           return res.status(500).json({
@@ -79,21 +79,20 @@ async function getThreads(req, res) {
           });
 
         db.collection("tabs")
-          .find(
-            {
-              _id: { $in: threadObject.tabs },
-            },
-          ).project({ messages: 0 })
+          .find({
+            _id: ObjectId(req.query.tab_id),
+          })
+          .project({ messages: 1 })
           .toArray(function (err, tabObject) {
             if (!tabObject)
               return res.status(200).json({
                 status: "SUCCESS",
-                message: "No tabs to retrieve.",
+                message: "No messages to retrieve.",
                 result: [],
               });
             return res.status(200).json({
               status: "SUCCESS",
-              message: "Tabs Retrieved.",
+              message: "Messages Retrieved.",
               result: tabObject,
             });
           });

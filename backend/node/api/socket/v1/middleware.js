@@ -83,17 +83,27 @@ async function verifyAndInsertMessage(message, socket) {
         });
 
         if (hasAccess) {
+          let messageObject = {
+            sender: ObjectId(socket.id),
+            type: "text",
+            content: message.content,
+            date_created: new Date(),
+          };
           db.collection("tabs").updateOne(
             { _id: ObjectId(message.tab_id) },
-            { $push: { messages: message.content } },
+            { $push: { messages: messageObject } },
             function (err, result) {
               if (err) throw err;
 
+              messageObject.thread_id = threadObject._id;
+              messageObject.tab_id = message.tab_id;
+
               //If the user is online send it to the respective socket.
-              if (connectionMap[message.receiver_id])
-                connectionMap[message.receiver_id].emit("_messageIn", {
-                  message: message.content,
-                });
+              threadObject.thread_participants.forEach((receiverId) => {
+                if (connectionMap[receiverId] && !receiverId.equals(socket.id))
+                  connectionMap[receiverId].emit("_messageIn", messageObject);
+              });
+
               resolve(true);
             }
           );
