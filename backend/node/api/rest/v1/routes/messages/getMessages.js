@@ -50,6 +50,12 @@ async function getThreads(req, res) {
       reason: errorBuilder.buildReason("empty", "TAB_ID"),
       insight: errorBuilder.buildInsight("empty", "tab id"),
     });
+  if (!req.query.limit || !req.query.offset)
+    return res.status(400).json({
+      status: "ERR",
+      reason: errorBuilder.buildReason("empty", "LIMIT_OFFSET"),
+      insight: errorBuilder.buildInsight("empty", "limit or offset"),
+    });
   try {
     db.collection("threads").findOne(
       { tabs: { $in: [ObjectId(req.query.tab_id)] } },
@@ -82,7 +88,15 @@ async function getThreads(req, res) {
           .find({
             _id: ObjectId(req.query.tab_id),
           })
-          .project({ messages: 1 })
+          .project({
+            messages: {
+              $slice: [parseInt(req.query.offset), parseInt(req.query.limit)],
+            },
+            _id: 0,
+            tab_name: 0,
+            thread_id: 0,
+            date_created: 0,
+          })
           .toArray(function (err, tabObject) {
             if (!tabObject)
               return res.status(200).json({
