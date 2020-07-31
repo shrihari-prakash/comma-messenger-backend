@@ -35,9 +35,9 @@ async function getThreads(req, res) {
 
   let db = req.app.get("mongoInstance");
 
-  let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
+  let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
 
-  if (!loggerInUser)
+  if (!loggedInUserId)
     return res.status(403).json({
       status: "ERR",
       reason: errorBuilder.buildReason("unauthorized"),
@@ -46,7 +46,7 @@ async function getThreads(req, res) {
   try {
     db.collection("users").findOne(
       {
-        _id: ObjectId(loggerInUser.user_id),
+        _id: ObjectId(loggedInUserId),
       },
       function (err, userObject) {
         db.collection("threads")

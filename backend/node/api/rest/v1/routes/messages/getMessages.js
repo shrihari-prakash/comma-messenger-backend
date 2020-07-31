@@ -5,6 +5,9 @@ var ObjectId = require("mongodb").ObjectID;
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
 
+const cryptUtil = require("../../../../utils/crypt");
+const crypt = new cryptUtil.crypt();
+
 const errorBuilder = require("../../../../utils/responseErrorBuilder");
 
 router.get("/", async function (req, res) {
@@ -35,9 +38,9 @@ async function getThreads(req, res) {
 
   let db = req.app.get("mongoInstance");
 
-  let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
+  let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
 
-  if (!loggerInUser)
+  if (!loggedInUserId)
     return res.status(403).json({
       status: "ERR",
       reason: errorBuilder.buildReason("unauthorized"),
@@ -75,7 +78,7 @@ async function getThreads(req, res) {
         var hasAccess = threadObject.thread_participants.some(function (
           participantId
         ) {
-          return participantId.equals(loggerInUser.user_id);
+          return participantId.equals(loggedInUserId);
         });
         if (!hasAccess)
           return res.status(404).json({
@@ -103,6 +106,12 @@ async function getThreads(req, res) {
                 status: "SUCCESS",
                 message: "No messages to retrieve.",
                 result: [],
+              });
+              console.log(tabObject);
+            if (tabObject[0].messages)
+              tabObject[0].messages.forEach((messageObject, index) => {
+                let decrypted = crypt.decrypt(messageObject.content);
+                tabObject[0].messages[index].content = decrypted;
               });
             return res.status(200).json({
               status: "SUCCESS",

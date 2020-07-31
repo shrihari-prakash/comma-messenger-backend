@@ -1,3 +1,5 @@
+const { ObjectId } = require("mongodb");
+
 function tokenManager() {
   var randomizer = function () {
     return Math.random().toString(36).substr(2); // remove `0.`
@@ -11,14 +13,18 @@ function tokenManager() {
     return randomizer() + randomizer() + randomizer() + "_" + dateHash();
   };
 
-  this.generate = (db, userId, cacheManager) => {
+  this.generate = (db, userId /* type: objectId */, cacheManager) => {
+    if(typeof userId === "object") {
+      userId = userId.toString();
+    }
+    console.log("Generating new token.")
     return new Promise((resolve, reject) => {
       let now = new Date();
       let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
       let insertToken = token();
 
       let tokenObject = {
-        user_id: userId,
+        user_id: ObjectId(userId),
         token: insertToken,
         date_added: now,
         date_expiry: tomorrow,
@@ -30,16 +36,19 @@ function tokenManager() {
       ) {
         if (err) reject(err);
         cacheManager.putUserToken(insertToken, userId);
+        console.log("Inserted token in cache." + typeof userId)
         resolve(insertToken);
       });
     });
   };
 
   this.verify = (db, token, cacheManager) => {
+    console.log("Veryfying token...")
     return new Promise((resolve, reject) => {
       let userId = cacheManager.getUserIdFromToken(token);
 
       if (userId) {
+        console.log("Fetched token from cache." + typeof userId)
         resolve(userId);
       } else {
         db.collection("tokens").findOne({ token: token }, function (
@@ -58,7 +67,11 @@ function tokenManager() {
                 { $set: { date_expiry: tomorrow } },
                 function (err) {
                   if (err) resolve(false);
-                  else resolve(tokenObject);
+                  else {
+                    cacheManager.putUserToken(token, tokenObject.user_id.toString());
+                    console.log("Inserted token to cache." + typeof tokenObject.user_id)
+                    resolve(tokenObject.user_id.toString());
+                  }
                 }
               );
             }

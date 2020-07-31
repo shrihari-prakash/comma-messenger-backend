@@ -41,9 +41,9 @@ async function editProfileInfo(req, res) {
 
   let db = req.app.get("mongoInstance");
 
-  let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
+  let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
 
-  if (!loggerInUser)
+  if (!loggedInUserId)
     return res.status(404).json({
       status: "ERR",
       reason: errorBuilder.buildReason("unauthorized"),
@@ -65,7 +65,7 @@ async function editProfileInfo(req, res) {
   console.log(JSON.stringify({ $set: userDetails }));
 
   db.collection("users").updateOne(
-    { _id: ObjectId(loggerInUser.user_id) },
+    { _id: ObjectId(loggedInUserId) },
     { $set: userDetails },
     function (err, result) {
       if (err) throw err;

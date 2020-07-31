@@ -35,9 +35,9 @@ async function createThread(req, res) {
 
   let db = req.app.get("mongoInstance");
 
-  let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
+  let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
 
-  if (!loggerInUser)
+  if (!loggedInUserId)
     return res.status(404).json({
       status: "ERR",
       reason: errorBuilder.buildReason("unauthorized"),

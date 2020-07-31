@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { ObjectId } = require("mongodb");
 
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
@@ -37,9 +38,9 @@ async function createThread(req, res) {
 
   let db = req.app.get("mongoInstance");
 
-  let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
-
-  if (!loggerInUser)
+  let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
+    console.log(loggedInUserId)
+  if (!loggedInUserId)
     return res.status(404).json({
       status: "ERR",
       reason: errorBuilder.buildReason("notFound", "USER"),
@@ -62,7 +63,7 @@ async function createThread(req, res) {
       });
     } else {
       let threadObject = {
-        thread_participants: [loggerInUser.user_id, receiver._id],
+        thread_participants: [ObjectId(loggedInUserId), receiver._id],
         tabs: [],
         date_created: new Date(),
       };
@@ -75,7 +76,7 @@ async function createThread(req, res) {
           if (err) throw err;
           let insertedThreadId = threadObject._id;
           db.collection("users").updateMany(
-            { _id: { $in: [loggerInUser.user_id, receiver._id] } },
+            { _id: { $in: [ObjectId(loggedInUserId), receiver._id] } },
             { $push: { threads: insertedThreadId } },
             function (err, result) {
               if (err) throw err;

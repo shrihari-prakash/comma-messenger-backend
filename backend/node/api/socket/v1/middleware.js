@@ -4,6 +4,9 @@ const tokenManager = new tokenMgr.tokenManager();
 const cache = require("../../utils/cacheManager");
 const cacheManager = new cache.cacheManager();
 
+const cryptUtil = require("../../utils/crypt");
+const crypt = new cryptUtil.crypt();
+
 cacheManager.init();
 
 const mongoConnector = require("../../utils/dbUtils/mongoConnector");
@@ -65,7 +68,7 @@ async function verifyUser(authToken) {
   console.log(loggerInUser);
   if (!loggerInUser) return false;
 
-  return loggerInUser.user_id;
+  return loggerInUser;
 }
 
 async function verifyAndInsertMessage(message, socket) {
@@ -86,7 +89,7 @@ async function verifyAndInsertMessage(message, socket) {
           let messageObject = {
             sender: ObjectId(socket.id),
             type: "text",
-            content: message.content,
+            content: crypt.encrypt(message.content),
             date_created: new Date(),
           };
           db.collection("tabs").updateOne(
@@ -98,6 +101,7 @@ async function verifyAndInsertMessage(message, socket) {
               messageObject.thread_id = threadObject._id;
               messageObject.tab_id = message.tab_id;
 
+              messageObject.content = message.content;
               //If the user is online send it to the respective socket.
               threadObject.thread_participants.forEach((receiverId) => {
                 if (connectionMap[receiverId] && !receiverId.equals(socket.id))
