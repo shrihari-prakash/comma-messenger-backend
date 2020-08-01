@@ -5,31 +5,28 @@ var ObjectId = require("mongodb").ObjectID;
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
 
-const errorBuilder = require("../../../../utils/responseErrorBuilder");
+const errors = require("../../../../utils/errors");
+const errorModel = require("../../../../utils/errorResponse");
 
 router.get("/", async function (req, res) {
   getThreads(req, res);
 });
 
 async function getThreads(req, res) {
-  if (!req.header("authorization"))
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!req.header("authorization")) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
 
   let authToken = req
     .header("authorization")
     .slice(7, req.header("authorization").length)
     .trimLeft();
 
-  if (!authToken)
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!authToken) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
 
   let cacheManager = req.app.get("cacheManager");
 
@@ -37,12 +34,11 @@ async function getThreads(req, res) {
 
   let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
 
-  if (!loggedInUserId)
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!loggedInUserId) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
+
   try {
     db.collection("users").findOne(
       {
@@ -91,15 +87,12 @@ async function getThreads(req, res) {
                 reason: errorBuilder.buildReason("isr"),
                 insight: errorBuilder.buildInsight("isr", err),
               });
-            if (!result)
-              return res.status(200).json({
-                status: "SUCCESS",
-                message: "No threads to retrieve.",
-                result: [],
-              });
-            console.log(result);
+            if (!result) {
+              let error = new errorModel.errorResponse(errors.internal_error);
+              return res.json(error);
+            }
             return res.status(200).json({
-              status: "SUCCESS",
+              status: 200,
               message: "Threads Retrieved.",
               result: result,
             });
@@ -107,11 +100,8 @@ async function getThreads(req, res) {
       }
     );
   } catch (e) {
-    return res.status(500).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("isr"),
-      insight: errorBuilder.buildInsight("isr", e),
-    });
+    let error = new errorModel.errorResponse(errors.internal_error);
+    return res.json(error);
   }
 }
 

@@ -5,7 +5,8 @@ var ObjectId = require("mongodb").ObjectID;
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
 
-const errorBuilder = require("../../../../utils/responseErrorBuilder");
+const errors = require("../../../../utils/errors");
+const errorModel = require("../../../../utils/errorResponse");
 
 const editableProperties = [
   "name",
@@ -19,23 +20,19 @@ router.put("/", async function (req, res) {
 });
 
 async function editProfileInfo(req, res) {
-  if (!req.header("authorization"))
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!req.header("authorization")) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
   let authToken = req
     .header("authorization")
     .slice(7, req.header("authorization").length)
     .trimLeft();
 
-  if (!authToken)
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!authToken) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
 
   let cacheManager = req.app.get("cacheManager");
 
@@ -43,38 +40,41 @@ async function editProfileInfo(req, res) {
 
   let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
 
-  if (!loggedInUserId)
-    return res.status(404).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!loggedInUserId) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
 
   let userDetails = req.body;
 
   if (
     objectIterator(userDetails) == false ||
     checkJSONSchema(userDetails) == false
-  )
-    return res.status(400).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("invalid", "PROFILE_DETAILS"),
-      insight: errorBuilder.buildInsight("invalid", "profile details object"),
-    });
+  ) {
+    let error = new errorModel.errorResponse(
+      errors.invalid_input.withDetails(
+        "No valid `profile object` was sent along with the request."
+      )
+    );
+    return res.status(400).json(error);
+  }
 
-  console.log(JSON.stringify({ $set: userDetails }));
-
-  db.collection("users").updateOne(
-    { _id: ObjectId(loggedInUserId) },
-    { $set: userDetails },
-    function (err, result) {
-      if (err) throw err;
-      return res.status(200).json({
-        status: "SUCCESS",
-        message: "Profile info changed.",
-      });
-    }
-  );
+  try {
+    db.collection("users").updateOne(
+      { _id: ObjectId(loggedInUserId) },
+      { $set: userDetails },
+      function (err, result) {
+        if (err) throw err;
+        return res.status(200).json({
+          status: 200,
+          message: "Profile info changed.",
+        });
+      }
+    );
+  } catch (e) {
+    let error = new errorModel.errorResponse(errors.internal_error);
+    return res.json(error);
+  }
 }
 
 function objectIterator(o) {
@@ -84,16 +84,13 @@ function objectIterator(o) {
       objectIterator(o[k]);
     }
     if (typeof o[k] === "string") {
-      console.log(k);
-      console.log(editableProperties.includes(k));
       if (!editableProperties.includes(k)) {
         returnValue = false;
         return false;
       }
     }
   });
-  console.log(returnValue)
-  return(returnValue)
+  return returnValue;
 }
 
 function checkJSONSchema(userDetails) {

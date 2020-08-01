@@ -5,31 +5,28 @@ var ObjectId = require("mongodb").ObjectID;
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
 
-const errorBuilder = require("../../../../utils/responseErrorBuilder");
+const errors = require("../../../../utils/errors");
+const errorModel = require("../../../../utils/errorResponse");
 
 router.get("/", async function (req, res) {
   getThreads(req, res);
 });
 
 async function getThreads(req, res) {
-  if (!req.header("authorization"))
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!req.header("authorization")) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
 
   let authToken = req
     .header("authorization")
     .slice(7, req.header("authorization").length)
     .trimLeft();
 
-  if (!authToken)
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!authToken) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
 
   let cacheManager = req.app.get("cacheManager");
 
@@ -37,62 +34,59 @@ async function getThreads(req, res) {
 
   let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
 
-  if (!loggedInUserId)
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!loggedInUserId) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
 
-  if (!req.query.thread_id)
-    return res.status(400).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("empty", "THREAD_ID"),
-      insight: errorBuilder.buildInsight("empty", "thread id"),
-    });
+  if (!req.query.thread_id) {
+    let error = new errorModel.errorResponse(
+      errors.invalid_input.withDetails(
+        "No valid `thread_id` was sent along with the request."
+      )
+    );
+    return res.status(400).json(error);
+  }
   try {
     db.collection("threads").findOne(
       { _id: ObjectId(req.query.thread_id) },
       function (err, threadObject) {
-        if (err)
-          return res.status(500).json({
-            status: "ERR",
-            reason: errorBuilder.buildReason("isr"),
-            insight: errorBuilder.buildInsight("isr", err),
-          });
-        if (!threadObject)
-          return res.status(404).json({
-            status: "ERR",
-            reason: errorBuilder.buildReason("notFound", "THREAD"),
-            insight: errorBuilder.buildInsight("notFound", "thread"),
-          });
+        if (err) {
+          let error = new errorModel.errorResponse(errors.internal_error);
+          return res.json(error);
+        }
+        if (!threadObject) {
+          let error = new errorModel.errorResponse(
+            errors.not_found.withDetails(
+              "No thread exists for the provided `thread_id`"
+            )
+          );
+          return res.status(404).json(error);
+        }
         var hasAccess = threadObject.thread_participants.some(function (
           participantId
         ) {
           return participantId.equals(ObjectId(loggedInUserId));
         });
-        if (!hasAccess)
-          return res.status(404).json({
-            status: "ERR",
-            reason: errorBuilder.buildReason("unauthorized"),
-            insight: errorBuilder.buildInsight("unauthorized"),
-          });
+        if (!hasAccess) {
+          let error = new errorModel.errorResponse(errors.invalid_key);
+          return res.status(403).json(error);
+        }
 
         db.collection("tabs")
-          .find(
-            {
-              _id: { $in: threadObject.tabs },
-            },
-          ).project({ messages: 0 })
+          .find({
+            _id: { $in: threadObject.tabs },
+          })
+          .project({ messages: 0 })
           .toArray(function (err, tabObject) {
             if (!tabObject)
               return res.status(200).json({
-                status: "SUCCESS",
+                status: 200,
                 message: "No tabs to retrieve.",
                 result: [],
               });
             return res.status(200).json({
-              status: "SUCCESS",
+              status: 200,
               message: "Tabs Retrieved.",
               result: tabObject,
             });
@@ -100,11 +94,8 @@ async function getThreads(req, res) {
       }
     );
   } catch (e) {
-    return res.status(500).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("isr"),
-      insight: errorBuilder.buildInsight("isr", e),
-    });
+    let error = new errorModel.errorResponse(errors.internal_error);
+    return res.json(error);
   }
 }
 

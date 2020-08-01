@@ -14,10 +14,9 @@ function tokenManager() {
   };
 
   this.generate = (db, userId /* type: objectId */, cacheManager) => {
-    if(typeof userId === "object") {
+    if (typeof userId === "object") {
       userId = userId.toString();
     }
-    console.log("Generating new token.")
     return new Promise((resolve, reject) => {
       let now = new Date();
       let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
@@ -36,19 +35,16 @@ function tokenManager() {
       ) {
         if (err) reject(err);
         cacheManager.putUserToken(insertToken, userId);
-        console.log("Inserted token in cache." + typeof userId)
         resolve(insertToken);
       });
     });
   };
 
   this.verify = (db, token, cacheManager) => {
-    console.log("Veryfying token...")
     return new Promise((resolve, reject) => {
       let userId = cacheManager.getUserIdFromToken(token);
 
       if (userId) {
-        console.log("Fetched token from cache." + typeof userId)
         resolve(userId);
       } else {
         db.collection("tokens").findOne({ token: token }, function (
@@ -68,8 +64,10 @@ function tokenManager() {
                 function (err) {
                   if (err) resolve(false);
                   else {
-                    cacheManager.putUserToken(token, tokenObject.user_id.toString());
-                    console.log("Inserted token to cache." + typeof tokenObject.user_id)
+                    cacheManager.putUserToken(
+                      token,
+                      tokenObject.user_id.toString()
+                    );
                     resolve(tokenObject.user_id.toString());
                   }
                 }

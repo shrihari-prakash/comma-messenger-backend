@@ -5,30 +5,27 @@ var ObjectId = require("mongodb").ObjectID;
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
 
-const errorBuilder = require("../../../../utils/responseErrorBuilder");
+const errors = require("../../../../utils/errors");
+const errorModel = require("../../../../utils/errorResponse");
 
 router.put("/", async function (req, res) {
   renameTab(req, res);
 });
 
 async function renameTab(req, res) {
-  if (!req.header("authorization"))
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!req.header("authorization")) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
   let authToken = req
     .header("authorization")
     .slice(7, req.header("authorization").length)
     .trimLeft();
 
-  if (!authToken)
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!authToken) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
 
   let cacheManager = req.app.get("cacheManager");
 
@@ -36,52 +33,60 @@ async function renameTab(req, res) {
 
   let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
 
-  if (!loggedInUserId)
-    return res.status(403).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("unauthorized"),
-      insight: errorBuilder.buildInsight("unauthorized"),
-    });
+  if (!loggedInUserId) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
 
   let tabInfo = req.body;
 
-  if (!tabInfo.tab_id)
-    return res.status(400).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("empty", "TAB_ID"),
-      insight: errorBuilder.buildInsight("empty", "tab id"),
-    });
+  if (!tabInfo.tab_id) {
+    let error = new errorModel.errorResponse(
+      errors.invalid_input.withDetails(
+        "No valid `tab_id` was sent along with the request."
+      )
+    );
+    return res.status(400).json(error);
+  }
 
-  if (!tabInfo.name)
-    return res.status(400).json({
-      status: "ERR",
-      reason: errorBuilder.buildReason("empty", "TAB_NAME"),
-      insight: errorBuilder.buildInsight("empty", "tab name"),
-    });
-
-  db.collection("threads").findOne(
-    { tabs: { $in: [ObjectId(tabInfo.tab_id)] } },
-    function (err, threadObject) {
-      if (err)
-        return res.status(400).json({
-          status: "ERR",
-          reason: errorBuilder.buildReason("invalid", "TAB_ID"),
-          insight: errorBuilder.buildInsight("invalid", "tab id"),
-        });
-
-      db.collection("tabs").updateOne(
-        { _id: ObjectId(tabInfo.tab_id) },
-        { $set: { tab_name: tabInfo.name } },
-        function (err, result) {
-          if (err) throw err;
-          return res.status(200).json({
-            status: "SUCCESS",
-            message: "Tab renamed.",
-          });
+  if (!tabInfo.name) {
+    let error = new errorModel.errorResponse(
+      errors.invalid_input.withDetails(
+        "No valid `tab_name` was sent along with the request."
+      )
+    );
+    return res.status(400).json(error);
+  }
+  try {
+    db.collection("threads").findOne(
+      { tabs: { $in: [ObjectId(tabInfo.tab_id)] } },
+      function (err, threadObject) {
+        if (err) {
+          let error = new errorModel.errorResponse(
+            errors.invalid_input.withDetails(
+              "No valid `tab_id` was sent along with the request."
+            )
+          );
+          return res.status(400).json(error);
         }
-      );
-    }
-  );
+
+        db.collection("tabs").updateOne(
+          { _id: ObjectId(tabInfo.tab_id) },
+          { $set: { tab_name: tabInfo.name } },
+          function (err, result) {
+            if (err) throw err;
+            return res.status(200).json({
+              status: 200,
+              message: "Tab renamed.",
+            });
+          }
+        );
+      }
+    );
+  } catch (e) {
+    let error = new errorModel.errorResponse(errors.internal_error);
+    return res.json(error);
+  }
 }
 
 module.exports = router;
