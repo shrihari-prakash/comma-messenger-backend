@@ -39,7 +39,7 @@ router.get(
     conID = req.query.s;
     next();
   },
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", { scope: ["profile", "email"] }) //The profile-email scope is the most minimal amount of data you can get without sending your app for verification.
 );
 
 router.get(
@@ -56,7 +56,7 @@ async function postAuthenticate(req, res) {
   let displayPictureURL = req.user.photos[0].value;
 
   let user = {
-    name: fullName, //object
+    name: fullName, //{object} - contains givenName and familyName.
     email: email,
     display_picture: displayPictureURL,
     threads: [],
@@ -90,6 +90,7 @@ async function postAuthenticate(req, res) {
         tokenManager
           .generate(db, existingUser._id, req.app.get("cacheManager"))
           .then((insertToken) => {
+            //Ideally this should be a redirect to front end with user data and token encoded as url params.
             return res.status(200).json({
               status: "SUCCESS",
               message: "Login success.",

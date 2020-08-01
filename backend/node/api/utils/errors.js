@@ -1,7 +1,7 @@
 var errors = {};
 var util = require("util");
 
-function ApiError(httpCode /* {Number} */, httpMessage /* {String} */, description /* {String} */) {
+function ApiError(httpCode /* #Number */, httpMessage /* "String" */, description /* "String" */) {
   this.httpCode = httpCode;
   this.httpMessage = httpMessage;
   this.description = description;

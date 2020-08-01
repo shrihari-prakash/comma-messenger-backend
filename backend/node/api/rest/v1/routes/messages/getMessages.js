@@ -59,6 +59,7 @@ async function getThreads(req, res) {
     return res.status(400).json(error);
   }
 
+  //Check if the given tab beelongs to any thread.
   try {
     db.collection("threads").findOne(
       { tabs: { $in: [ObjectId(req.query.tab_id)] } },
@@ -75,6 +76,7 @@ async function getThreads(req, res) {
           );
           return res.status(404).json(error);
         }
+        //Even if the tab does belong to a valid thread, we still need to check if the current user is a part of the thread to which the tab belongs.
         var hasAccess = threadObject.thread_participants.some(function (
           participantId
         ) {
@@ -98,18 +100,20 @@ async function getThreads(req, res) {
             thread_id: 0,
             date_created: 0,
           })
-          .toArray(function (err, tabObject) {
+          .toArray(function (err, tabObject /* [array] */ ) {
             if (!tabObject)
               return res.status(200).json({
                 status: 200,
                 message: "No messages to retrieve.",
                 result: [],
               });
-            if (tabObject[0].messages)
+
+            if (tabObject[0].messages) //After the tab is retrieved successfully, loop through the messages and decrypt everything to send to client.
               tabObject[0].messages.forEach((messageObject, index) => {
                 let decrypted = crypt.decrypt(messageObject.content);
                 tabObject[0].messages[index].content = decrypted;
               });
+
             return res.status(200).json({
               status: 200,
               message: "Messages Retrieved.",

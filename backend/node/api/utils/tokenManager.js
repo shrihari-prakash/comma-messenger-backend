@@ -13,7 +13,7 @@ function tokenManager() {
     return randomizer() + randomizer() + randomizer() + "_" + dateHash();
   };
 
-  this.generate = (db, userId /* type: objectId */, cacheManager) => {
+  this.generate = (db, userId, cacheManager) => {
     if (typeof userId === "object") {
       userId = userId.toString();
     }
@@ -42,11 +42,13 @@ function tokenManager() {
 
   this.verify = (db, token, cacheManager) => {
     return new Promise((resolve, reject) => {
+      //If the user id is stored in cache directly retreive it.
       let userId = cacheManager.getUserIdFromToken(token);
 
       if (userId) {
         resolve(userId);
       } else {
+        //NOT A CALLBACK HELL! Hardly has two callbacks, rest are all 'if-else' shit.
         db.collection("tokens").findOne({ token: token }, function (
           err,
           tokenObject
@@ -56,6 +58,7 @@ function tokenManager() {
             if (!tokenObject) {
               resolve(false);
             } else {
+              //If the token validation is success, we bump up the token expiry time to one more day so that they can stay logged in.
               let now = new Date();
               let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
               db.collection("tokens").updateOne(

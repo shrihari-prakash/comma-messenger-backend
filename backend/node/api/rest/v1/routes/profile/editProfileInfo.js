@@ -47,6 +47,7 @@ async function editProfileInfo(req, res) {
 
   let userDetails = req.body;
 
+  //We need to make sure the user does not edit things he is not supposed to edit. Say, his email,
   if (
     objectIterator(userDetails) == false ||
     checkJSONSchema(userDetails) == false
@@ -93,6 +94,8 @@ function objectIterator(o) {
   return returnValue;
 }
 
+/*Put any checks you need to do for validating the input JSON schema, in this case, the name given by Google when a user signs up is
+an {object}. This object contains givenName and familyName keys.*/
 function checkJSONSchema(userDetails) {
   if (userDetails.name) {
     if (!userDetails.name.familyName || !userDetails.name.givenName)

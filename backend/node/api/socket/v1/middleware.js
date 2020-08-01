@@ -102,7 +102,7 @@ async function verifyAndInsertMessage(message, socket) {
               messageObject.tab_id = message.tab_id;
 
               messageObject.content = message.content;
-              //If the user is online send it to the respective socket.
+              //If any user of the thread is online send it to the respective socket.
               threadObject.thread_participants.forEach((receiverId) => {
                 if (connectionMap[receiverId] && !receiverId.equals(socket.id))
                   connectionMap[receiverId].emit("_messageIn", messageObject);
