@@ -2,7 +2,6 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const cors = require("cors");
 const passport = require("passport");
 
 const errors = require("./utils/errors");
@@ -32,7 +31,6 @@ mongoConnector.connectToServer(function (err, client) {
   app.set("mongoInstance", db);
 });
 
-/* app.use(cors()); */
 //we need to allow requests from outside our own domain.
 app.all("*", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", process.env.CLIENT_URL);

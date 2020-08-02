@@ -70,6 +70,25 @@ async function renameTab(req, res) {
           return res.status(400).json(error);
         }
 
+        if(!threadObject) {
+          let error = new errorModel.errorResponse(
+            errors.invalid_input.withDetails(
+              "No valid `tab_id` was sent along with the request."
+            )
+          );
+          return res.status(400).json(error);
+        }
+
+        var hasAccess = threadObject.thread_participants.some(function (
+          participantId
+        ) {
+          return participantId.equals(loggedInUserId);
+        });
+        if (!hasAccess) {
+          let error = new errorModel.errorResponse(errors.invalid_permission);
+          return res.status(401).json(error);
+        }
+
         db.collection("tabs").updateOne(
           { _id: ObjectId(tabInfo.tab_id) },
           { $set: { tab_name: tabInfo.name } },

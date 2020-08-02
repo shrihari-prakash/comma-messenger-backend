@@ -45,6 +45,7 @@ async function getThreads(req, res) {
         _id: ObjectId(loggedInUserId),
       },
       function (err, userObject) {
+        if(err) throw err;
         db.collection("threads")
           .aggregate([
             {
@@ -86,8 +87,11 @@ async function getThreads(req, res) {
               return res.json(error);
             }
             if (!result) {
-              let error = new errorModel.errorResponse(errors.internal_error);
-              return res.json(error);
+              return res.status(200).json({
+                status: 200,
+                message: "No threads to retrieve.",
+                result: [],
+              });
             }
             return res.status(200).json({
               status: 200,

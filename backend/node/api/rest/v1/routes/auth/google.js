@@ -39,7 +39,7 @@ router.get(
     conID = req.query.s;
     next();
   },
-  passport.authenticate("google", { scope: ["profile", "email"] }) //The profile-email scope is the most minimal amount of data you can get without sending your app for verification.
+  passport.authenticate("google", { scope: ["profile", "email"] }) //The `profile-email` scope is the most minimal amount of data you can get without sending your app for verification.
 );
 
 router.get(
@@ -56,7 +56,7 @@ async function postAuthenticate(req, res) {
   let displayPictureURL = req.user.photos[0].value;
 
   let user = {
-    name: fullName, //{object} - contains givenName and familyName.
+    name: fullName, //{object} - contains keys :givenName and :familyName.
     email: email,
     display_picture: displayPictureURL,
     threads: [],
