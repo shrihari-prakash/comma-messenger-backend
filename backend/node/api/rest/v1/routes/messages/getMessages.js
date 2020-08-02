@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require('bcrypt');
 var ObjectId = require("mongodb").ObjectID;
 
 const tokenMgr = require("../../../../utils/tokenManager");
@@ -50,6 +51,7 @@ async function getThreads(req, res) {
     );
     return res.status(400).json(error);
   }
+
   if (!req.query.limit || !req.query.offset) {
     let error = new errorModel.errorResponse(
       errors.invalid_input.withDetails(
@@ -57,6 +59,18 @@ async function getThreads(req, res) {
       )
     );
     return res.status(400).json(error);
+  }
+
+  if (req.query.password) {
+    let password = req.query.password;
+    if (isEmptyOrSpaces(password) || password.length < 4) {
+      let error = new errorModel.errorResponse(
+        errors.invalid_input.withDetails(
+          "Provided password does not meet security requirements."
+        )
+      );
+      return res.status(400).json(error);
+    }
   }
 
   //Check if the given tab beelongs to any thread.
@@ -114,6 +128,20 @@ async function getThreads(req, res) {
                 tabObject[0].messages[index].content = decrypted;
               });
 
+              if(tabObject[0].password[loggedInUserId] && tabObject[0].password[loggedInUserId] != null) {
+                if(!req.query.password) {
+                  let error = new errorModel.errorResponse(errors.invalid_access);
+                  return res.status(401).json(error);
+                }
+                let passwordVerified = bcrypt.compareSync(req.query.password, tabObject[0].password[loggedInUserId]); 
+                if(passwordVerified !== true) {
+                  let error = new errorModel.errorResponse(errors.invalid_access);
+                  return res.status(401).json(error);
+                }
+              }
+
+              delete tabObject[0].password;
+
             return res.status(200).json({
               status: 200,
               message: "Messages Retrieved.",
@@ -126,6 +154,10 @@ async function getThreads(req, res) {
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.json(error);
   }
+}
+
+function isEmptyOrSpaces(str) {
+  return str === null || str.match(/^ *$/) !== null;
 }
 
 module.exports = router;
