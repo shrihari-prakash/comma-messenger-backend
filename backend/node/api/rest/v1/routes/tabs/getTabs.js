@@ -77,7 +77,7 @@ async function getThreads(req, res) {
           .find({
             _id: { $in: threadObject.tabs },
           })
-          .project({ messages: 0 }) //Make sure we don't send all the messages that a tab has since this endpoint should just fetch a list of all tabs.
+          .project({ messages: 0, password: 0 }) //Make sure we don't send all the messages that a tab has since this endpoint should just fetch a list of all tabs.
           .toArray(function (err, tabObject) {
             if (!tabObject)
               return res.status(200).json({
