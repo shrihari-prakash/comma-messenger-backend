@@ -260,3 +260,53 @@ localhost:26398/api/rest/v1/threads/editProfileInfo
 }
 ```
 
+## Realtime Messaging:
+### Making a connection:
+
+#### Client socket object format: 
+```
+var socket = io("http://localhost:26398", {
+      path: "/api/socket/communicate",
+    });
+```
+
+#### Connecting:
+```
+function connect() {
+      socket.emit("_connect", {
+        token: "Bearer API_TOKEN",
+      });
+    }
+```
+The connection will be accepted or rejected based on the API token sent.
+
+#### Sending a message:
+```
+    function sendMessage() {
+      socket.emit("_messageOut", {
+        id: "generate a random id based on current time. This id will be sent back on callback to let the front end know if the message was delivered or rejected.",
+        token: "Bearer API_TOKEN",
+        tab_id: "tab_1",
+        receiver_id: "receiver_1",
+        content: "Hello",
+      });
+    }
+```
+
+#### Getting the status of the sent message:
+```
+    socket.on("_success", function (data) {
+      console.log(data)
+    });
+    
+    socket.on("_error", function (data) {
+      console.log(data)
+    });
+```
+
+#### Receiving messages:
+```
+    socket.on("_messageIn", function (message) {
+      console.log(message)
+    });
+```
