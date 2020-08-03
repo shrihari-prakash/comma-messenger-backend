@@ -40,7 +40,7 @@ const socketHandler = (io) => {
 
     socket.on("_messageOut", async (message) => {
       let loggedInUserId = await verifyUser(message.token, socket);
-
+      
       if (loggedInUserId != false) {
         let messageId = message.id;
 

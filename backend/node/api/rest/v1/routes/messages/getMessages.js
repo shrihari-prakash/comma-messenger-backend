@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 var ObjectId = require("mongodb").ObjectID;
 
 const tokenMgr = require("../../../../utils/tokenManager");
@@ -114,33 +114,42 @@ async function getThreads(req, res) {
             thread_id: 0,
             date_created: 0,
           })
-          .toArray(function (err, tabObject /* [array] */ ) {
-            if (!tabObject)
+          .toArray(function (err, tabObject /* [array] */) {
+            if (!tabObject || !tabObject[0])
               return res.status(200).json({
                 status: 200,
                 message: "No messages to retrieve.",
                 result: [],
               });
+              
+            tabObject = tabObject[0];
 
-            if (tabObject[0].messages) //After the tab is retrieved successfully, loop through the messages and decrypt everything to send to client.
-              tabObject[0].messages.forEach((messageObject, index) => {
+            if (tabObject.messages)
+              //After the tab is retrieved successfully, loop through the messages and decrypt everything to send to client.
+              tabObject.messages.forEach((messageObject, index) => {
                 let decrypted = crypt.decrypt(messageObject.content);
-                tabObject[0].messages[index].content = decrypted;
+                tabObject.messages[index].content = decrypted;
               });
 
-              if(tabObject[0].password[loggedInUserId] && tabObject[0].password[loggedInUserId] != null) {
-                if(!req.query.password) {
-                  let error = new errorModel.errorResponse(errors.invalid_access);
-                  return res.status(401).json(error);
-                }
-                let passwordVerified = bcrypt.compareSync(req.query.password, tabObject[0].password[loggedInUserId]); 
-                if(passwordVerified !== true) {
-                  let error = new errorModel.errorResponse(errors.invalid_access);
-                  return res.status(401).json(error);
-                }
+            if (
+              tabObject.password[loggedInUserId] &&
+              tabObject.password[loggedInUserId] != null
+            ) {
+              if (!req.query.password) {
+                let error = new errorModel.errorResponse(errors.invalid_access);
+                return res.status(401).json(error);
               }
+              let passwordVerified = bcrypt.compareSync(
+                req.query.password,
+                tabObject.password[loggedInUserId]
+              );
+              if (passwordVerified !== true) {
+                let error = new errorModel.errorResponse(errors.invalid_access);
+                return res.status(401).json(error);
+              }
+            }
 
-              delete tabObject[0].password;
+            delete tabObject.password;
 
             return res.status(200).json({
               status: 200,

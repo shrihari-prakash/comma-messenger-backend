@@ -35,8 +35,8 @@ passport.use(
 router.get(
   "/google",
   (req, res, next) => {
-    console.log(req.query);
-    conID = req.query.s;
+    console.log(req.headers.referer);
+    req.session.returnTo = req.headers.referer;
     next();
   },
   passport.authenticate("google", { scope: ["profile", "email"] }) //The `profile-email` scope is the most minimal amount of data you can get without sending your app for verification.
@@ -78,25 +78,29 @@ async function postAuthenticate(req, res) {
           tokenManager
             .generate(db, insertedUserId, req.app.get("cacheManager"))
             .then((insertToken) => {
-              return res.status(200).json({
-                status: "SUCCESS",
-                message: "Account Created.",
-                user_data: user,
-                token: insertToken,
-              });
+              //Redirect to the page from which the login request came from with the login details attached.
+              res.redirect(
+                req.session.returnTo +
+                  encodeURI(
+                    `?status="SUCCESS"&type="register"&user_data=${JSON.stringify(
+                      existingUser
+                    )}&token=${insertToken}`
+                  )
+              );
             });
         });
       } else {
         tokenManager
           .generate(db, existingUser._id, req.app.get("cacheManager"))
           .then((insertToken) => {
-            //Ideally this should be a redirect to front end with user data and token encoded as url params.
-            return res.status(200).json({
-              status: "SUCCESS",
-              message: "Login success.",
-              user_data: existingUser,
-              token: insertToken,
-            });
+            res.redirect(
+              req.session.returnTo +
+                encodeURI(
+                  `?status="SUCCESS"&type="login"&user_data=${JSON.stringify(
+                    existingUser
+                  )}&token=${insertToken}`
+                )
+            );
           });
       }
     })
