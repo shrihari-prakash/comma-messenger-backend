@@ -30,10 +30,19 @@ function tokenManager() {
 
   this.verify = async (db, token, cacheManager) => {
     return new Promise(async (resolve, reject) => {
+      let now = new Date();
+      let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
+
       //If the user id is stored in cache directly retreive it.
       let userId = cacheManager.getUserIdFromToken(token);
 
       if (userId) {
+        //If the token validation is success, we bump up the token expiry time to one more day so that the user stays logged in.
+        db.collection("tokens").updateOne(
+          { token: token },
+          { $set: { date_expiry: tomorrow } }
+        );
+
         resolve(userId);
       } else {
         let tokenObject = await db
@@ -41,38 +50,36 @@ function tokenManager() {
           .findOne({ token: token });
 
         if (!tokenObject) {
-          resolve(false);
-        } else {
-          //If the token validation is success, we bump up the token expiry time to one more day so that the user stays logged in.
-          let now = new Date();
-          let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
-
-          await db
-            .collection("tokens")
-            .updateOne(
-              { _id: tokenObject._id },
-              { $set: { date_expiry: tomorrow } }
-            );
-
-          cacheManager.putUserToken(token, tokenObject.user_id.toString());
-          resolve(tokenObject.user_id.toString());
+          return resolve(false);
         }
+
+        if (tokenObject.date_expiry < new Date()) return resolve(false);
+
+        await db
+          .collection("tokens")
+          .updateOne(
+            { token: tokenObject._id },
+            { $set: { date_expiry: tomorrow } }
+          );
+
+        cacheManager.putUserToken(token, tokenObject.user_id.toString());
+        resolve(tokenObject.user_id.toString());
       }
     });
   };
 }
 
-function randomizer () {
+function randomizer() {
   return Math.random().toString(36).substr(2); // remove `0.`
-};
+}
 
-function dateHash () {
+function dateHash() {
   return (+new Date()).toString(36);
-};
+}
 
-function token () {
+function token() {
   return randomizer() + randomizer() + randomizer() + "_" + dateHash();
-};
+}
 
 module.exports = new tokenManager();
 module.exports.tokenManager = tokenManager;
