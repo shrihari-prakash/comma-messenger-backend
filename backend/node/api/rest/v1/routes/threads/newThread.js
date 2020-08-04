@@ -73,6 +73,11 @@ async function createThread(req, res) {
         var threadInsertResult = await db
           .collection("threads")
           .insertOne(threadObject, { w: 1 });
+        
+          if (threadInsertResult.result.ok != 1) {
+            let error = new errorModel.errorResponse(errors.internal_error);
+            return res.json(error);
+          }
 
         let insertedThreadId = threadObject._id;
 

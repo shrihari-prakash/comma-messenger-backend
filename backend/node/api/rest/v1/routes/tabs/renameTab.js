@@ -84,17 +84,22 @@ async function renameTab(req, res) {
       return res.status(401).json(error);
     }
 
-    db.collection("tabs").updateOne(
-      { _id: ObjectId(tabInfo.tab_id) },
-      { $set: { tab_name: tabInfo.name } },
-      function (err, result) {
-        if (err) throw err;
-        return res.status(200).json({
-          status: 200,
-          message: "Tab renamed.",
-        });
-      }
-    );
+    var tabUpdateResult = await db
+      .collection("tabs")
+      .updateOne(
+        { _id: ObjectId(tabInfo.tab_id) },
+        { $set: { tab_name: tabInfo.name } }
+      );
+
+    if (tabUpdateResult.result.ok != 1) {
+      let error = new errorModel.errorResponse(errors.internal_error);
+      return res.json(error);
+    }
+    
+    return res.status(200).json({
+      status: 200,
+      message: "Tab renamed.",
+    });
   } catch (e) {
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.json(error);

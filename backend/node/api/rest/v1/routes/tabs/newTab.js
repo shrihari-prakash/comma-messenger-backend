@@ -125,6 +125,11 @@ async function createThread(req, res) {
         { $push: { tabs: insertedTabId } }
       );
 
+    if(threadUpdateResult.result.ok != 1 || tabInsertResult.result.ok != 1) {
+      let error = new errorModel.errorResponse(errors.internal_error);
+      return res.json(error);
+    }
+
     return res.status(200).json({
       status: 200,
       message: "Tab created.",
