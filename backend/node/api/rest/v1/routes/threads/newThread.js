@@ -73,11 +73,11 @@ async function createThread(req, res) {
         var threadInsertResult = await db
           .collection("threads")
           .insertOne(threadObject, { w: 1 });
-        
-          if (threadInsertResult.result.ok != 1) {
-            let error = new errorModel.errorResponse(errors.internal_error);
-            return res.json(error);
-          }
+
+        if (threadInsertResult.result.ok != 1) {
+          let error = new errorModel.errorResponse(errors.internal_error);
+          return res.json(error);
+        }
 
         let insertedThreadId = threadObject._id;
 
@@ -87,6 +87,11 @@ async function createThread(req, res) {
             { _id: { $in: [ObjectId(loggedInUserId), receiver._id] } },
             { $push: { threads: insertedThreadId } }
           );
+
+        if (userUpdateResult.result.ok != 1) {
+          let error = new errorModel.errorResponse(errors.internal_error);
+          return res.json(error);
+        }
 
         return res.status(200).json({
           status: 200,
