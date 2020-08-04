@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 var ObjectId = require("mongodb").ObjectID;
 
 const tokenMgr = require("../../../../utils/tokenManager");
@@ -14,6 +14,7 @@ router.post("/", async function (req, res) {
 });
 
 async function createThread(req, res) {
+  //Start of input validation.
   if (!req.header("authorization")) {
     let error = new errorModel.errorResponse(errors.invalid_key);
     return res.status(403).json(error);
@@ -70,51 +71,65 @@ async function createThread(req, res) {
     );
     return res.status(400).json(error);
   }
+  //End of input validation.
+
   try {
-    db.collection("threads").findOne(
-      { _id: ObjectId(tabDetails.thread_id) },
-      function (err, threadObject) {
-        if (err) {
-          let error = new errorModel.errorResponse(errors.internal_error);
-          return res.json(error);
-        }
+    var threadObject = await db
+      .collection("threads")
+      .findOne({ _id: ObjectId(tabDetails.thread_id) });
 
-        let tabObject = {
-          tab_name: tabDetails.tab_name,
-          thread_id: ObjectId(tabDetails.thread_id),
-          messages: [],
-          date_created: new Date(),
-          password: {}
-        };
+    if (!threadObject) {
+      let error = new errorModel.errorResponse(
+        errors.invalid_input.withDetails(
+          "No valid `thread_id` was sent along with the request."
+        )
+      );
+      return res.status(400).json(error);
+    }
 
-        if(tabDetails.password) {
-          var salt = bcrypt.genSaltSync(10);
-          let hash = bcrypt.hashSync(tabDetails.password, salt);
-          tabObject.password[loggedInUserId] = hash;
-        }
+    var hasAccess = threadObject.thread_participants.some(function (
+      participantId
+    ) {
+      return participantId.equals(ObjectId(loggedInUserId));
+    });
+    if (!hasAccess) {
+      let error = new errorModel.errorResponse(errors.invalid_key);
+      return res.status(403).json(error);
+    }
 
-        //Insert into tabs and push the inserted tab _id into array of tabs in threads.
-        db.collection("tabs").insertOne(tabObject, { w: 1 }, function (
-          err,
-          result
-        ) {
-          if (err) throw err;
-          let insertedTabId = tabObject._id;
-          db.collection("threads").updateOne(
-            { _id: ObjectId(tabDetails.thread_id) },
-            { $push: { tabs: insertedTabId } },
-            function (err, result) {
-              if (err) throw err;
-              return res.status(200).json({
-                status: 200,
-                message: "Tab created.",
-                tab_id: insertedTabId,
-              });
-            }
-          );
-        });
-      }
-    );
+    let tabObject = {
+      tab_name: tabDetails.tab_name,
+      thread_id: ObjectId(tabDetails.thread_id),
+      messages: [],
+      date_created: new Date(),
+      password: {},
+    };
+
+    if (tabDetails.password) {
+      var salt = bcrypt.genSaltSync(10);
+      let hash = bcrypt.hashSync(tabDetails.password, salt);
+      tabObject.password[loggedInUserId] = hash;
+    }
+
+    //Insert into tabs and push the inserted tab _id into array of tabs in threads.
+    var tabInsertResult = await db
+      .collection("tabs")
+      .insertOne(tabObject, { w: 1 });
+
+    let insertedTabId = tabObject._id;
+
+    var threadUpdateResult = await db
+      .collection("threads")
+      .updateOne(
+        { _id: ObjectId(tabDetails.thread_id) },
+        { $push: { tabs: insertedTabId } }
+      );
+
+    return res.status(200).json({
+      status: 200,
+      message: "Tab created.",
+      tab_id: insertedTabId,
+    });
   } catch (e) {
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.json(error);

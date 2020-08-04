@@ -16,6 +16,7 @@ router.get("/", async function (req, res) {
 });
 
 async function createThread(req, res) {
+  //Start of input validation.
   if (!req.header("authorization")) {
     let error = new errorModel.errorResponse(errors.invalid_key);
     return res.status(403).json(error);
@@ -51,8 +52,9 @@ async function createThread(req, res) {
     );
     return res.status(400).json(error);
   }
+  //End of input validation.
 
-  userManager.checkExistingUser(db, req.query.email).then((receiver) => {
+  userManager.checkExistingUser(db, req.query.email).then(async (receiver) => {
     if (typeof receiver === "boolean" && receiver === false) {
       let error = new errorModel.errorResponse(
         errors.not_found.withDetails(
@@ -68,24 +70,23 @@ async function createThread(req, res) {
       };
       try {
         //Insert into threads and push the inserted thread _id into array of threads in users.
-        db.collection("threads").insertOne(threadObject, { w: 1 }, function (
-          err,
-          result
-        ) {
-          if (err) throw err;
-          let insertedThreadId = threadObject._id;
-          db.collection("users").updateMany(
+        var threadInsertResult = await db
+          .collection("threads")
+          .insertOne(threadObject, { w: 1 });
+
+        let insertedThreadId = threadObject._id;
+
+        var userUpdateResult = await db
+          .collection("users")
+          .updateMany(
             { _id: { $in: [ObjectId(loggedInUserId), receiver._id] } },
-            { $push: { threads: insertedThreadId } },
-            function (err, result) {
-              if (err) throw err;
-              return res.status(200).json({
-                status: 200,
-                message: "Thread created.",
-                thread_id: insertedThreadId,
-              });
-            }
+            { $push: { threads: insertedThreadId } }
           );
+
+        return res.status(200).json({
+          status: 200,
+          message: "Thread created.",
+          thread_id: insertedThreadId,
         });
       } catch (e) {
         let error = new errorModel.errorResponse(errors.internal_error);

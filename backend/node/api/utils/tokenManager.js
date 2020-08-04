@@ -1,18 +1,6 @@
 const { ObjectId } = require("mongodb");
 
 function tokenManager() {
-  var randomizer = function () {
-    return Math.random().toString(36).substr(2); // remove `0.`
-  };
-
-  var dateHash = function () {
-    return (+new Date()).toString(36);
-  };
-
-  var token = function () {
-    return randomizer() + randomizer() + randomizer() + "_" + dateHash();
-  };
-
   this.generate = (db, userId, cacheManager) => {
     if (typeof userId === "object") {
       userId = userId.toString();
@@ -40,48 +28,51 @@ function tokenManager() {
     });
   };
 
-  this.verify = (db, token, cacheManager) => {
-    return new Promise((resolve, reject) => {
+  this.verify = async (db, token, cacheManager) => {
+    return new Promise(async (resolve, reject) => {
       //If the user id is stored in cache directly retreive it.
       let userId = cacheManager.getUserIdFromToken(token);
 
       if (userId) {
         resolve(userId);
       } else {
-        //NOT A CALLBACK HELL! Hardly has two callbacks, rest are all 'if-else' shit.
-        db.collection("tokens").findOne({ token: token }, function (
-          err,
-          tokenObject
-        ) {
-          if (err) reject(err);
-          else {
-            if (!tokenObject) {
-              resolve(false);
-            } else {
-              //If the token validation is success, we bump up the token expiry time to one more day so that they can stay logged in.
-              let now = new Date();
-              let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
-              db.collection("tokens").updateOne(
-                { _id: tokenObject._id },
-                { $set: { date_expiry: tomorrow } },
-                function (err) {
-                  if (err) resolve(false);
-                  else {
-                    cacheManager.putUserToken(
-                      token,
-                      tokenObject.user_id.toString()
-                    );
-                    resolve(tokenObject.user_id.toString());
-                  }
-                }
-              );
-            }
-          }
-        });
+        let tokenObject = await db
+          .collection("tokens")
+          .findOne({ token: token });
+
+        if (!tokenObject) {
+          resolve(false);
+        } else {
+          //If the token validation is success, we bump up the token expiry time to one more day so that the user stays logged in.
+          let now = new Date();
+          let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
+
+          await db
+            .collection("tokens")
+            .updateOne(
+              { _id: tokenObject._id },
+              { $set: { date_expiry: tomorrow } }
+            );
+
+          cacheManager.putUserToken(token, tokenObject.user_id.toString());
+          resolve(tokenObject.user_id.toString());
+        }
       }
     });
   };
 }
+
+function randomizer () {
+  return Math.random().toString(36).substr(2); // remove `0.`
+};
+
+function dateHash () {
+  return (+new Date()).toString(36);
+};
+
+function token () {
+  return randomizer() + randomizer() + randomizer() + "_" + dateHash();
+};
 
 module.exports = new tokenManager();
 module.exports.tokenManager = tokenManager;

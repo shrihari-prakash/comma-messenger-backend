@@ -40,7 +40,7 @@ const socketHandler = (io) => {
 
     socket.on("_messageOut", async (message) => {
       let loggedInUserId = await verifyUser(message.token, socket);
-      
+
       if (loggedInUserId != false) {
         let messageId = message.id;
 
@@ -72,48 +72,67 @@ async function verifyUser(authToken) {
 }
 
 async function verifyAndInsertMessage(message, socket) {
-  return new Promise(function (resolve, reject) {
-    db.collection("threads").findOne(
-      { tabs: { $in: [ObjectId(message.tab_id)] } },
-      function (err, threadObject) {
-        if (err) resolve(false);
+  return new Promise(async function (resolve, reject) {
+    var threadObject = db
+      .collection("threads")
+      .findOne({ tabs: { $in: [ObjectId(message.tab_id)] } });
 
-        //Make sure some random user is not sending messages to a thread to which he doesn't even belong.
-        var hasAccess = threadObject.thread_participants.some(function (
-          participantId
-        ) {
-          return participantId.equals(socket.id);
-        });
+    //Make sure some random user is not sending messages to a thread to which he doesn't even belong.
+    var hasAccess = threadObject.thread_participants.some(function (
+      participantId
+    ) {
+      return participantId.equals(socket.id);
+    });
 
-        if (hasAccess) {
-          let messageObject = {
-            sender: ObjectId(socket.id),
-            type: "text",
-            content: crypt.encrypt(message.content),
-            date_created: new Date(),
-          };
-          db.collection("tabs").updateOne(
-            { _id: ObjectId(message.tab_id) },
-            { $push: { messages: messageObject } },
-            function (err, result) {
-              if (err) throw err;
+    var tabObject = await collection.findOne({ _id: ObjectId(message.tab_id) });
 
-              messageObject.thread_id = threadObject._id;
-              messageObject.tab_id = message.tab_id;
-
-              messageObject.content = message.content;
-              //If any user of the thread is online send it to the respective socket.
-              threadObject.thread_participants.forEach((receiverId) => {
-                if (connectionMap[receiverId] && !receiverId.equals(socket.id))
-                  connectionMap[receiverId].emit("_messageIn", messageObject);
-              });
-
-              resolve(true);
-            }
-          );
-        } else resolve(false);
+    if (
+      tabObject.password[loggedInUserId] &&
+      tabObject.password[loggedInUserId] != null
+    ) {
+      if (!message.password) {
+        resolve(false);
       }
-    );
+      let passwordVerified = bcrypt.compareSync(
+        req.query.password,
+        tabObject.password[loggedInUserId]
+      );
+      if (passwordVerified !== true) {
+        resolve(false);
+      }
+    }
+
+    if (hasAccess) {
+      let messageObject = {
+        sender: ObjectId(socket.id),
+        type: "text",
+        content: crypt.encrypt(message.content),
+        date_created: new Date(),
+      };
+
+      var result = await db
+        .collection("tabs")
+        .updateOne(
+          { _id: ObjectId(message.tab_id) },
+          { $push: { messages: messageObject } }
+        );
+      
+      if(!result) {
+        resolve(false)
+      }
+
+      messageObject.thread_id = threadObject._id;
+      messageObject.tab_id = message.tab_id;
+
+      messageObject.content = message.content;
+      //If any user of the thread is online send it to the respective socket.
+      threadObject.thread_participants.forEach((receiverId) => {
+        if (connectionMap[receiverId] && !receiverId.equals(socket.id))
+          connectionMap[receiverId].emit("_messageIn", messageObject);
+      });
+
+      resolve(true);
+    } else resolve(false);
   });
 }
 

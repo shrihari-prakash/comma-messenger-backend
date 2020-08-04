@@ -13,6 +13,7 @@ router.put("/", async function (req, res) {
 });
 
 async function renameTab(req, res) {
+  //Start of input validation.
   if (!req.header("authorization")) {
     let error = new errorModel.errorResponse(errors.invalid_key);
     return res.status(403).json(error);
@@ -57,49 +58,41 @@ async function renameTab(req, res) {
     );
     return res.status(400).json(error);
   }
+  //End of input validation.
+
   try {
-    db.collection("threads").findOne(
-      { tabs: { $in: [ObjectId(tabInfo.tab_id)] } },
-      function (err, threadObject) {
-        if (err) {
-          let error = new errorModel.errorResponse(
-            errors.invalid_input.withDetails(
-              "No valid `tab_id` was sent along with the request."
-            )
-          );
-          return res.status(400).json(error);
-        }
+    var threadObject = await db
+      .collection("threads")
+      .findOne({ tabs: { $in: [ObjectId(tabInfo.tab_id)] } });
 
-        if(!threadObject) {
-          let error = new errorModel.errorResponse(
-            errors.invalid_input.withDetails(
-              "No valid `tab_id` was sent along with the request."
-            )
-          );
-          return res.status(400).json(error);
-        }
+    if (!threadObject) {
+      let error = new errorModel.errorResponse(
+        errors.invalid_input.withDetails(
+          "No valid `tab_id` was sent along with the request."
+        )
+      );
+      return res.status(400).json(error);
+    }
 
-        var hasAccess = threadObject.thread_participants.some(function (
-          participantId
-        ) {
-          return participantId.equals(loggedInUserId);
+    var hasAccess = threadObject.thread_participants.some(function (
+      participantId
+    ) {
+      return participantId.equals(loggedInUserId);
+    });
+    if (!hasAccess) {
+      let error = new errorModel.errorResponse(errors.invalid_permission);
+      return res.status(401).json(error);
+    }
+
+    db.collection("tabs").updateOne(
+      { _id: ObjectId(tabInfo.tab_id) },
+      { $set: { tab_name: tabInfo.name } },
+      function (err, result) {
+        if (err) throw err;
+        return res.status(200).json({
+          status: 200,
+          message: "Tab renamed.",
         });
-        if (!hasAccess) {
-          let error = new errorModel.errorResponse(errors.invalid_permission);
-          return res.status(401).json(error);
-        }
-
-        db.collection("tabs").updateOne(
-          { _id: ObjectId(tabInfo.tab_id) },
-          { $set: { tab_name: tabInfo.name } },
-          function (err, result) {
-            if (err) throw err;
-            return res.status(200).json({
-              status: 200,
-              message: "Tab renamed.",
-            });
-          }
-        );
       }
     );
   } catch (e) {

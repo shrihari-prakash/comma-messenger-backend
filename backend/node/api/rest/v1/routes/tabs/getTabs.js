@@ -13,6 +13,7 @@ router.get("/", async function (req, res) {
 });
 
 async function getThreads(req, res) {
+  //Start of input validation.
   if (!req.header("authorization")) {
     let error = new errorModel.errorResponse(errors.invalid_key);
     return res.status(403).json(error);
@@ -47,53 +48,51 @@ async function getThreads(req, res) {
     );
     return res.status(400).json(error);
   }
-  try {
-    db.collection("threads").findOne(
-      { _id: ObjectId(req.query.thread_id) },
-      function (err, threadObject) {
-        if (err) {
-          let error = new errorModel.errorResponse(errors.internal_error);
-          return res.json(error);
-        }
-        if (!threadObject) {
-          let error = new errorModel.errorResponse(
-            errors.not_found.withDetails(
-              "No thread exists for the provided `thread_id`"
-            )
-          );
-          return res.status(404).json(error);
-        }
-        var hasAccess = threadObject.thread_participants.some(function (
-          participantId
-        ) {
-          return participantId.equals(ObjectId(loggedInUserId));
-        });
-        if (!hasAccess) {
-          let error = new errorModel.errorResponse(errors.invalid_key);
-          return res.status(403).json(error);
-        }
+  //End of input validation.
 
-        db.collection("tabs")
-          .find({
-            _id: { $in: threadObject.tabs },
-          })
-          .project({ messages: 0, password: 0 }) //Make sure we don't send all the messages that a tab has since this endpoint should just fetch a list of all tabs.
-          .toArray(function (err, tabObject) {
-            if (!tabObject)
-              return res.status(200).json({
-                status: 200,
-                message: "No tabs to retrieve.",
-                result: [],
-              });
-            return res.status(200).json({
-              status: 200,
-              message: "Tabs Retrieved.",
-              result: tabObject,
-            });
-          });
-      }
-    );
+  try {
+    var threadObject = await db
+      .collection("threads")
+      .findOne({ _id: ObjectId(req.query.thread_id) });
+
+    if (!threadObject) {
+      let error = new errorModel.errorResponse(
+        errors.not_found.withDetails(
+          "No thread exists for the provided `thread_id`"
+        )
+      );
+      return res.status(404).json(error);
+    }
+    var hasAccess = threadObject.thread_participants.some(function (
+      participantId
+    ) {
+      return participantId.equals(ObjectId(loggedInUserId));
+    });
+    if (!hasAccess) {
+      let error = new errorModel.errorResponse(errors.invalid_key);
+      return res.status(403).json(error);
+    }
+
+    var tabObject = await db
+      .collection("tabs")
+      .find({
+        _id: { $in: threadObject.tabs },
+      })
+      .project({ messages: 0, password: 0 }) //Make sure we don't send all the messages that a tab has since this endpoint should just fetch a list of all tabs.
+      .toArray();
+    if (!tabObject)
+      return res.status(200).json({
+        status: 200,
+        message: "No tabs to retrieve.",
+        result: [],
+      });
+    return res.status(200).json({
+      status: 200,
+      message: "Tabs Retrieved.",
+      result: tabObject,
+    });
   } catch (e) {
+    console.log(e);
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.json(error);
   }

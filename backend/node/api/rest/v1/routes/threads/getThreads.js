@@ -13,6 +13,7 @@ router.get("/", async function (req, res) {
 });
 
 async function getThreads(req, res) {
+  //Start of input validation.
   if (!req.header("authorization")) {
     let error = new errorModel.errorResponse(errors.invalid_key);
     return res.status(403).json(error);
@@ -38,6 +39,7 @@ async function getThreads(req, res) {
     let error = new errorModel.errorResponse(errors.invalid_key);
     return res.status(403).json(error);
   }
+  //End of input validation.
 
   try {
     db.collection("users").findOne(
