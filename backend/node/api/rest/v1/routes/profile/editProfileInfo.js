@@ -8,6 +8,7 @@ const tokenManager = new tokenMgr.tokenManager();
 const errors = require("../../../../utils/errors");
 const errorModel = require("../../../../utils/errorResponse");
 
+//An array of properties that an user is allowed to edit.
 const editableProperties = [
   "name",
   "familyName",
@@ -49,8 +50,8 @@ async function editProfileInfo(req, res) {
 
   //We need to make sure the user does not edit things he is not supposed to edit. Say, his email,
   if (
-    objectIterator(userDetails) == false ||
-    checkJSONSchema(userDetails) == false
+    validateJSONProperties(userDetails) == false ||
+    validateJSONSchema(userDetails) == false
   ) {
     let error = new errorModel.errorResponse(
       errors.invalid_input.withDetails(
@@ -78,11 +79,11 @@ async function editProfileInfo(req, res) {
   }
 }
 
-function objectIterator(o) {
+function validateJSONProperties(o) {
   let returnValue = true;
   Object.keys(o).forEach(function (k) {
     if (o[k] !== null && typeof o[k] === "object") {
-      objectIterator(o[k]);
+      validateJSONProperties(o[k]);
     }
     if (typeof o[k] === "string") {
       if (!editableProperties.includes(k)) {
@@ -95,8 +96,8 @@ function objectIterator(o) {
 }
 
 /*Put any checks you need to do for validating the input JSON schema, in this case, the name given by Google when a user signs up is
-an {object}. This object contains givenName and familyName keys.*/
-function checkJSONSchema(userDetails) {
+an {object}. This object contains :givenName and :familyName keys.*/
+function validateJSONSchema(userDetails) {
   if (userDetails.name) {
     if (!userDetails.name.familyName || !userDetails.name.givenName)
       return false;

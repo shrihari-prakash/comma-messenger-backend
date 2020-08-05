@@ -1,3 +1,5 @@
+const bcrypt = require("bcrypt");
+
 const tokenMgr = require("../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
 
@@ -44,7 +46,7 @@ const socketHandler = (io) => {
       if (loggedInUserId != false) {
         let messageId = message.id;
 
-        verifyAndInsertMessage(message, socket).then((isSuccess) => {
+        verifyAndInsertMessage(message, socket, loggedInUserId).then((isSuccess) => {
           console.log(isSuccess);
           if (isSuccess === true)
             socket.emit("_success", { message_id: messageId });
@@ -68,16 +70,15 @@ async function verifyUser(authToken) {
   authToken = authToken.slice(7, authToken.length).trimLeft();
 
   let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
-  console.log(loggerInUser);
   if (!loggerInUser) return false;
 
   return loggerInUser;
 }
 
-async function verifyAndInsertMessage(message, socket) {
+async function verifyAndInsertMessage(message, socket, loggedInUserId) {
   return new Promise(async function (resolve, reject) {
     try {
-      var threadObject = db
+      var threadObject = await db
         .collection("threads")
         .findOne({ tabs: { $in: [ObjectId(message.tab_id)] } });
 
@@ -88,7 +89,7 @@ async function verifyAndInsertMessage(message, socket) {
         return participantId.equals(socket.id);
       });
 
-      var tabObject = await collection.findOne({
+      var tabObject = await db.collection("tabs").findOne({
         _id: ObjectId(message.tab_id),
       });
 
@@ -99,8 +100,9 @@ async function verifyAndInsertMessage(message, socket) {
         if (!message.password) {
           reject(false);
         }
+        
         let passwordVerified = bcrypt.compareSync(
-          req.query.password,
+          message.password,
           tabObject.password[loggedInUserId]
         );
         if (passwordVerified !== true) {
@@ -127,10 +129,6 @@ async function verifyAndInsertMessage(message, socket) {
           reject(false);
         }
 
-        if (!result) {
-          reject(false);
-        }
-
         messageObject.thread_id = threadObject._id;
         messageObject.tab_id = message.tab_id;
 
@@ -144,6 +142,7 @@ async function verifyAndInsertMessage(message, socket) {
         resolve(true);
       } else reject(false);
     } catch (e) {
+      console.log(e)
       reject(false);
     }
   });

@@ -32,6 +32,7 @@ async function createThread(req, res) {
   let cacheManager = req.app.get("cacheManager");
 
   let db = req.app.get("mongoInstance");
+  let client = req.app.get("mongoClient");
 
   let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
 
@@ -112,9 +113,12 @@ async function createThread(req, res) {
     }
 
     //Insert into tabs and push the inserted tab _id into array of tabs in threads.
-    var tabInsertResult = await db
-      .collection("tabs")
-      .insertOne(tabObject, { w: 1 });
+    var tabInsertResult = await db.collection("tabs").insertOne(
+      tabObject,
+      {
+        w: 1,
+      }
+    );
 
     let insertedTabId = tabObject._id;
 
@@ -125,7 +129,7 @@ async function createThread(req, res) {
         { $push: { tabs: insertedTabId } }
       );
 
-    if(threadUpdateResult.result.ok != 1 || tabInsertResult.result.ok != 1) {
+    if (threadUpdateResult.result.ok != 1 || tabInsertResult.result.ok != 1) {
       let error = new errorModel.errorResponse(errors.internal_error);
       return res.json(error);
     }
@@ -136,6 +140,7 @@ async function createThread(req, res) {
       tab_id: insertedTabId,
     });
   } catch (e) {
+    console.log(e);
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.json(error);
   }

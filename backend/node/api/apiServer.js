@@ -28,7 +28,9 @@ mongoConnector.connectToServer(function (err, client) {
   /* This instance of db returned from the mongoConnector is used throughout the app 
   by all the end points to write and fetch data. (Except the socket connection) */
   let db = mongoConnector.getDb();
+  let mongoClient = mongoConnector.getClient();
   app.set("mongoInstance", db);
+  app.set("mongoClient", mongoClient);
 });
 
 //we need to allow requests from outside our own domain.

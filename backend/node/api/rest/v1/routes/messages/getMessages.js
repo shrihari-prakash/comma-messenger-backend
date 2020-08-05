@@ -75,7 +75,7 @@ async function getThreads(req, res) {
   }
   //End of input validation.
 
-  //Check if the given tab beelongs to any thread.
+  //Check if the given tab belongs to any thread.
   try {
     var threadObject = await db
       .collection("threads")
