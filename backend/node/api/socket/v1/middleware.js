@@ -27,11 +27,11 @@ var connectionMap = {};
 const socketHandler = (io) => {
   io.on("connection", (socket) => {
     socket.on("_connect", async (initObject) => {
-      let loggedInUserId = await verifyUser(initObject.token);
+      let userAuthResult = await verifyUser(initObject.token);
 
-      if (loggedInUserId != false) {
-        console.log("connected: " + loggedInUserId);
-        socket.id = loggedInUserId;
+      if (userAuthResult.ok != 0) {
+        console.log("connected: " + userAuthResult.data);
+        socket.id = userAuthResult.data;
         connectionMap[socket.id] = socket;
       } else {
         console.log("Unauthenticated user.");
@@ -41,20 +41,36 @@ const socketHandler = (io) => {
     });
 
     socket.on("_messageOut", async (message) => {
-      let loggedInUserId = await verifyUser(message.token, socket);
+      let userAuthResult = await verifyUser(message.token, socket);
+      let messageId = message.id;
 
-      if (loggedInUserId != false) {
-        let messageId = message.id;
-
-        verifyAndInsertMessage(message, socket, loggedInUserId).then((isSuccess) => {
-          console.log(isSuccess);
-          if (isSuccess === true)
-            socket.emit("_success", { message_id: messageId });
-          else socket.emit("_error", { message_id: messageId });
-        }).catch(function(rej) {
-          socket.emit("_error", { message_id: messageId })
-          console.log(rej);
-        });;
+      if (userAuthResult.ok != 0) {
+        verifyAndInsertMessage(message, socket, userAuthResult.data)
+          .then((result) => {
+            if (result.ok === 1) {
+              socket.emit("_success", { message_id: messageId, ok: 1 });
+            } else {
+              socket.emit("_error", {
+                message_id: messageId,
+                ok: 0,
+                reason: userAuthResult.reason,
+              });
+            }
+          })
+          .catch(function (rej) {
+            socket.emit("_error", {
+              message_id: messageId,
+              ok: 0,
+              reason: userAuthResult.reason,
+            });
+            console.log(rej);
+          });
+      } else {
+        socket.emit("_error", {
+          message_id: messageId,
+          ok: 0,
+          reason: userAuthResult.reason,
+        });
       }
     });
 
@@ -65,17 +81,17 @@ const socketHandler = (io) => {
 };
 
 async function verifyUser(authToken) {
-  if (!authToken) return false;
+  if (!authToken) return { ok: 0, reason: "INVALID_API_KEY" };
 
   authToken = authToken.slice(7, authToken.length).trimLeft();
 
   let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
-  if (!loggerInUser) return false;
+  if (!loggerInUser) return { ok: 0, reason: "INVALID_API_KEY" };
 
-  return loggerInUser;
+  return { ok: 1, data: loggerInUser };
 }
 
-async function verifyAndInsertMessage(message, socket, loggedInUserId) {
+async function verifyAndInsertMessage(message, socket, userAuthResult) {
   return new Promise(async function (resolve, reject) {
     try {
       var threadObject = await db
@@ -94,19 +110,19 @@ async function verifyAndInsertMessage(message, socket, loggedInUserId) {
       });
 
       if (
-        tabObject.password[loggedInUserId] &&
-        tabObject.password[loggedInUserId] != null
+        tabObject.password[userAuthResult] &&
+        tabObject.password[userAuthResult] != null
       ) {
         if (!message.password) {
-          reject(false);
+          reject({ ok: 0, reason: "INVALID_PASSWORD" });
         }
-        
+
         let passwordVerified = bcrypt.compareSync(
           message.password,
-          tabObject.password[loggedInUserId]
+          tabObject.password[userAuthResult]
         );
         if (passwordVerified !== true) {
-          reject(false);
+          reject({ ok: 0, reason: "INVALID_PASSWORD" });
         }
       }
 
@@ -126,7 +142,7 @@ async function verifyAndInsertMessage(message, socket, loggedInUserId) {
           );
 
         if (tabUpdateResult.result.ok != 1) {
-          reject(false);
+          reject({ ok: 0, reason: "INTERNAL_SERVER_ERROR" });
         }
 
         messageObject.thread_id = threadObject._id;
@@ -139,11 +155,11 @@ async function verifyAndInsertMessage(message, socket, loggedInUserId) {
             connectionMap[receiverId].emit("_messageIn", messageObject);
         });
 
-        resolve(true);
-      } else reject(false);
+        resolve({ ok: 1 });
+      } else reject({ ok: 0, reason: "NO_ACCESS" });
     } catch (e) {
-      console.log(e)
-      reject(false);
+      console.log(e);
+      reject({ ok: 0, reason: "INTERNAL_SERVER_ERROR" });
     }
   });
 }

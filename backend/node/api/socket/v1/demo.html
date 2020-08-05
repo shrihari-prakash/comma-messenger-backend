@@ -17,6 +17,10 @@
       document.getElementById("messages").innerHTML += "Message " + data.message_id + " has been delivered successfully.</br>";
     });
 
+    socket.on("_error", function (data) {
+      document.getElementById("messages").innerHTML += "Message " + data.message_id + " was not delivered. Error:" + data.reason + "</br>";
+    });
+
     function connect() {
       socket.emit("_connect", {
         token: document.getElementById("my_id").value,
