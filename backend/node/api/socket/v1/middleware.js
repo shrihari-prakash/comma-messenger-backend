@@ -53,7 +53,7 @@ const socketHandler = (io) => {
               socket.emit("_error", {
                 message_id: messageId,
                 ok: 0,
-                reason: userAuthResult.reason,
+                reason: result.reason,
               });
             }
           })
