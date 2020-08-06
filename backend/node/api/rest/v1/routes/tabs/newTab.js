@@ -52,18 +52,6 @@ async function createThread(req, res) {
     return res.status(400).json(error);
   }
 
-  if (tabDetails.password) {
-    let password = tabDetails.password;
-    if (isEmptyOrSpaces(password) || password.length < 4) {
-      let error = new errorModel.errorResponse(
-        errors.invalid_input.withDetails(
-          "Provided password does not meet security requirements."
-        )
-      );
-      return res.status(400).json(error);
-    }
-  }
-
   if (!tabDetails.tab_name) {
     let error = new errorModel.errorResponse(
       errors.invalid_input.withDetails(
@@ -103,14 +91,7 @@ async function createThread(req, res) {
       thread_id: ObjectId(tabDetails.thread_id),
       messages: [],
       date_created: new Date(),
-      password: {},
     };
-
-    if (tabDetails.password) {
-      var salt = bcrypt.genSaltSync(10);
-      let hash = bcrypt.hashSync(tabDetails.password, salt);
-      tabObject.password[loggedInUserId] = hash;
-    }
 
     //Insert into tabs and push the inserted tab _id into array of tabs in threads.
     var tabInsertResult = await db.collection("tabs").insertOne(
