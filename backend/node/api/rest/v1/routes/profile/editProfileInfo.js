@@ -14,6 +14,7 @@ const editableProperties = [
   "familyName",
   "givenName",
   "display_picture",
+  "tab_password"
 ];
 
 router.put("/", async function (req, res) {
@@ -102,7 +103,14 @@ function validateJSONSchema(userDetails) {
     if (!userDetails.name.familyName || !userDetails.name.givenName)
       return false;
   }
+  if (isEmptyOrSpaces(password) || password.length < 4) {
+    return false;
+  }
   return true;
+}
+
+function isEmptyOrSpaces(str) {
+  return str === null || str.match(/^ *$/) !== null;
 }
 
 module.exports = router;

@@ -60,6 +60,10 @@ async function postAuthenticate(req, res) {
     email: email,
     display_picture: displayPictureURL,
     threads: [],
+    passwords: {
+      master_password: null,
+      tab_password: null
+    }
   };
 
   let db = req.app.get("mongoInstance");

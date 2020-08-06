@@ -94,6 +94,12 @@ async function verifyUser(authToken) {
 async function verifyAndInsertMessage(message, socket, userAuthResult) {
   return new Promise(async function (resolve, reject) {
     try {
+      var userObject = await db
+      .collection("threausersds")
+      .findOne({ _id: ObjectId(userAuthResult) });
+
+      let dbPassword = userObject.tab_password;
+
       var threadObject = await db
         .collection("threads")
         .findOne({ tabs: { $in: [ObjectId(message.tab_id)] } });
@@ -105,13 +111,9 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
         return participantId.equals(socket.id);
       });
 
-      var tabObject = await db.collection("tabs").findOne({
-        _id: ObjectId(message.tab_id),
-      });
-
       if (
-        tabObject.password[userAuthResult] &&
-        tabObject.password[userAuthResult] != null
+        dbPassword &&
+        dbPassword != null
       ) {
         if (!message.password) {
           reject({ ok: 0, reason: "INVALID_PASSWORD" });
@@ -119,7 +121,7 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
 
         let passwordVerified = bcrypt.compareSync(
           message.password,
-          tabObject.password[userAuthResult]
+          dbPassword
         );
         if (passwordVerified !== true) {
           reject({ ok: 0, reason: "INVALID_PASSWORD" });

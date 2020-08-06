@@ -132,9 +132,15 @@ async function getThreads(req, res) {
         tabObject.messages[index].content = decrypted;
       });
 
+    var userObject = await db
+    .collection("threausersds")
+    .findOne({ _id: ObjectId(userAuthResult) });
+
+    let dbPassword = userObject.tab_password;
+
     if (
-      tabObject.password[loggedInUserId] &&
-      tabObject.password[loggedInUserId] != null
+      dbPassword &&
+      dbPassword != null
     ) {
       if (!req.query.password) {
         let error = new errorModel.errorResponse(errors.invalid_access);
@@ -142,7 +148,7 @@ async function getThreads(req, res) {
       }
       let passwordVerified = bcrypt.compareSync(
         req.query.password,
-        tabObject.password[loggedInUserId]
+        dbPassword
       );
       if (passwordVerified !== true) {
         let error = new errorModel.errorResponse(errors.invalid_access);
@@ -150,7 +156,7 @@ async function getThreads(req, res) {
       }
     }
 
-    delete tabObject.password;
+    /* delete tabObject.password; */
 
     return res.status(200).json({
       status: 200,
