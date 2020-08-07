@@ -95,8 +95,8 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
   return new Promise(async function (resolve, reject) {
     try {
       var userObject = await db
-      .collection("threausersds")
-      .findOne({ _id: ObjectId(userAuthResult) });
+        .collection("threausersds")
+        .findOne({ _id: ObjectId(userAuthResult) });
 
       let dbPassword = userObject.tab_password;
 
@@ -111,18 +111,16 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
         return participantId.equals(socket.id);
       });
 
-      if (
-        dbPassword &&
-        dbPassword != null
-      ) {
+      var tabObject = await db
+        .collection("tabs")
+        .findOne({ _id: ObjectId(message.tab_id) });
+
+      if (tabObject.require_authentication == true) {
         if (!message.password) {
           reject({ ok: 0, reason: "INVALID_PASSWORD" });
         }
 
-        let passwordVerified = bcrypt.compareSync(
-          message.password,
-          dbPassword
-        );
+        let passwordVerified = bcrypt.compareSync(message.password, dbPassword);
         if (passwordVerified !== true) {
           reject({ ok: 0, reason: "INVALID_PASSWORD" });
         }

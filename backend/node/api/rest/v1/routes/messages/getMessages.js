@@ -112,6 +112,7 @@ async function getThreads(req, res) {
         _id: 0,
         tab_name: 0,
         thread_id: 0,
+        require_authentication: 0,
         date_created: 0,
       })
       .toArray();
@@ -132,13 +133,13 @@ async function getThreads(req, res) {
         tabObject.messages[index].content = decrypted;
       });
 
-    var userObject = await db
-      .collection("users")
-      .findOne({ _id: ObjectId(loggedInUserId) });
+    if (tabObject.require_authentication == true) {
+      var userObject = await db
+        .collection("users")
+        .findOne({ _id: ObjectId(loggedInUserId) });
 
-    let dbPassword = userObject.tab_password;
+      let dbPassword = userObject.tab_password;
 
-    if (dbPassword && dbPassword != null) {
       if (!req.query.password) {
         let error = new errorModel.errorResponse(errors.invalid_access);
         return res.status(401).json(error);
@@ -158,7 +159,7 @@ async function getThreads(req, res) {
       result: tabObject,
     });
   } catch (e) {
-    console.log(e)
+    console.log(e);
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.json(error);
   }
