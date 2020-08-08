@@ -2,6 +2,8 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const fileUpload = require('express-fileupload');
+const rateLimit = require("express-rate-limit");
 const passport = require("passport");
 
 const errors = require("./utils/errors");
@@ -43,9 +45,17 @@ app.all("*", function (req, res, next) {
   next();
 });
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: "3mb"}));
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: "3mb", extended: true }));
+
+//Limit the number of requests sent to the server per minute to prevent DDOS.
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 50
+});
+
+app.use(apiLimiter);
 
 app.use((err, req, res, next) => {
   console.error(err);
@@ -70,6 +80,8 @@ app.use(
     saveUninitialized: true,
   })
 );
+
+app.use(fileUpload());
 
 app.use(passport.initialize());
 app.use(passport.session());

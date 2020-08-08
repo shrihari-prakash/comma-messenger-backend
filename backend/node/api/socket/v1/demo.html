@@ -32,6 +32,7 @@
       socket.emit("_messageOut", {
         id: Math.floor((Math.random() * 1000000) + 1),
         token: document.getElementById("my_id").value,
+        type: "text",
         tab_id: "5f2ad2ed59645244cc6a837a",
         receiver_id: document.getElementById("other_id").value,
         content: document.getElementById("content").value,

@@ -95,9 +95,10 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
   return new Promise(async function (resolve, reject) {
     try {
       var userObject = await db
-        .collection("threausersds")
+        .collection("users")
         .findOne({ _id: ObjectId(userAuthResult) });
 
+        console.log(userObject)
       let dbPassword = userObject.tab_password;
 
       var threadObject = await db
@@ -127,12 +128,28 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
       }
 
       if (hasAccess) {
+        if(!["text", "image"].includes(message.type)) reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
+
         let messageObject = {
           sender: ObjectId(socket.id),
-          type: "text",
-          content: crypt.encrypt(message.content),
+          type: message.type,
           date_created: new Date(),
         };
+
+        switch (message.type) {
+          case "text":
+            if(!message.content) reject({ ok: 0, reason: "EMPTY_MESSAGE_CONTENT" })
+            messageObject.content = crypt.encrypt(message.content);
+            break;
+
+          case "image":
+            if(!message.file_name) reject({ ok: 0, reason: "EMPTY_FILE_NAME" })
+            messageObject.file_name = message.file_name;
+            break;
+        
+          default:
+            break;
+        }
 
         var tabUpdateResult = await db
           .collection("tabs")

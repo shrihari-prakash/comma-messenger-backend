@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const path = require("path")
 var ObjectId = require("mongodb").ObjectID;
 
 const tokenMgr = require("../../../../utils/tokenManager");
@@ -13,10 +14,10 @@ const errors = require("../../../../utils/errors");
 const errorModel = require("../../../../utils/errorResponse");
 
 router.get("/", async function (req, res) {
-  getThreads(req, res);
+  download(req, res);
 });
 
-async function getThreads(req, res) {
+async function download(req, res) {
   //Start of input validation.
   if (!req.header("authorization")) {
     let error = new errorModel.errorResponse(errors.invalid_key);
@@ -53,10 +54,10 @@ async function getThreads(req, res) {
     return res.status(400).json(error);
   }
 
-  if (!req.query.limit || !req.query.offset) {
+  if (!req.query.file_name) {
     let error = new errorModel.errorResponse(
       errors.invalid_input.withDetails(
-        "No valid `limit` (or) `offset` values were sent along with the request."
+        "No valid `file name` was sent along with the request."
       )
     );
     return res.status(400).json(error);
@@ -83,7 +84,7 @@ async function getThreads(req, res) {
     if (!threadObject) {
       let error = new errorModel.errorResponse(
         errors.not_found.withDetails(
-          "No thread exists for the provided `thread_id`"
+          "No tab exists for the provided `tab_id`"
         )
       );
       return res.status(404).json(error);
@@ -106,12 +107,10 @@ async function getThreads(req, res) {
         _id: ObjectId(req.query.tab_id),
       })
       .project({
-        messages: {
-          $slice: [parseInt(req.query.offset), parseInt(req.query.limit)],
-        },
         _id: 0,
         tab_name: 0,
         thread_id: 0,
+        messages: 0,
         date_created: 0,
       })
       .toArray();
@@ -124,15 +123,6 @@ async function getThreads(req, res) {
       });
 
     tabObject = tabObject[0];
-
-    if (tabObject.messages)
-      //After the tab is retrieved successfully, loop through the messages and decrypt everything to send to client.
-      tabObject.messages.forEach((messageObject, index) => {
-        if(messageObject.content){
-          let decrypted = crypt.decrypt(messageObject.content);
-          tabObject.messages[index].content = decrypted;
-        }
-      });
 
     if (tabObject.require_authentication == true) {
       var userObject = await db
@@ -152,13 +142,8 @@ async function getThreads(req, res) {
       }
     }
 
-    delete tabObject.require_authentication;
+    res.sendFile(path.join(__dirname, `/../../../../user-content/${req.query.tab_id}/`) + req.query.file_name);
 
-    return res.status(200).json({
-      status: 200,
-      message: "Messages Retrieved.",
-      result: tabObject,
-    });
   } catch (e) {
     console.log(e);
     let error = new errorModel.errorResponse(errors.internal_error);
