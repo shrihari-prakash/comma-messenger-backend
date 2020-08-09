@@ -22,14 +22,21 @@ GOOGLE_CLIENT_SECRET=YourGoogleClientSecret
 SESSION_SECRET=YourSessionSecret
 
 #MongoDB
-MONGO_HOST=localhost:27017
+MONGO_HOST=mongodb://localhost:27017
 
 #URL of client web page
 CLIENT_URL=http://127.0.0.1:5500
 
+#URL of server
+SERVER_URL=http://127.0.0.1:26398
+
 #Encryption
 CRYPT_KEY=YourEncryptionKey
 CRYPT_IV=YourEncryptionIV
+
+#vapidKeys for push notifications
+VAPID_PUBLIC_KEY=YourVapidPublicKey
+VAPID_PRIVATE_KEY=YourVapidPrivateKey
 ```
 
 **Frontend:**
