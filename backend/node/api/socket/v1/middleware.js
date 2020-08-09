@@ -197,17 +197,21 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
           .collection("users")
           .find({ _id: { $in: threadObject.thread_participants } });
         let notificationPayload = {
-          title: "New Message",
+          title: "New Message on " + tabObject.tab_name,
           description:
-            tabObject.tab_name +
+            userObject.name.givenName +
             ": " +
             (messageObject.content || "Sent an image"),
+          icon: userObject.display_picture
         };
 
         participants.forEach((participant) => {
           if (participant.notification_subscriptions) {
             participant.notification_subscriptions.forEach((subscription) => {
-              push.sendNotification(subscription, JSON.stringify(notificationPayload));
+              push.sendNotification(
+                subscription,
+                JSON.stringify(notificationPayload)
+              );
             });
           }
         });
