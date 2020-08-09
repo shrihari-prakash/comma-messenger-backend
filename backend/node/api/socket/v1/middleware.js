@@ -206,7 +206,7 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
         };
 
         participants.forEach((participant) => {
-          if (participant.notification_subscriptions) {
+          if (participant.notification_subscriptions && participant._id != ObjectId(loggerInUser)) {
             participant.notification_subscriptions.forEach((subscription) => {
               push.sendNotification(
                 subscription,
