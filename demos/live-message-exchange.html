@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello world</title>
+  </head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+
+  <script>
+    var socket = io("http://localhost:26398", {
+      path: "/api/socket/communicate",
+    });
+    socket.on("_messageIn", function (data) {
+      document.getElementById("messages").innerHTML +=
+        JSON.stringify(data) + "</br>";
+    });
+
+    socket.on("_success", function (data) {
+      document.getElementById("messages").innerHTML +=
+        "Message " + data.message_id + " has been sent successfully.</br>";
+    });
+
+    socket.on("_error", function (data) {
+      document.getElementById("messages").innerHTML +=
+        "Message " +
+        data.message_id +
+        " was not delivered. Error:" +
+        data.reason || "UNKNOWN_ERROR" +
+        "</br>";
+    });
+
+    function connect() {
+      socket.emit("_connect", {
+        token: document.getElementById("auth_token").value,
+      });
+    }
+
+    function sendMessage() {
+      socket.emit("_messageOut", {
+        id: Math.floor(Math.random() * 1000000 + 1),
+        token: document.getElementById("auth_token").value,
+        type: "text",
+        tab_id: document.getElementById("tab_id").value,
+        content: document.getElementById("content").value,
+        password: document.getElementById("password").value,
+      });
+    }
+  </script>
+  <body>
+    <center>
+      <input
+        type="button"
+        value="Connect"
+        id="connect"
+        onclick="connect()"
+      /><br />
+      Send a message:<br />
+      <label for="auth_token">Your Token:</label><br />
+      <input type="text" id="auth_token" name="auth_token" /><br />
+      <label for="tab_id">Tab ID:</label><br />
+      <input type="text" id="tab_id" name="tab_id" /><br />
+      <label for="content">Tab Password:</label><br />
+      <input type="text" id="password" name="password" /><br />
+      <label for="content">Message:</label><br />
+      <input type="text" id="content" name="content" /><br /><br />
+      <input type="submit" value="Submit" id="submit" onclick="sendMessage()" />
+      <div id="messages"></div>
+    </center>
+  </body>
+</html>

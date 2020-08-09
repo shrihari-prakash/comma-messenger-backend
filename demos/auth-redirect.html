@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello world</title>
+  </head>
+  <body>
+    <a
+      href="http://comma-js.herokuapp.com/api/rest/v1/auth/google/"
+      id="login-btn"
+      >Sign In</a
+    >
+    <script type="text/javascript">
+      var url_string = window.location.href;
+      var url = new URL(url_string);
+      var token = url.searchParams.get("token");
+      if(token) {
+          alert("Login successfull!")
+          document.getElementById("login-btn").style.display = "none";
+          document.write("<b>token:</b> " + token + "<br><br>");
+          document.write("<b>user details:</b> " + url.searchParams.get("user_data"))
+      }
+    </script>
+  </body>
+</html>

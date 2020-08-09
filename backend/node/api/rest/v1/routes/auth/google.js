@@ -62,8 +62,8 @@ async function postAuthenticate(req, res) {
     threads: [],
     passwords: {
       master_password: null,
-      tab_password: null
-    }
+      tab_password: null,
+    },
   };
 
   let db = req.app.get("mongoInstance");
@@ -82,6 +82,9 @@ async function postAuthenticate(req, res) {
           tokenManager
             .generate(db, insertedUserId, req.app.get("cacheManager"))
             .then((insertToken) => {
+              delete user.threads;
+              delete user.passwords;
+              delete user.notification_subscriptions;
               //Redirect to the page from which the login request came from with the login details attached.
               res.redirect(
                 req.session.returnTo +
@@ -95,13 +98,15 @@ async function postAuthenticate(req, res) {
         });
       } else {
         tokenManager
-          .generate(db, existingUser._id, req.app.get("cacheManager"))
+          .generate(db, user._id, req.app.get("cacheManager"))
           .then((insertToken) => {
+            delete user.threads;
+            delete user.passwords;
             res.redirect(
               req.session.returnTo +
                 encodeURI(
                   `?status="SUCCESS"&type="login"&user_data=${JSON.stringify(
-                    existingUser
+                    user
                   )}&token=${insertToken}`
                 )
             );
