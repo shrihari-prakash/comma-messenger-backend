@@ -9,6 +9,24 @@ const cacheManager = new cache.cacheManager();
 const cryptUtil = require("../../utils/crypt");
 const crypt = new cryptUtil.crypt();
 
+const push = require("web-push");
+
+//uncomment to generate new vapidKeys.
+
+/* let vapidKeys = push.generateVAPIDKeys();
+console.log(vapidKeys); */
+
+let vapidKeys = {
+  publicKey: process.env.VAPID_PUBLIC_KEY,
+  privateKey: process.env.VAPID_PRIVATE_KEY,
+};
+
+push.setVapidDetails(
+  "mailto:shrihariprakash@outlook.com",
+  vapidKeys.publicKey,
+  vapidKeys.privateKey
+);
+
 cacheManager.init();
 
 const mongoConnector = require("../../utils/dbUtils/mongoConnector");
@@ -98,7 +116,7 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
         .collection("users")
         .findOne({ _id: ObjectId(userAuthResult) });
 
-        console.log(userObject)
+      console.log(userObject);
       let dbPassword = userObject.tab_password;
 
       var threadObject = await db
@@ -128,7 +146,8 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
       }
 
       if (hasAccess) {
-        if(!["text", "image"].includes(message.type)) reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
+        if (!["text", "image"].includes(message.type))
+          reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
 
         let messageObject = {
           sender: ObjectId(socket.id),
@@ -138,15 +157,17 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
 
         switch (message.type) {
           case "text":
-            if(!message.content) reject({ ok: 0, reason: "EMPTY_MESSAGE_CONTENT" })
+            if (!message.content)
+              reject({ ok: 0, reason: "EMPTY_MESSAGE_CONTENT" });
             messageObject.content = crypt.encrypt(message.content);
             break;
 
           case "image":
-            if(!message.file_name) reject({ ok: 0, reason: "EMPTY_FILE_NAME" })
+            if (!message.file_name)
+              reject({ ok: 0, reason: "EMPTY_FILE_NAME" });
             messageObject.file_name = message.file_name;
             break;
-        
+
           default:
             break;
         }
@@ -172,6 +193,24 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
             connectionMap[receiverId].emit("_messageIn", messageObject);
         });
 
+        let participants = await db
+          .collection("users")
+          .find({ _id: { $in: threadObject.thread_participants } });
+        let notificationPayload = {
+          title: "New Message",
+          description:
+            tabObject.tab_name +
+            ": " +
+            (messageObject.content || "Sent an image"),
+        };
+
+        participants.forEach((participant) => {
+          if (participant.notification_subscriptions) {
+            participant.notification_subscriptions.forEach((subscription) => {
+              push.sendNotification(subscription, JSON.stringify(notificationPayload));
+            });
+          }
+        });
         resolve({ ok: 1 });
       } else reject({ ok: 0, reason: "NO_ACCESS" });
     } catch (e) {
