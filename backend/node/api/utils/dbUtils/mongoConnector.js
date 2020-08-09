@@ -7,7 +7,7 @@ var _client;
 module.exports = {
   connectToServer: function (callback) {
     MongoClient.connect(
-      "mongodb://" + process.env.MONGO_HOST,
+      process.env.MONGO_HOST,
       { useUnifiedTopology: true },
       function (err, client) {
         _db = client.db("comma");
