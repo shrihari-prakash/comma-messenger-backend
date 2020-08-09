@@ -31,12 +31,11 @@
 
       socket.emit("_messageOut", {
         id: Math.floor((Math.random() * 1000000) + 1),
-        token: document.getElementById("my_id").value,
+        token: "Bearer " + document.getElementById("my_id").value,
         type: "text",
-        tab_id: "5f2ad2ed59645244cc6a837a",
-        receiver_id: document.getElementById("other_id").value,
+        tab_id: document.getElementById("tab_id").value,
         content: document.getElementById("content").value,
-        password: "1234"
+        password: document.getElementById("password").value,
       });
     }
   </script>
@@ -50,8 +49,10 @@
     Send a message:<br />
     <label for="my_id">Your Token:</label><br />
     <input type="text" id="my_id" name="my_id" /><br />
-    <label for="other_id">Reciever ID:</label><br />
-    <input type="text" id="other_id" name="other_id" /><br />
+    <label for="tab_id">Tab ID:</label><br />
+    <input type="text" id="tab_id" name="tab_id" /><br />
+    <label for="content">Tab Password:</label><br />
+    <input type="text" id="password" name="password" /><br /><br />
     <label for="content">Message:</label><br />
     <input type="text" id="content" name="content" /><br /><br />
     <input type="submit" value="Submit" id="submit" onclick="sendMessage()" />

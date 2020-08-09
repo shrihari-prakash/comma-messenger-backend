@@ -25,12 +25,12 @@ async function send() {
 
   // Send Push Notification
   console.log("Sending Push...");
-  await fetch("http://localhost:26398/api/rest/v1/notifications/subscribe", {
+  await fetch("https://comma-js.herokuapp.com/api/rest/v1/notifications/subscribe", {
     method: "POST",
     body: JSON.stringify(subscription),
     headers: {
       "content-type": "application/json",
-      "Authorization": "Bearer apb3us6p95ryym0pt0o0sr5batrl2hie_kdlq52m9"
+      "Authorization": "Bearer eqkkd72feaf2guooeitc9swc7us447i_kdmyprtd"
     }
   });
   console.log("Push Sent...");

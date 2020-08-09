@@ -103,10 +103,10 @@ async function verifyUser(authToken) {
 
   authToken = authToken.slice(7, authToken.length).trimLeft();
 
-  let loggerInUser = await tokenManager.verify(db, authToken, cacheManager);
-  if (!loggerInUser) return { ok: 0, reason: "INVALID_API_KEY" };
+  let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
+  if (!loggedInUserId) return { ok: 0, reason: "INVALID_API_KEY" };
 
-  return { ok: 1, data: loggerInUser };
+  return { ok: 1, data: loggedInUserId };
 }
 
 async function verifyAndInsertMessage(message, socket, userAuthResult) {
@@ -206,7 +206,7 @@ async function verifyAndInsertMessage(message, socket, userAuthResult) {
         };
 
         participants.forEach((participant) => {
-          if (participant.notification_subscriptions && participant._id != ObjectId(loggerInUser)) {
+          if (participant.notification_subscriptions && participant._id != ObjectId(userAuthResult)) {
             participant.notification_subscriptions.forEach((subscription) => {
               push.sendNotification(
                 subscription,
