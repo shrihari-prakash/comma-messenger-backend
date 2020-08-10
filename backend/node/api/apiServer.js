@@ -2,7 +2,7 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const fileUpload = require('express-fileupload');
+const fileUpload = require("express-fileupload");
 const rateLimit = require("express-rate-limit");
 const passport = require("passport");
 
@@ -44,14 +44,14 @@ app.all("*", function (req, res, next) {
   next();
 });
 
-app.use(bodyParser.json({limit: "3mb"}));
+app.use(bodyParser.json({ limit: "3mb" }));
 
 app.use(bodyParser.urlencoded({ limit: "3mb", extended: true }));
 
 //Limit the number of requests sent to the server per minute to prevent DDOS.
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 50
+  max: 50,
 });
 
 app.use(apiLimiter);
@@ -88,5 +88,16 @@ app.use(passport.session());
 //API v1 routes.
 
 app.use("/api/rest/v1", RESTv1);
+
+//404 routes.
+
+app.use(function(req, res) {
+  let error = new errorModel.errorResponse(
+    errors.not_found.withDetails(
+      "The API endpoint you tried to hit is invalid, please refer to the API documentation here: https://github.com/Shrihari-Prakash/comma-js/blob/master/backend/node/api/docs/api_docs.md"
+    )
+  );
+  return res.status(404).json(error);
+});
 
 module.exports = app;
