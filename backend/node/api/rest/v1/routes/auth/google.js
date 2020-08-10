@@ -9,6 +9,9 @@ const tokenManager = new tokenMgr.tokenManager();
 const userMgr = require("../../../../utils/dbUtils/userManager");
 const userManager = new userMgr.userManager();
 
+const errors = require("../../../../utils/errors");
+const errorModel = require("../../../../utils/errorResponse");
+
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
@@ -37,6 +40,16 @@ router.get(
   (req, res, next) => {
     console.log(req.headers.referer);
     req.session.returnTo = req.headers.referer;
+    //Do not allow anonymous login when, like in cases where user requests a login by simply trying the url on a browser address bar.
+    if(!req.session.returnTo) {
+      let error = new errorModel.errorResponse(
+        errors.invalid_input.withDetails(
+          "The login request did not arrive from a trusted domain."
+        )
+      );
+      return res.status(400).json(error);
+    }
+
     next();
   },
   passport.authenticate("google", { scope: ["profile", "email"] }) //The `profile-email` scope is the most minimal amount of data you can get without sending your app for verification.

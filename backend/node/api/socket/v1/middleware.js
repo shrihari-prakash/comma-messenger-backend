@@ -63,7 +63,7 @@ const socketHandler = (io) => {
       let messageId = message.id;
 
       if (userAuthResult.ok != 0) {
-        verifyAndInsertMessage(message, socket, userAuthResult.data)
+        sendMessage(message, socket, userAuthResult.data)
           .then((result) => {
             if (result.ok === 1) {
               socket.emit("_success", { message_id: messageId, ok: 1 });
@@ -79,7 +79,7 @@ const socketHandler = (io) => {
             socket.emit("_error", {
               message_id: messageId,
               ok: 0,
-              reason: userAuthResult.reason,
+              reason: rej.reason,
             });
             console.log(rej);
           });
@@ -109,7 +109,7 @@ async function verifyUser(authToken) {
   return { ok: 1, data: loggedInUserId };
 }
 
-async function verifyAndInsertMessage(message, socket, userAuthResult) {
+async function sendMessage(message, socket, userAuthResult) {
   return new Promise(async function (resolve, reject) {
     try {
       var userObject = await db
