@@ -85,6 +85,9 @@ app.use(fileUpload());
 app.use(passport.initialize());
 app.use(passport.session());
 
+//Abstract express headers from end consumer.
+app.disable('x-powered-by');
+
 //API v1 routes.
 
 app.use("/api/rest/v1", RESTv1);
