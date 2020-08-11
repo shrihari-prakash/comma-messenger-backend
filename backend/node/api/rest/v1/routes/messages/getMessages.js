@@ -143,15 +143,19 @@ async function getThreads(req, res) {
         .findOne({ _id: ObjectId(loggedInUserId) });
 
       let dbPassword = userObject.tab_password;
-
-      if (!req.query.password) {
-        let error = new errorModel.errorResponse(errors.invalid_access);
-        return res.status(401).json(error);
-      }
-      let passwordVerified = bcrypt.compareSync(req.query.password, dbPassword);
-      if (passwordVerified !== true) {
-        let error = new errorModel.errorResponse(errors.invalid_access);
-        return res.status(401).json(error);
+      if (dbPassword != null) {
+        if (!req.query.password) {
+          let error = new errorModel.errorResponse(errors.invalid_access);
+          return res.status(401).json(error);
+        }
+        let passwordVerified = bcrypt.compareSync(
+          req.query.password,
+          dbPassword
+        );
+        if (passwordVerified !== true) {
+          let error = new errorModel.errorResponse(errors.invalid_access);
+          return res.status(401).json(error);
+        }
       }
     }
 

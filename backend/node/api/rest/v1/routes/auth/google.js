@@ -41,7 +41,7 @@ router.get(
     console.log(req.headers.referer);
     req.session.returnTo = req.headers.referer;
     //Do not allow anonymous login when, like in cases where user requests a login by simply trying the url on a browser address bar.
-    if(!req.session.returnTo) {
+    if (!req.session.returnTo) {
       let error = new errorModel.errorResponse(
         errors.invalid_input.withDetails(
           "The login request did not arrive from a trusted domain."
@@ -73,10 +73,8 @@ async function postAuthenticate(req, res) {
     email: email,
     display_picture: displayPictureURL,
     threads: [],
-    passwords: {
-      master_password: null,
-      tab_password: null,
-    },
+    master_password: null,
+    tab_password: null,
   };
 
   let db = req.app.get("mongoInstance");
@@ -96,7 +94,8 @@ async function postAuthenticate(req, res) {
             .generate(db, insertedUserId, req.app.get("cacheManager"))
             .then((insertToken) => {
               delete user.threads;
-              delete user.passwords;
+              delete user.master_password;
+              delete user.tab_password;
               delete user.notification_subscriptions;
               //Redirect to the page from which the login request came from with the login details attached.
               res.redirect(
@@ -114,7 +113,8 @@ async function postAuthenticate(req, res) {
           .generate(db, user._id, req.app.get("cacheManager"))
           .then((insertToken) => {
             delete user.threads;
-            delete user.passwords;
+            delete user.master_password;
+            delete user.tab_password;
             res.redirect(
               req.session.returnTo +
                 encodeURI(

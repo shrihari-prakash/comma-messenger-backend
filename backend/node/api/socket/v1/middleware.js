@@ -138,13 +138,18 @@ async function sendMessage(message, socket, userAuthResult) {
         return participantId.equals(socket.id);
       });
       if (isTabSecured == true) {
-        if (!message.password) {
-          reject({ ok: 0, reason: "INVALID_PASSWORD" });
-        }
+        if (dbPassword != null) {
+          if (!message.password) {
+            reject({ ok: 0, reason: "INVALID_PASSWORD" });
+          }
 
-        let passwordVerified = bcrypt.compareSync(message.password, dbPassword);
-        if (passwordVerified !== true) {
-          reject({ ok: 0, reason: "INVALID_PASSWORD" });
+          let passwordVerified = bcrypt.compareSync(
+            message.password,
+            dbPassword
+          );
+          if (passwordVerified !== true) {
+            reject({ ok: 0, reason: "INVALID_PASSWORD" });
+          }
         }
       }
 
