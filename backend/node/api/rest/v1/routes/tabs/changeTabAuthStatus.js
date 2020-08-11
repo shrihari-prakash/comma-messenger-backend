@@ -132,6 +132,7 @@ async function changeAuthStatus(req, res) {
       message: "Tab " + tabInfo.require_authentication == true ? "locked." : "unlocked.",
     });
   } catch (e) {
+    console.log(e)
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.json(error);
   }
