@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcrypt");
 var ObjectId = require("mongodb").ObjectID;
 
 const tokenMgr = require("../../../../utils/tokenManager");
@@ -129,7 +130,7 @@ async function changeAuthStatus(req, res) {
 
     return res.status(200).json({
       status: 200,
-      message: "Tab " + tabInfo.require_authentication == true ? "locked." : "unlocked.",
+      message: "Tab " + (tabInfo.require_authentication == true ? "locked." : "unlocked."),
     });
   } catch (e) {
     console.log(e)
