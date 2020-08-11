@@ -112,7 +112,6 @@ async function getThreads(req, res) {
         _id: 0,
         tab_name: 0,
         thread_id: 0,
-        secured_for: 0,
         date_created: 0,
       })
       .toArray();
@@ -160,7 +159,7 @@ async function getThreads(req, res) {
       }
     }
 
-    delete tabObject.require_authentication;
+    delete tabObject.secured_for;
 
     return res.status(200).json({
       status: 200,
