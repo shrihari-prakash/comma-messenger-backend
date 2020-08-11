@@ -112,6 +112,7 @@ async function getThreads(req, res) {
         _id: 0,
         tab_name: 0,
         thread_id: 0,
+        secured_for: 0,
         date_created: 0,
       })
       .toArray();
