@@ -87,7 +87,7 @@ async function changeAuthStatus(req, res) {
     let authentication_operator =
       tabInfo.require_authentication == true ? "$addToSet" : "$pull";
 
-    if (authentication_operator == false) {
+    if (tabInfo.require_authentication == false) {
       var userObject = await db
         .collection("users")
         .findOne({ _id: ObjectId(loggedInUserId) });
@@ -96,10 +96,15 @@ async function changeAuthStatus(req, res) {
       let dbPassword = userObject.tab_password;
 
       if (dbPassword != null) {
-        let passwordVerified = bcrypt.compareSync(
-          tabInfo.password,
-          dbPassword
-        );
+        if (!tabInfo.password) {
+          let error = new errorModel.errorResponse(
+            errors.invalid_input.withDetails(
+              "Provided password does not match with the one on the system."
+            )
+          );
+          return res.status(400).json(error);
+        }
+        let passwordVerified = bcrypt.compareSync(tabInfo.password, dbPassword);
         if (passwordVerified !== true) {
           let error = new errorModel.errorResponse(
             errors.invalid_input.withDetails(
@@ -124,7 +129,7 @@ async function changeAuthStatus(req, res) {
 
     return res.status(200).json({
       status: 200,
-      message: "Tab renamed.",
+      message: "Tab " + tabInfo.require_authentication == true ? "locked." : "unlocked.",
     });
   } catch (e) {
     let error = new errorModel.errorResponse(errors.internal_error);
