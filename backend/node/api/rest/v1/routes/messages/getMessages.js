@@ -148,7 +148,7 @@ async function getThreads(req, res) {
         let error = new errorModel.errorResponse(errors.invalid_access);
         return res.status(401).json(error);
       }
-      let passwordVerified = bcrypt.compareSync(req.query.password, dbPassword);
+      let passwordVerified = dbPassword !== null ? bcrypt.compareSync(req.query.password, dbPassword) : true;
       if (passwordVerified !== true) {
         let error = new errorModel.errorResponse(errors.invalid_access);
         return res.status(401).json(error);
