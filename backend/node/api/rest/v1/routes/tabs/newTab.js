@@ -98,8 +98,11 @@ async function createThread(req, res) {
       tab_name: tabDetails.tab_name,
       thread_id: ObjectId(tabDetails.thread_id),
       messages: [],
-      date_created: new Date(),
+      secured_for: [],
+      date_created: new Date()
     };
+
+    if(tabDetails.require_authentication == true) tabObject.secured_for.push(ObjectId(loggedInUserId))
 
     //Insert into tabs and push the inserted tab _id into array of tabs in threads.
     var tabInsertResult = await db.collection("tabs").insertOne(

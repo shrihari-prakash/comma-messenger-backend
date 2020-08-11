@@ -84,11 +84,12 @@ async function changeAuthStatus(req, res) {
       return res.status(401).json(error);
     }
 
+    let authentication_operator = (tabInfo.require_authentication == true ? '$addToSet' : '$pull');
     var tabUpdateResult = await db
       .collection("tabs")
       .updateOne(
         { _id: ObjectId(tabInfo.tab_id) },
-        { $set: { require_authentication: tabInfo.require_authentication } }
+        { [authentication_operator] : { secured_for: ObjectId(loggedInUserId) } }
       );
 
     if (tabUpdateResult.result.ok != 1) {

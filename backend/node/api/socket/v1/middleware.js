@@ -134,7 +134,10 @@ async function sendMessage(message, socket, userAuthResult) {
         .collection("tabs")
         .findOne({ _id: ObjectId(message.tab_id) });
 
-      if (tabObject.require_authentication == true) {
+      var isTabSecured = tabObject.secured_for.some(function (participantId) {
+        return participantId.equals(socket.id);
+      });
+      if (isTabSecured == true) {
         if (!message.password) {
           reject({ ok: 0, reason: "INVALID_PASSWORD" });
         }
@@ -202,11 +205,14 @@ async function sendMessage(message, socket, userAuthResult) {
             userObject.name.givenName +
             ": " +
             (messageObject.content || "Sent an image"),
-          icon: userObject.display_picture
+          icon: userObject.display_picture,
         };
 
         participants.forEach((participant) => {
-          if (participant.notification_subscriptions && participant._id != ObjectId(userAuthResult)) {
+          if (
+            participant.notification_subscriptions &&
+            participant._id != ObjectId(userAuthResult)
+          ) {
             participant.notification_subscriptions.forEach((subscription) => {
               push.sendNotification(
                 subscription,
