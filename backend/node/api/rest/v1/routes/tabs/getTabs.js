@@ -86,6 +86,15 @@ async function getThreads(req, res) {
         message: "No tabs to retrieve.",
         result: [],
       });
+
+    tabObject.forEach((tab, index) => {
+      let isSecured = tab.secured_for.some(function (participantId) {
+        return participantId.equals(loggedInUserId);
+      });
+      tabObject[index].is_secured = isSecured;
+      delete tabObject[index].secured_for;
+    });
+
     return res.status(200).json({
       status: 200,
       message: "Tabs Retrieved.",
