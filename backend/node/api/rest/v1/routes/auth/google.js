@@ -103,7 +103,7 @@ async function postAuthenticate(req, res) {
                 req.session.returnTo +
                   encodeURI(
                     `?status="SUCCESS"&type="register"&user_data=${JSON.stringify(
-                      existingUser
+                      user
                     )}&token=${insertToken}`
                   )
               );
@@ -119,7 +119,7 @@ async function postAuthenticate(req, res) {
               req.session.returnTo +
                 encodeURI(
                   `?status="SUCCESS"&type="login"&user_data=${JSON.stringify(
-                    user
+                    existingUser
                   )}&token=${insertToken}`
                 )
             );
