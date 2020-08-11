@@ -128,13 +128,16 @@ async function getThreads(req, res) {
     if (tabObject.messages)
       //After the tab is retrieved successfully, loop through the messages and decrypt everything to send to client.
       tabObject.messages.forEach((messageObject, index) => {
-        if(messageObject.content){
+        if (messageObject.content) {
           let decrypted = crypt.decrypt(messageObject.content);
           tabObject.messages[index].content = decrypted;
         }
       });
 
-    if (tabObject.require_authentication == true) {
+    var isTabSecured = tabObject.secured_for.some(function (participantId) {
+      return participantId.equals(loggedInUserId);
+    });
+    if (isTabSecured == true) {
       var userObject = await db
         .collection("users")
         .findOne({ _id: ObjectId(loggedInUserId) });
