@@ -150,7 +150,7 @@ localhost:26398/api/rest/v1/threads/newThread
 {
     "thread_id": "thread_1",
     "tab_name": "new_tab",
-    "password": "0000" (Optional)
+    "is_secured": true
 }
 ```
 
