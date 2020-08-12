@@ -10,21 +10,23 @@ localhost:26398/api/rest/v1/auth/google
 #### Response Parameters: 
 
 ```
-{
-  "status": "SUCCESS",
-  "message": "Login success.",
-  "user_data": {
-    "_id": "logged_in_user_id",
-    "name": {
-      "familyName": "Doe",
-      "givenName": "John"
-    },
-    "email": "johndoe@example.com",
-    "display_picture": "https://lh3.googleusercontent.com/a-/profile-image"
-  },
-  "token": "API_TOKEN"
-}
+ "status": "SUCCESS",
+ "message": "Login success.",
+ "user_data": {
+   "_id": "logged_in_user_id",
+   "name": {
+     "familyName": "Doe",
+     "givenName": "John"
+   },
+   "email": "johndoe@example.com",
+   "display_picture": "https://lh3.googleusercontent.com/a-/profile-image"
+ },
+ "token": "API_TOKEN"
 ```
+
+The response is a redirect to the original page with the above values as get parameters. 
+
+**NOTE:** status, message and token are typical get key - value pairs, whereas user_data is an object that is URL encoded.
 
 _This login token must be stored in a cookie or local storage and should be sent along with all subsequent API calls as Authorization header._
 
@@ -121,14 +123,14 @@ thread_id: thread_1
             "_id": "tab_1",
             "tab_name": "personal",
             "thread_id": "thread_1",
-            "password_protected": 1,
+            "is_secured": true,
             "date_created": "2020-07-31T18:37:33.566Z"
         },
         {
             "_id": "tab_2",
             "tab_name": "party",
             "thread_id": "thread_1",
-            "password_protected": 0,
+            "is_secured": false,
             "date_created": "2020-08-02T14:36:52.963Z"
         }
     ]
@@ -187,6 +189,32 @@ localhost:26398/api/rest/v1/threads/newThread
 }
 ```
 
+### Lock/Unlock a tab:
+
+#### Request URL: 
+localhost:26398/api/rest/v1/threads/changeTabAuthStatus
+
+#### Request Method: POST
+
+#### Request Body: 
+
+```
+{
+    "tab_id": "tab_1",
+    "require_authentication": false,
+    "password" : "0000" //Required only while unlocking tabs.
+}
+```
+
+#### Sample Response: 
+
+```
+{
+    "status": 200,
+    "message": "Tab unlocked.",
+}
+```
+
 ## Messages
 ### Get all messages for a given tab:
 
@@ -221,8 +249,8 @@ password: 0000 (Optional)
                 },
                 {
                         "sender" : "sender_2",
-                        "type" : "text",
-                        "content" : "Hello!",
+                        "type" : "image",
+                        "file_name" : "0123456789.png",
                         "date_created" : ISODate("2020-07-31T18:53:38.766Z")
                 }
             ]
@@ -247,7 +275,11 @@ localhost:26398/api/rest/v1/threads/editProfileInfo
         "givenName": "John",
         "familyName": "Doe",
     },
-    "display_picture": "image_url"
+    "display_picture": "image_url",
+    "change_tab_password": {
+        "existing": "0000",
+        "changed": "0000"
+    }
 }
 ```
 
@@ -284,11 +316,12 @@ The connection will be accepted or rejected based on the API token sent.
 ```
     function sendMessage() {
       socket.emit("_messageOut", {
-        id: "generate a random id based on current time. This id will be sent back on callback to let the front end know if the message was delivered or rejected.",
+        id: "Current unix timestamp recommended. This id will be sent back on callback to let the front end know if the message was delivered or rejected.",
         token: "Bearer API_TOKEN",
+        type: "text",
         tab_id: "tab_1",
-        receiver_id: "receiver_1",
         content: "Hello",
+        password: "1234",
       });
     }
 ```
