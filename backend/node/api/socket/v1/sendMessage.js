@@ -13,6 +13,8 @@ module.exports = {
           .collection("users")
           .findOne({ _id: ObjectId(userAuthResult) });
 
+        console.log(userObject);
+
         let dbPassword = userObject.tab_password;
 
         var threadObject = await db
