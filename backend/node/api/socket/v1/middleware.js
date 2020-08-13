@@ -61,8 +61,7 @@ const socketHandler = (io) => {
       let messageId = message.id;
 
       if (userAuthResult.ok != 0) {
-        console.log(userAuthResult)
-        sender.sendMessage(db, push, socket, message, userAuthResult.data)
+        sender.sendMessage(db, push, socket, message, userAuthResult)
           .then((result) => {
             if (result.ok === 1) {
               socket.emit("_success", { message_id: messageId, ok: 1 });

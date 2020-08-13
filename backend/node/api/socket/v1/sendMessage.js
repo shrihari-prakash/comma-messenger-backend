@@ -9,12 +9,9 @@ module.exports = {
   sendMessage: function (db, push, socket, message, userAuthResult) {
     return new Promise(async function (resolve, reject) {
       try {
-        console.log(userAuthResult);
         var userObject = await db
           .collection("users")
           .findOne({ _id: ObjectId(userAuthResult) });
-
-        console.log(userObject);
 
         let dbPassword = userObject.tab_password;
 
