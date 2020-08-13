@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const cryptUtil = require("../../utils/crypt");
 const crypt = new cryptUtil.crypt();
 
+var ObjectId = require("mongodb").ObjectID;
+
 module.exports = {
   sendMessage: function (db, push, socket, message, userAuthResult) {
     return new Promise(async function (resolve, reject) {
