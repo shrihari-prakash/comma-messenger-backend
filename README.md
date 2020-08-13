@@ -1,7 +1,7 @@
 # comma-js
 ![Comma JS Logo](/branding-assets/logo.png)
 
-Chat application based on NodeJS and React
+Open source messenger based on Express, MongoDB and Socket.IO
 
 **How to Run?**
 
@@ -25,7 +25,7 @@ SESSION_SECRET=YourSessionSecret
 MONGO_HOST=mongodb://localhost:27017
 
 #URL of client web page
-CLIENT_URL=http://127.0.0.1:5500
+CLIENT_URL=http://127.0.0.1:5501
 
 #URL of server
 SERVER_URL=http://127.0.0.1:26398
@@ -38,6 +38,10 @@ CRYPT_IV=YourEncryptionIV
 VAPID_PUBLIC_KEY=YourVapidPublicKey
 VAPID_PRIVATE_KEY=YourVapidPrivateKey
 ```
+
+**Samples:**
+* Sample frontend implementations for important pieces of backend can be found in the `demos` folder.
+* Run the demo files on `live server` exstension for VS Code or any other server that runs on port 5501.
 
 **Frontend:**
 *Docs on progress*
