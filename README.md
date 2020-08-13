@@ -1,7 +1,7 @@
 # comma-js
 ![Comma JS Logo](/branding-assets/logo.png)
 
-Chat application based on Express, MongoDB and Socket.IO
+Open source messenger based on Express, MongoDB and Socket.IO
 
 **How to Run?**
 
