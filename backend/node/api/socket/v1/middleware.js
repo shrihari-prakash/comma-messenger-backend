@@ -46,7 +46,7 @@ const socketHandler = (io) => {
       let userAuthResult = await verifyUser(initObject.token);
 
       if (userAuthResult.ok != 0) {
-        console.log("connected: " + userAuthResult.data);
+        console.log("User", userAuthResult.data, "is online.");
         socket.id = userAuthResult.data;
         connectionMap[socket.id] = socket;
       } else {
@@ -61,7 +61,7 @@ const socketHandler = (io) => {
       let messageId = message.id;
 
       if (userAuthResult.ok != 0) {
-        sender.sendMessage(db, push, socket, message, userAuthResult)
+        sender.sendMessage(db, push, socket, message, connectionMap, userAuthResult.data)
           .then((result) => {
             if (result.ok === 1) {
               socket.emit("_success", { message_id: messageId, ok: 1 });
@@ -91,6 +91,7 @@ const socketHandler = (io) => {
     });
 
     socket.on("disconnect", (message) => {
+      console.log("User", socket.id, "has disconnected.");
       delete connectionMap[socket.id];
     });
   });

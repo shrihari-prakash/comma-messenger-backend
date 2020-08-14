@@ -6,12 +6,14 @@ const crypt = new cryptUtil.crypt();
 var ObjectId = require("mongodb").ObjectID;
 
 module.exports = {
-  sendMessage: function (db, push, socket, message, userAuthResult) {
+  sendMessage: function (db, push, socket, message, connectionMap, userAuthResult) {
     return new Promise(async function (resolve, reject) {
       try {
         var userObject = await db
           .collection("users")
           .findOne({ _id: ObjectId(userAuthResult) });
+
+        console.log("New message exchange initiated by:", userObject._id);
 
         let dbPassword = userObject.tab_password;
 

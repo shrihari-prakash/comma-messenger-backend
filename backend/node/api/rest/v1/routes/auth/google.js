@@ -29,7 +29,7 @@ passport.use(
       callbackURL: process.env.SERVER_URL + "/api/rest/v1/auth/google/callback",
     },
     function (accessToken, refreshToken, profile, cb) {
-      console.log(profile);
+      /* console.log(profile); */
       return cb(null, profile);
     }
   )
@@ -38,9 +38,9 @@ passport.use(
 router.get(
   "/google",
   (req, res, next) => {
-    console.log(req.headers.referer);
     req.session.returnTo = req.headers.referer;
     //Do not allow anonymous login when, like in cases where user requests a login by simply trying the url on a browser address bar.
+    console.log("Return to URL: ", req.session.returnTo)
     if (!req.session.returnTo) {
       let error = new errorModel.errorResponse(
         errors.invalid_input.withDetails(
@@ -98,6 +98,7 @@ async function postAuthenticate(req, res) {
               delete user.tab_password;
               delete user.notification_subscriptions;
               //Redirect to the page from which the login request came from with the login details attached.
+              console.log("Returning control to: ", req.session)
               res.redirect(
                 req.session.returnTo +
                   encodeURI(
@@ -110,11 +111,12 @@ async function postAuthenticate(req, res) {
         });
       } else {
         tokenManager
-          .generate(db, user._id, req.app.get("cacheManager"))
+          .generate(db, existingUser._id, req.app.get("cacheManager"))
           .then((insertToken) => {
-            delete user.threads;
-            delete user.master_password;
-            delete user.tab_password;
+            delete existingUser.threads;
+            delete existingUser.master_password;
+            delete existingUser.tab_password;
+            console.log("Returning control to: ", req.session.returnTo)
             res.redirect(
               req.session.returnTo +
                 encodeURI(

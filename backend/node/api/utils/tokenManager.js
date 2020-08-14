@@ -5,6 +5,7 @@ function tokenManager() {
     if (typeof userId === "object") {
       userId = userId.toString();
     }
+    console.log("Generating authentication token for user id: ", userId);
     return new Promise((resolve, reject) => {
       let now = new Date();
       let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
@@ -37,6 +38,7 @@ function tokenManager() {
       let userId = cacheManager.getUserIdFromToken(token);
 
       if (userId) {
+        console.log("User " + userId + "'s token has been verified from cache.");
         //If the token validation is success, we bump up the token expiry time to one more day so that the user stays logged in.
         db.collection("tokens").updateOne(
           { token: token },
@@ -50,6 +52,7 @@ function tokenManager() {
           .findOne({ token: token });
 
         if (!tokenObject) {
+          console.log("No valid token was matched for the given request.")
           return resolve(false);
         }
 
@@ -62,6 +65,7 @@ function tokenManager() {
             { $set: { date_expiry: tomorrow } }
           );
 
+        console.log("User " + tokenObject.user_id + "'s token has been verified from database.");
         cacheManager.putUserToken(token, tokenObject.user_id.toString());
         resolve(tokenObject.user_id.toString());
       }
