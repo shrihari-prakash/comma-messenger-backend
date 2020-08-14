@@ -25,7 +25,7 @@ module.exports = {
         var hasAccess = threadObject.thread_participants.some(function (
           participantId
         ) {
-          return participantId.equals(socket.id);
+          return participantId.equals(userAuthResult);
         });
 
         var tabObject = await db
@@ -33,7 +33,7 @@ module.exports = {
           .findOne({ _id: ObjectId(message.tab_id) });
 
         var isTabSecured = tabObject.secured_for.some(function (participantId) {
-          return participantId.equals(socket.id);
+          return participantId.equals(socket.userId);
         });
         if (isTabSecured == true) {
           if (dbPassword != null) {
@@ -56,7 +56,7 @@ module.exports = {
             reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
 
           let messageObject = {
-            sender: ObjectId(socket.id),
+            sender: ObjectId(socket.userId),
             type: message.type,
             date_created: new Date(),
           };
@@ -95,7 +95,7 @@ module.exports = {
           messageObject.content = message.content;
           //If any user of the thread is online send it to the respective socket.
           threadObject.thread_participants.forEach((receiverId) => {
-            if (connectionMap[receiverId] && !receiverId.equals(socket.id))
+            if (connectionMap[receiverId] && !receiverId.equals(socket.userId))
               connectionMap[receiverId].emit("_messageIn", messageObject);
           });
 

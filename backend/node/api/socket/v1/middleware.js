@@ -47,8 +47,9 @@ const socketHandler = (io) => {
 
       if (userAuthResult.ok != 0) {
         console.log("User", userAuthResult.data, "is online.");
-        socket.id = userAuthResult.data;
-        connectionMap[socket.id] = socket;
+        /* socket.id = userAuthResult.data; */
+        socket.userId = userAuthResult.data;
+        connectionMap[socket.userId] = socket;
       } else {
         console.log("Unauthenticated user.");
         socket.disconnect();
@@ -91,8 +92,8 @@ const socketHandler = (io) => {
     });
 
     socket.on("disconnect", (message) => {
-      console.log("User", socket.id, "has disconnected.");
-      delete connectionMap[socket.id];
+      console.log("User", socket.userId, "has disconnected.");
+      delete connectionMap[socket.userId];
     });
   });
 };
