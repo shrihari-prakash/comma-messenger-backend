@@ -6,12 +6,24 @@ const crypt = new cryptUtil.crypt();
 var ObjectId = require("mongodb").ObjectID;
 
 module.exports = {
-  sendMessage: function (db, push, socket, message, connectionMap, userAuthResult) {
+  sendMessage: function (
+    db,
+    push,
+    socket,
+    message,
+    connectionMap,
+    userAuthResult
+  ) {
     return new Promise(async function (resolve, reject) {
+      var isHardFail = true;
       try {
         var userObject = await db
           .collection("users")
           .findOne({ _id: ObjectId(userAuthResult) });
+
+        if (typeof userObject != "object") {
+          return reject({ ok: 0, reason: "INVALID_USER" });
+        }
 
         console.log("New message exchange initiated by:", userObject._id);
 
@@ -38,7 +50,7 @@ module.exports = {
         if (isTabSecured == true) {
           if (dbPassword != null) {
             if (!message.password) {
-              reject({ ok: 0, reason: "INVALID_PASSWORD" });
+              return reject({ ok: 0, reason: "INVALID_PASSWORD" });
             }
 
             let passwordVerified = bcrypt.compareSync(
@@ -46,14 +58,14 @@ module.exports = {
               dbPassword
             );
             if (passwordVerified !== true) {
-              reject({ ok: 0, reason: "INVALID_PASSWORD" });
+              return reject({ ok: 0, reason: "INVALID_PASSWORD" });
             }
           }
         }
 
         if (hasAccess) {
           if (!["text", "image"].includes(message.type))
-            reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
+            return reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
 
           let messageObject = {
             sender: ObjectId(socket.userId),
@@ -64,13 +76,13 @@ module.exports = {
           switch (message.type) {
             case "text":
               if (!message.content)
-                reject({ ok: 0, reason: "EMPTY_MESSAGE_CONTENT" });
+                return reject({ ok: 0, reason: "EMPTY_MESSAGE_CONTENT" });
               messageObject.content = crypt.encrypt(message.content);
               break;
 
             case "image":
               if (!message.file_name)
-                reject({ ok: 0, reason: "EMPTY_FILE_NAME" });
+                return reject({ ok: 0, reason: "EMPTY_FILE_NAME" });
               messageObject.file_name = message.file_name;
               break;
 
@@ -86,8 +98,10 @@ module.exports = {
             );
 
           if (tabUpdateResult.result.ok != 1) {
-            reject({ ok: 0, reason: "INTERNAL_SERVER_ERROR" });
+            return reject({ ok: 0, reason: "DATABASE_WRITE_ERROR" });
           }
+
+          isHardFail = false;
 
           messageObject.thread_id = threadObject._id;
           messageObject.tab_id = message.tab_id;
@@ -99,9 +113,11 @@ module.exports = {
               connectionMap[receiverId].emit("_messageIn", messageObject);
           });
 
+          //Send notification to all the participants except the one who sent the message.
           let participants = await db
             .collection("users")
             .find({ _id: { $in: threadObject.thread_participants } });
+
           let notificationPayload = {
             title: "New Message on " + tabObject.tab_name,
             description:
@@ -125,10 +141,10 @@ module.exports = {
             }
           });
           resolve({ ok: 1 });
-        } else reject({ ok: 0, reason: "NO_ACCESS" });
+        } else return reject({ ok: 0, reason: "NO_ACCESS" });
       } catch (e) {
         console.log(e);
-        reject({ ok: 0, reason: "INTERNAL_SERVER_ERROR" });
+        return reject({ ok: 0, reason: "INTERNAL_SERVER_ERROR" });
       }
     });
   },
