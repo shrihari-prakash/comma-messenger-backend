@@ -144,7 +144,7 @@ module.exports = {
         } else return reject({ ok: 0, reason: "NO_ACCESS" });
       } catch (e) {
         console.log(e);
-        return reject({ ok: 0, reason: "INTERNAL_SERVER_ERROR" });
+        return reject({ ok: 0, reason: "INTERNAL_SERVER_ERROR", is_hard_fail: isHardFail});
       }
     });
   },
