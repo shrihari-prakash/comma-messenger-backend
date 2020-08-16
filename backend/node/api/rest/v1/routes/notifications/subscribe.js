@@ -45,7 +45,7 @@ async function subscribeUser(req, res) {
   try {
     db.collection("users").updateOne(
       { _id: ObjectId(loggedInUserId) },
-      { $push: { notification_subscriptions: subscriptionDetails } },
+      { $addToSet: { notification_subscriptions: subscriptionDetails } },
       function (err, result) {
         if (err) throw err;
         return res.status(200).json({
