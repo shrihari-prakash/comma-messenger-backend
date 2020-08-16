@@ -44,7 +44,7 @@ async function getThreads(req, res) {
   try {
     var userObject = await db.collection("users").findOne({
       _id: ObjectId(loggedInUserId),
-    }, { projection: { _id: 0, threads: 0 } });
+    }, { projection: { _id: 0, threads: 0, master_password: 0, tab_password: 0 } });
     return res.status(200).json({
       status: 200,
       message: "User Profile Retrieved.",
