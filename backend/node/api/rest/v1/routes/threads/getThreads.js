@@ -29,6 +29,15 @@ async function getThreads(req, res) {
     return res.status(403).json(error);
   }
 
+  if (!req.query.limit || !req.query.offset) {
+    let error = new errorModel.errorResponse(
+      errors.invalid_input.withDetails(
+        "No valid `limit` (or) `offset` values were sent along with the request."
+      )
+    );
+    return res.status(400).json(error);
+  }
+
   let cacheManager = req.app.get("cacheManager");
 
   let db = req.app.get("mongoInstance");
@@ -47,7 +56,7 @@ async function getThreads(req, res) {
         _id: ObjectId(loggedInUserId),
       },
       function (err, userObject) {
-        if(err) throw err;
+        if (err) throw err;
         db.collection("threads")
           .aggregate([
             {
@@ -82,6 +91,8 @@ async function getThreads(req, res) {
                 as: "thread_participants",
               },
             },
+            { $skip: parseInt(req.query.offset) },
+            { $limit: parseInt(req.query.limit) },
           ]) //Joining both 'users' and 'threads' collection since the thread list view usually requires the name of everyone who is involved in that thread.
           .toArray(function (err, result) {
             if (err) {
