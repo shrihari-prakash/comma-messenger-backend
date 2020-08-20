@@ -39,7 +39,8 @@ VAPID_PUBLIC_KEY=YourVapidPublicKey
 VAPID_PRIVATE_KEY=YourVapidPrivateKey
 ```
 
-**API Documentation**
+**API Documentation:**
+
 The REST and Socket API documentation can be found **[HERE](backend/node/api/docs/api_docs.md)**
 
 **Samples:**
