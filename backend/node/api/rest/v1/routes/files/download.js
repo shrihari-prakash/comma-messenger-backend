@@ -84,7 +84,7 @@ async function download(req, res) {
     if (!threadObject) {
       let error = new errorModel.errorResponse(
         errors.not_found.withDetails(
-          "No tab exists for the provided `tab_id`"
+          "No thread exists for the provided `tab_id`"
         )
       );
       return res.status(404).json(error);
@@ -115,12 +115,14 @@ async function download(req, res) {
       })
       .toArray();
 
-    if (!tabObject || !tabObject[0])
-      return res.status(200).json({
-        status: 200,
-        message: "No messages to retrieve.",
-        result: [],
-      });
+    if (!tabObject || !tabObject[0]) {
+      let error = new errorModel.errorResponse(
+        errors.not_found.withDetails(
+          "No tab exists for the provided `tab_id`"
+        )
+      );
+      return res.status(404).json(error);
+    }
 
     tabObject = tabObject[0];
 
