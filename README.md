@@ -39,6 +39,9 @@ VAPID_PUBLIC_KEY=YourVapidPublicKey
 VAPID_PRIVATE_KEY=YourVapidPrivateKey
 ```
 
+**API Documentation**
+The REST and Socket API documentation can be found **[HERE](backend/node/api/docs/api_docs.md)**
+
 **Samples:**
 * Sample frontend implementations for important pieces of backend can be found in the `demos` folder.
 * Run the demo files on `live server` exstension for VS Code or any other server that runs on port 5501.
