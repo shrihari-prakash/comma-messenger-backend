@@ -90,6 +90,18 @@ module.exports = {
               break;
           }
 
+          //Update the thread modified time so that while getting the list of threads we can sort by last active thread.
+          var threadUpdateResult = await db
+            .collection("threads")
+            .updateOne(
+              { _id: ObjectId(threadObject._id) },
+              { $set: { date_updated: new Date() } }
+            );
+
+          if (threadUpdateResult.result.ok != 1) {
+            return reject({ ok: 0, reason: "DATABASE_WRITE_ERROR" });
+          }
+
           var tabUpdateResult = await db
             .collection("tabs")
             .updateOne(
@@ -103,6 +115,8 @@ module.exports = {
 
           isHardFail = false;
 
+          //From this point, any failure doesn't really count as a message not sent since the message is written to the Database and 
+          //the user is guaranteed to recieve that message when getMessages API is hit.
           messageObject.thread_id = threadObject._id;
           messageObject.tab_id = message.tab_id;
 
@@ -144,7 +158,11 @@ module.exports = {
         } else return reject({ ok: 0, reason: "NO_ACCESS" });
       } catch (e) {
         console.log(e);
-        return reject({ ok: 0, reason: "INTERNAL_SERVER_ERROR", is_hard_fail: isHardFail});
+        return reject({
+          ok: 0,
+          reason: "INTERNAL_SERVER_ERROR",
+          is_hard_fail: isHardFail,
+        });
       }
     });
   },

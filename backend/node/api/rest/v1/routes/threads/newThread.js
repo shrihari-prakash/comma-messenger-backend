@@ -67,6 +67,7 @@ async function createThread(req, res) {
         thread_participants: [ObjectId(loggedInUserId), receiver._id],
         tabs: [],
         date_created: new Date(),
+        date_updated: new Date(),
       };
       try {
         //Insert into threads and push the inserted thread _id into array of threads in users.
