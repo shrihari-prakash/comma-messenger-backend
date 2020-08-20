@@ -1,4 +1,4 @@
-# comma-js
+# comma-js-server
 ![Comma JS Logo](/branding-assets/logo.png)
 
 Open source messenger based on Express, MongoDB and Socket.IO
@@ -44,4 +44,4 @@ VAPID_PRIVATE_KEY=YourVapidPrivateKey
 * Run the demo files on `live server` exstension for VS Code or any other server that runs on port 5501.
 
 **Frontend:**
-*Docs on progress*
+**[comma-js-frontend](https://github.com/ronaldlanton/comma-js-frontend)**
