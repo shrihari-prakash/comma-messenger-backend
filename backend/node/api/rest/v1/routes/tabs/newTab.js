@@ -99,18 +99,24 @@ async function createThread(req, res) {
       thread_id: ObjectId(tabDetails.thread_id),
       messages: [],
       secured_for: [],
-      date_created: new Date()
+      date_created: new Date(),
+      seen_status: [],
     };
 
-    if(tabDetails.require_authentication == true) tabObject.secured_for.push(ObjectId(loggedInUserId))
+    threadObject.thread_participants.forEach((participantId) => {
+      tabObject.seen_status.push({
+        user_id: participantId, //Already of type ObjectId.
+        last_read_message_id: null,
+      });
+    });
+
+    if (tabDetails.require_authentication == true)
+      tabObject.secured_for.push(ObjectId(loggedInUserId));
 
     //Insert into tabs and push the inserted tab _id into array of tabs in threads.
-    var tabInsertResult = await db.collection("tabs").insertOne(
-      tabObject,
-      {
-        w: 1,
-      }
-    );
+    var tabInsertResult = await db.collection("tabs").insertOne(tabObject, {
+      w: 1,
+    });
 
     let insertedTabId = tabObject._id;
 

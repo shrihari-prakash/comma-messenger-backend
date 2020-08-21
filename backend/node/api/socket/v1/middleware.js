@@ -7,7 +7,8 @@ const tokenManager = new tokenMgr.tokenManager();
 const cache = require("../../utils/cacheManager");
 const cacheManager = new cache.cacheManager();
 
-const sender = require('./sendMessage');
+const sender = require("./sendMessage");
+const updateMessageSeen = require("./updateMessageSeen");
 
 //uncomment to generate new vapidKeys.
 
@@ -62,12 +63,25 @@ const socketHandler = (io) => {
       let messageId = message.id;
 
       if (userAuthResult.ok != 0) {
-        sender.sendMessage(db, push, socket, message, connectionMap, userAuthResult.data)
+        sender
+          .sendMessage(
+            db,
+            push,
+            socket,
+            message,
+            connectionMap,
+            userAuthResult.data
+          )
           .then((result) => {
             if (result.ok === 1) {
-              socket.emit("_success", { message_id: messageId, ok: 1 });
+              socket.emit("_success", {
+                event: "_messageOut",
+                message_id: messageId,
+                ok: 1,
+              });
             } else {
               socket.emit("_error", {
+                event: "_messageOut",
                 message_id: messageId,
                 ok: 0,
                 reason: result.reason,
@@ -76,6 +90,7 @@ const socketHandler = (io) => {
           })
           .catch(function (rej) {
             socket.emit("_error", {
+              event: "_messageOut",
               message_id: messageId,
               ok: 0,
               reason: rej.reason,
@@ -84,7 +99,50 @@ const socketHandler = (io) => {
           });
       } else {
         socket.emit("_error", {
+          event: "_messageOut",
           message_id: messageId,
+          ok: 0,
+          reason: userAuthResult.reason,
+        });
+      }
+    });
+
+    socket.on("_updateMessageSeen", async (seenStatus) => {
+      let userAuthResult = await verifyUser(seenStatus.token);
+
+      if (userAuthResult.ok != 0) {
+        console.log(
+          "User",
+          userAuthResult.data,
+          "is trying to update read status."
+        );
+        updateMessageSeen(db, socket, seenStatus, userAuthResult.data)
+          .then((result) => {
+            if (result.ok === 1) {
+              socket.emit("_success", {
+                event: "_updateMessageSeen",
+                message_id: messageId,
+                ok: 1,
+              });
+            } else {
+              socket.emit("_error", {
+                event: "_updateMessageSeen",
+                ok: 0,
+                reason: result.reason,
+              });
+            }
+          })
+          .catch(function (rej) {
+            socket.emit("_error", {
+              event: "_updateMessageSeen",
+              ok: 0,
+              reason: rej.reason,
+            });
+            console.log(rej);
+          });
+      } else {
+        socket.emit("_error", {
+          event: "_updateMessageSeen",
           ok: 0,
           reason: userAuthResult.reason,
         });
