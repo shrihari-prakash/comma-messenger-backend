@@ -6,12 +6,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
 
   <script>
-    var socket = io("https://comma-js.herokuapp.com/", {
+    var socket = io("http://localhost:26398/", {
       path: "/api/socket/communicate",
     });
     socket.on("_messageIn", function (data) {
       document.getElementById("messages").innerHTML +=
         JSON.stringify(data) + "</br>";
+        updateSeen(data._id)
     });
 
     socket.on("_success", function (data) {
@@ -24,7 +25,7 @@
         "Message " +
         data.message_id +
         " was not delivered. Error:" +
-        data.reason || "UNKNOWN_ERROR" +
+        (data.reason || "UNKNOWN_ERROR") +
         "</br>";
     });
 
@@ -41,6 +42,16 @@
         type: "text",
         tab_id: document.getElementById("tab_id").value,
         content: document.getElementById("content").value,
+        password: document.getElementById("password").value,
+      });
+    }
+
+    function updateSeen(messageId) {
+      socket.emit("_updateMessageSeen", {
+        id: Math.floor(Math.random() * 1000000 + 1),
+        token: document.getElementById("auth_token").value,
+        tab_id: document.getElementById("tab_id").value,
+        last_read_message_id: messageId,
         password: document.getElementById("password").value,
       });
     }

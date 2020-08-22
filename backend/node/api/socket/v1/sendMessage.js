@@ -132,7 +132,7 @@ module.exports = {
 
           db.collection("threads").updateOne(
             { _id: ObjectId(threadObject._id) },
-            { $set: { new_for: newForArray } }
+            { $addToSet: { new_for: { $each: newForArray } } } //Mark tab as having unread message for participants if it is not already having an unread status.
           );
 
           //Send notification to all the participants except the one who sent the message.

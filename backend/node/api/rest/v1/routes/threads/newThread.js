@@ -66,6 +66,7 @@ async function createThread(req, res) {
       let threadObject = {
         thread_participants: [ObjectId(loggedInUserId), receiver._id],
         tabs: [],
+        new_for: [],
         date_created: new Date(),
         date_updated: new Date(),
       };
