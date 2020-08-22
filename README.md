@@ -3,6 +3,14 @@
 
 Open source messenger based on Express, MongoDB and Socket.IO
 
+**Is this another 'chat' application built based on YouTube examples? NO**
+
+**Ok it's not that, so how does it standout?**
+* Integrated Google Single Sign On for one-click user creation and login.💻
+* Mini-Conversations inside threads - This means users have the ability have sub conversations inside threads. Think of a conversation like a browser window with multiple tabs open! 💭
+* Lock parts of conversations instead of locking the whole application! Each tab in a thread are renamable and password-protectable! 🔐
+* Notifications support. 🔔
+
 **How to Run?**
 
 **Backend:**
@@ -38,6 +46,10 @@ CRYPT_IV=YourEncryptionIV
 VAPID_PUBLIC_KEY=YourVapidPublicKey
 VAPID_PRIVATE_KEY=YourVapidPrivateKey
 ```
+
+**API Documentation:**
+
+The REST and Socket API documentation can be found **[HERE](backend/node/api/docs/api_docs.md)**
 
 **Samples:**
 * Sample frontend implementations for important pieces of backend can be found in the `demos` folder.
