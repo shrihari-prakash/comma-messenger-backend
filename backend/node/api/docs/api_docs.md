@@ -42,6 +42,13 @@ localhost:26398/api/rest/v1/threads/getThreads
 
 #### Request Method: GET
 
+#### Request Parameters: 
+
+```
+limit: 10
+offset: 0
+```
+
 #### Sample Response: 
 
 ```
@@ -69,11 +76,15 @@ localhost:26398/api/rest/v1/threads/getThreads
                     "email": "monicadoe@example.com"
                 }
             ],
-            "date_created": "2020-07-31T18:36:50.386Z"
+            "date_created": "2020-07-31T18:36:50.386Z",
+            "date_updated": "2020-08-22T16:44:43.538Z",
+            "new_for": [user_1]
         }
     ]
 }
 ```
+
+_The `new_for` parameter specifies for which users, the unread indicator should be shown for any given thread._
 
 ### Create a new thread:
 
@@ -242,18 +253,30 @@ password: 0000 (Optional)
         {
             "messages": [
               {
+                        "_id": "5f4140d80833030fb041b86a",
                         "sender" : "sender_1",
                         "type" : "text",
                         "content" : "Hey there!",
                         "date_created" : ISODate("2020-07-31T18:51:21.547Z")
                 },
                 {
+                        "_id": "5f4140d80833030fb041b86b",
                         "sender" : "sender_2",
                         "type" : "image",
                         "file_name" : "0123456789.png",
                         "date_created" : ISODate("2020-07-31T18:53:38.766Z")
                 }
-            ]
+            ],
+            "seen_status": [
+            {
+                "user_id": "sender_1",
+                "last_read_message_id": null //This user never read any message from the tab.
+            },
+            {
+                "user_id": "sender_2",
+                "last_read_message_id": "5f4140d80833030fb041b86a"
+            }
+        ]
         }
     ]
 }
