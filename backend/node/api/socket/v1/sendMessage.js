@@ -116,16 +116,24 @@ module.exports = {
 
           isHardFail = false;
 
-          //From this point, any failure doesn't really count as a message not sent since the message is written to the Database and 
+          //From this point, any failure doesn't really count as a message not sent since the message is written to the Database and
           //the user is guaranteed to recieve that message when getMessages API is hit.
           messageObject.thread_id = threadObject._id;
           messageObject.tab_id = message.tab_id;
           messageObject.content = message.content;
-          //If any user of the thread is online send it to the respective socket.
+          //If any user of the thread is online send it to the respective socket else push it into their unread.
+          let newForArray = [];
           threadObject.thread_participants.forEach((receiverId) => {
             if (connectionMap[receiverId] && !receiverId.equals(socket.userId))
               connectionMap[receiverId].emit("_messageIn", messageObject);
+            else if (!receiverId.equals(socket.userId))
+              newForArray.push(receiverId);
           });
+
+          db.collection("threads").updateOne(
+            { _id: ObjectId(threadObject._id) },
+            { $set: { new_for: newForArray } }
+          );
 
           //Send notification to all the participants except the one who sent the message.
           let participants = await db
