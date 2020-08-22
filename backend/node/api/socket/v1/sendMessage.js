@@ -68,6 +68,7 @@ module.exports = {
             return reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
 
           let messageObject = {
+            _id: new ObjectId(),
             sender: ObjectId(socket.userId),
             type: message.type,
             date_created: new Date(),
@@ -119,7 +120,6 @@ module.exports = {
           //the user is guaranteed to recieve that message when getMessages API is hit.
           messageObject.thread_id = threadObject._id;
           messageObject.tab_id = message.tab_id;
-
           messageObject.content = message.content;
           //If any user of the thread is online send it to the respective socket.
           threadObject.thread_participants.forEach((receiverId) => {
@@ -154,7 +154,7 @@ module.exports = {
               });
             }
           });
-          resolve({ ok: 1 });
+          resolve({ ok: 1, inserted_id: messageObject._id });
         } else return reject({ ok: 0, reason: "NO_ACCESS" });
       } catch (e) {
         console.log(e);

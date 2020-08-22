@@ -75,33 +75,29 @@ const socketHandler = (io) => {
           .then((result) => {
             if (result.ok === 1) {
               socket.emit("_success", {
-                event: "_messageOut",
-                message_id: messageId,
                 ok: 1,
-              });
-            } else {
-              socket.emit("_error", {
                 event: "_messageOut",
                 message_id: messageId,
-                ok: 0,
-                reason: result.reason,
+                inserted_id: result.inserted_id,
               });
             }
           })
           .catch(function (rej) {
             socket.emit("_error", {
-              event: "_messageOut",
-              message_id: messageId,
               ok: 0,
+              event: "_messageOut",
+              is_hard_fail: rej.is_hard_fail,
+              message_id: messageId,
               reason: rej.reason,
             });
             console.log(rej);
           });
       } else {
         socket.emit("_error", {
-          event: "_messageOut",
-          message_id: messageId,
           ok: 0,
+          event: "_messageOut",
+          is_hard_fail: true,
+          message_id: messageId,
           reason: userAuthResult.reason,
         });
       }
@@ -116,12 +112,13 @@ const socketHandler = (io) => {
           userAuthResult.data,
           "is trying to update read status."
         );
-        updateMessageSeen(db, socket, seenStatus, userAuthResult.data)
+        updateMessageSeen
+          .updateMessageSeen(db, socket, seenStatus, userAuthResult.data)
           .then((result) => {
             if (result.ok === 1) {
               socket.emit("_success", {
                 event: "_updateMessageSeen",
-                message_id: messageId,
+                message_id: seenStatus.last_read_message_id,
                 ok: 1,
               });
             } else {

@@ -4,8 +4,6 @@ const cryptUtil = require("../../utils/crypt");
 const { ObjectId } = require("mongodb");
 const crypt = new cryptUtil.crypt();
 
-var ObjectId = require("mongodb").ObjectID;
-
 module.exports = {
   updateMessageSeen: function (db, socket, seenStatus, userAuthResult) {
     return new Promise(async function (resolve, reject) {
