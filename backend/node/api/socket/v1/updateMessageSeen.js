@@ -5,7 +5,7 @@ const { ObjectId } = require("mongodb");
 const crypt = new cryptUtil.crypt();
 
 module.exports = {
-  updateMessageSeen: function (db, socket, seenStatus, userAuthResult) {
+  updateMessageSeen: function (db, socket, connectionMap, seenStatus, userAuthResult) {
     return new Promise(async function (resolve, reject) {
       try {
         if (!seenStatus.last_read_message_id) {
@@ -74,6 +74,18 @@ module.exports = {
             return reject({ ok: 0, reason: "DATABASE_WRITE_ERROR" });
           }
           resolve({ ok: 1 });
+
+          emitObject = {
+            tab_id: seenStatus.tab_id,
+            thread_id: threadObject._id,
+            last_read_message_id: seenStatus.last_read_message_id,
+          };
+
+          threadObject.thread_participants.forEach((receiverId) => {
+            if (connectionMap[receiverId] && !receiverId.equals(socket.userId))
+              connectionMap[receiverId].emit("_messageSeen", emitObject);
+          });
+
         } else return reject({ ok: 0, reason: "NO_ACCESS" });
       } catch (e) {
         console.log(e);
