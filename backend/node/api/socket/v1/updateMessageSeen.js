@@ -25,7 +25,7 @@ module.exports = {
           .collection("threads")
           .findOne({ tabs: { $in: [ObjectId(seenStatus.tab_id)] } });
 
-        //Make sure some random user is not sending messages to a thread to which he doesn't even belong.
+        //Make sure some random user is not trying to update seen status on a thread to which he doesn't even belong.
         var hasAccess = threadObject.thread_participants.some(function (
           participantId
         ) {

@@ -117,30 +117,30 @@ const socketHandler = (io) => {
           .then((result) => {
             if (result.ok === 1) {
               socket.emit("_success", {
+                ok: 1,
                 event: "_updateMessageSeen",
                 message_id: seenStatus.last_read_message_id,
-                ok: 1,
               });
             } else {
               socket.emit("_error", {
-                event: "_updateMessageSeen",
                 ok: 0,
+                event: "_updateMessageSeen",
                 reason: result.reason,
               });
             }
           })
           .catch(function (rej) {
             socket.emit("_error", {
-              event: "_updateMessageSeen",
               ok: 0,
+              event: "_updateMessageSeen",
               reason: rej.reason,
             });
             console.log(rej);
           });
       } else {
         socket.emit("_error", {
-          event: "_updateMessageSeen",
           ok: 0,
+          event: "_updateMessageSeen",
           reason: userAuthResult.reason,
         });
       }
