@@ -315,6 +315,29 @@ localhost:26398/api/rest/v1/threads/editProfileInfo
 }
 ```
 
+## Push Notifications
+### Subscribe to push notifications:
+
+#### Request URL: 
+localhost:26398/api/rest/v1/notifications/subscribe
+
+#### Request Method: PUT
+
+#### Request Body: 
+
+```
+subscriptionDetails
+```
+
+#### Sample Response: 
+
+```
+{
+    "status": 200,
+    "message": "Subscribed."
+}
+```
+
 ## Realtime Messaging:
 ### Making a connection:
 
