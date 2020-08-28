@@ -349,18 +349,64 @@ The connection will be accepted or rejected based on the API token sent.
     }
 ```
 
-#### Getting the status of the sent message:
+#### Updating seen status of a message:
 ```
+    function updateSeen(messageId) {
+      socket.emit("_updateMessageSeen", {
+        id: "Database ID of the message",
+        token: "Bearer API_TOKEN",
+        tab_id: "tab_1",
+        last_read_message_id: "message_1",
+        password: "1234",
+      });
+    }
+```
+
+#### Incoming responses:
+```
+    //SUCCESS RESPONSES:
     socket.on("_success", function (data) {
       console.log(data)
     });
     
+    //Send success:
+    {
+      ok: 1,
+      event: "_messageOut",
+      message_id: "client_message_id",
+      inserted_id: "database_message_id",
+    }
+    
+    //Message seen status updated:
+    {
+      ok: 1,
+      event: "_updateMessageSeen",
+      message_id: "client_message_id", 
+    }
+    
+    //ERROR RESPONSES:
     socket.on("_error", function (data) {
       console.log(data)
     });
+    
+    //Send error:
+    {
+      ok: 0,
+      event: "_messageOut",
+      is_hard_fail: true, //A hardfail true indicates the message was never written to database and has to be re-tried.
+      message_id: messageId,
+      reason: "REASON",
+    }
+    
+    //Message seen status update error:
+    {
+      ok: 0,
+      event: "_updateMessageSeen",
+      reason: "REASON",
+    }
 ```
 
-#### Receiving messages:
+#### Receiving a message:
 ```
     socket.on("_messageIn", function (message) {
       console.log(message)
