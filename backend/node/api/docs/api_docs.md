@@ -1,4 +1,4 @@
-# comma-js REST API documentation
+# comma-js API documentation
 
 ## Auth:
 
