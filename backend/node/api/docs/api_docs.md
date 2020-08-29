@@ -338,6 +338,57 @@ subscriptionDetails
 }
 ```
 
+## Files
+### Upload a file to a thread:
+
+#### Request URL: 
+localhost:26398/api/rest/v1/files/upload
+
+#### Request Method: POST
+
+#### Request Body (FORM DATA): 
+
+```
+{
+    "tab_id": "tab_1",
+    "attachment": FILE
+}
+```
+
+#### Sample Response: 
+
+```
+{
+    "status": 200,
+    "message": "File uploaded.",
+    data: [
+           {
+            file_name: "12345678.jpg",
+           },
+    ]
+}
+```
+
+### Download a file:
+
+#### Request URL: 
+localhost:26398/api/rest/v1/files/download
+
+#### Request Method: GET
+
+#### Request Parameters: 
+
+```
+tab_id: tab_1
+file_name: "12345678.jpg"
+```
+
+#### Sample Response: 
+
+```
+FILE_OBJECT
+```
+
 ## Realtime Messaging:
 ### Making a connection:
 
