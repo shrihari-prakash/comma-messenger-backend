@@ -1,3 +1,6 @@
+const dotenv = require("dotenv");
+dotenv.config({ path: __dirname + "/.env" });
+
 const http = require("http");
 const app = require("./apiServer.js");
 const port = process.env.PORT || 26398;
@@ -9,3 +12,5 @@ require("./socket/v1/middleware")(io);
 
 server.listen(port);
 console.log(`Comma APIs runnning at ${process.env.PORT || 26398}`);
+
+module.exports = server; // for testing
