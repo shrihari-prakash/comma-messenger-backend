@@ -16,7 +16,8 @@ describe("REST APIs", function () {
   runTest("Get threads:", "./rest/threads/getThreads");
   runTest("Create new tab:", "./rest/tabs/newTab");
   runTest("Get tabs:", "./rest/tabs/getTabs");
-  runTest("Rename Tab:", "./rest/tabs/renameTab");
+  runTest("Rename tab:", "./rest/tabs/renameTab");
+  runTest("Change tab auth status:", "./rest/tabs/changeTabAuthStatus");
   after(function () {
     //Restore logs.
     console.log = log;

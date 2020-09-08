@@ -8,15 +8,15 @@ const should = chai.should();
 
 chai.use(chaiHttp);
 
-const endPoint = process.env.API_PATH + "/tabs/renameTab";
+const endPoint = process.env.API_PATH + "/tabs/changeTabAuthStatus";
 
-it("Rename a secured tab with valid password", function (done) {
+it("Disable auth of a secured tab with valid password", function (done) {
   chai
     .request(server)
     .put(endPoint)
     .send({
       tab_id: common.objectIds.tabIds.withAuthentication,
-      name: "test_tab_renamed",
+      require_authentication: false,
       password: "1234",
     })
     .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
@@ -27,7 +27,25 @@ it("Rename a secured tab with valid password", function (done) {
     });
 });
 
-it("Rename tab with invalid API key", function (done) {
+it("Disable auth of a secured tab with invalid password", function (done) {
+    chai
+      .request(server)
+      .put(endPoint)
+      .send({
+        tab_id: common.objectIds.tabIds.withAuthentication,
+        require_authentication: false,
+        password: "0000",
+      })
+      .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
+      .end((err, res) => {
+          console.log(res.body)
+        expect(res).to.have.status(200);
+        res.body.should.be.a("object");
+        done();
+      });
+  });
+
+it("Change tab auth status with invalid API key", function (done) {
   chai
     .request(server)
     .put(endPoint)
