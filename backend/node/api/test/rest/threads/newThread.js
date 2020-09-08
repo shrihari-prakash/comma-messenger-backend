@@ -23,6 +23,7 @@ it("Create thread with valid email id", function (done) {
       res.body.thread_id.length.should.be.eql(
         parseInt(process.env.MONGO_OBJECT_ID_LENGTH)
       ); //24 is the MongoDB object id length.
+      common.objectIds.threadId = res.body.thread_id;
       done();
     });
 });

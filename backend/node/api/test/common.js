@@ -4,7 +4,10 @@ var server = require("../app");
 
 var objectIds = {
   threadId: null,
-  tab_id: null,
+  tabIds: {
+    withAuthentication: null,
+    withoutAuthentication: null,
+  },
 };
 
 exports.server = server;

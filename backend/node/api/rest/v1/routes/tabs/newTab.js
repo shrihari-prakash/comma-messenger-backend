@@ -77,11 +77,11 @@ async function createThread(req, res) {
 
     if (!threadObject) {
       let error = new errorModel.errorResponse(
-        errors.invalid_input.withDetails(
+        errors.not_found.withDetails(
           "No valid `thread_id` was sent along with the request."
         )
       );
-      return res.status(400).json(error);
+      return res.status(404).json(error);
     }
 
     var hasAccess = threadObject.thread_participants.some(function (
