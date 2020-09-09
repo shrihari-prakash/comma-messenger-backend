@@ -13,7 +13,6 @@ const endPoint = process.env.API_PATH + "/tabs/newTab";
 var tabObject = {
   thread_id: null,
   tab_name: "test_tab",
-  password: "1234",
   require_authentication: true,
 }
 

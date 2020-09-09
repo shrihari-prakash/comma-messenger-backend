@@ -12,6 +12,7 @@ describe("REST APIs", function () {
   var log = console.log;
   /* console.log = () => {}; */
 
+  runTest("Edit profile info:", "./rest/profile/editProfileInfo");
   runTest("Create new thread:", "./rest/threads/newThread");
   runTest("Get threads:", "./rest/threads/getThreads");
   runTest("Create new tab:", "./rest/tabs/newTab");

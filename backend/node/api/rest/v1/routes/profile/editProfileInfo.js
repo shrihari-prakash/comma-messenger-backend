@@ -72,7 +72,6 @@ async function editProfileInfo(req, res) {
         .collection("users")
         .findOne({ _id: ObjectId(loggedInUserId) });
 
-      console.log(userObject);
       let dbPassword = userObject.tab_password;
 
       if (dbPassword != null) {
