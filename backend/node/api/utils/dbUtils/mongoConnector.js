@@ -10,7 +10,7 @@ module.exports = {
       process.env.MONGO_HOST,
       { useUnifiedTopology: true },
       function (err, client) {
-        _db = client.db("comma");
+        _db = client.db(process.env.NODE_ENV == "test" ? process.env.MONGO_DB_NAME_TEST : process.env.MONGO_DB_NAME);
         _client = client;
         return callback(err);
       }
