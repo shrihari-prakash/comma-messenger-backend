@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "set NODE_ENV=test&& mocha --reporter spec",
+    "test": "set NODE_ENV=test&& mocha --exit --reporter spec",
     "start": "node app.js"
   },
   "keywords": [

@@ -14,8 +14,8 @@ it("Create thread with valid email id", function (done) {
   chai
     .request(server)
     .get(endPoint)
-    .query({ email: common.receiverEmail })
-    .set("Authorization", `Bearer ${common.apiToken}`)
+    .query({ email: common.user2.email })
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
@@ -32,7 +32,7 @@ it("Create thread with invalid API key", function (done) {
   chai
     .request(server)
     .get(endPoint)
-    .query({ email: common.receiverEmail })
+    .query({ email: common.user2.email })
     .set("Authorization", `Bearer SOME_API_KEY`)
     .end((err, res) => {
       expect(res).to.have.status(404);
@@ -47,7 +47,7 @@ it("Create thread with non-existant email id", function (done) {
     .request(server)
     .get(endPoint)
     .query({ email: "johndoe@example.com" })
-    .set("Authorization", `Bearer ${common.apiToken}`)
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(404);
       res.body.should.be.a("object");
@@ -60,7 +60,7 @@ it("Create thread without sending an email id", function (done) {
   chai
     .request(server)
     .get(endPoint)
-    .set("Authorization", `Bearer ${common.apiToken}`)
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(400);
       res.body.should.be.a("object");

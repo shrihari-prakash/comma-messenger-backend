@@ -19,7 +19,7 @@ it("Disable auth of a secured tab with valid password", function (done) {
       require_authentication: false,
       password: "1234",
     })
-    .set("Authorization", `Bearer ${common.apiToken}`)
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
@@ -36,7 +36,7 @@ it("Disable auth of a secured tab with invalid password", function (done) {
         require_authentication: false,
         password: "0000",
       })
-      .set("Authorization", `Bearer ${common.apiToken}`)
+      .set("Authorization", `Bearer ${common.user1.apiToken}`)
       .end((err, res) => {
         expect(res).to.have.status(400);
         res.body.should.be.a("object");

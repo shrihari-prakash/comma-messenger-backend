@@ -23,7 +23,7 @@ it("Create tab with valid thread id and authentication", function (done) {
     .request(server)
     .post(endPoint)
     .send(tabObject)
-    .set("Authorization", `Bearer ${common.apiToken}`)
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
@@ -45,7 +45,7 @@ it("Create tab with valid thread id and no authentication", function (done) {
     .request(server)
     .post(endPoint)
     .send(tabObject)
-    .set("Authorization", `Bearer ${common.apiToken}`)
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
@@ -79,7 +79,7 @@ it("Create tab with non-existant thread_id", function (done) {
     .request(server)
     .post(endPoint)
     .send(tabObject)
-    .set("Authorization", `Bearer ${common.apiToken}`)
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(404);
       res.body.should.be.a("object");
@@ -96,7 +96,7 @@ it("Create tab without sending a thread id", function (done) {
     .request(server)
     .post(endPoint)
     .send(tabWithoutThreadId)
-    .set("Authorization", `Bearer ${common.apiToken}`)
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(400);
       res.body.should.be.a("object");
@@ -113,7 +113,7 @@ it("Create tab without sending a tab_name", function (done) {
     .request(server)
     .post(endPoint)
     .send(tabWithoutTabName)
-    .set("Authorization", `Bearer ${common.apiToken}`)
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(400);
       res.body.should.be.a("object");

@@ -19,13 +19,15 @@ module.exports = {
 
         //set API token for user sending API requests.
         const user1 = createFakeUser();
-        const currentUser = await insertUser(db, user1);
-        common.apiToken = currentUser[1];
+        const userOne = await insertUser(db, user1);
+        common.user1.apiToken = userOne[1];
+        common.user1.email = userOne[0].email;
 
         //set email for other user in the system to test chats.
         const user2 = createFakeUser();
-        const receivingUser = await insertUser(db, user2);
-        common.receiverEmail = receivingUser[0].email;
+        const userTwo = await insertUser(db, user2);
+        common.user2.apiToken = userTwo[1];
+        common.user2.email = userTwo[0].email;
 
         resolve(true);
       });

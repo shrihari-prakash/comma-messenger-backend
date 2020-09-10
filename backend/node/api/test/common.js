@@ -10,11 +10,18 @@ var objectIds = {
   },
 };
 
-var apiToken = null;
-var receiverEmail = null;
+var user1 = {
+  apiToken: null,
+  email: null
+}
+
+var user2 = {
+  apiToken: null,
+  email: null
+}
 
 exports.server = server;
 exports.chai = chai;
 exports.objectIds = objectIds;
-exports.apiToken = apiToken;
-exports.receiverEmail = receiverEmail;
+exports.user1 = user1;
+exports.user2 = user2;
