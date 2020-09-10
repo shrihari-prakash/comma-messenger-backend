@@ -60,16 +60,17 @@ function insertUser(db, user) {
 }
 
 function createFakeUser() {
-  let name = faker.name.findName();
-  return {
+  let user = {
     name: {
-      givenName: name.split(" ")[0],
-      familyName: name.split(" ")[1],
+      givenName: faker.name.firstName(),
+      familyName: faker.name.lastName(),
     },
     email: faker.internet.email(),
-    display_picture: "https://picsum.photos/200", //Random image url.
+    display_picture: faker.image.avatar(),
     threads: [],
     master_password: null,
     tab_password: null,
   };
+  console.log(user);
+  return user;
 }
