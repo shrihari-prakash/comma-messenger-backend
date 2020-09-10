@@ -5,13 +5,19 @@ function runTest(name, path) {
 }
 
 var common = require("./common");
+var testUtils = require("./utils");
 
 describe("REST APIs", function () {
+  before((done) => {
+    testUtils.mockUser().then(() => {
+      done();
+    });
+  });
+
   beforeEach(function () {});
   //Supress logs before starting test.
   var log = console.log;
   /* console.log = () => {}; */
-
   runTest("Edit profile info:", "./rest/profile/editProfileInfo");
   runTest("Create new thread:", "./rest/threads/newThread");
   runTest("Get threads:", "./rest/threads/getThreads");
@@ -23,5 +29,6 @@ describe("REST APIs", function () {
     //Restore logs.
     console.log = log;
     console.log("Test suite execution complete.");
+    testUtils.truncateDatabase();
   });
 });

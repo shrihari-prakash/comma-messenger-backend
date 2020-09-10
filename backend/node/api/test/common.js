@@ -10,6 +10,11 @@ var objectIds = {
   },
 };
 
+var apiToken = null;
+var receiverEmail = null;
+
 exports.server = server;
 exports.chai = chai;
 exports.objectIds = objectIds;
+exports.apiToken = apiToken;
+exports.receiverEmail = receiverEmail;

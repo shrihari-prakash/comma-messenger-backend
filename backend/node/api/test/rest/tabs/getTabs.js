@@ -15,7 +15,7 @@ it("Get all tabs of a thread.", function (done) {
     .request(server)
     .get(endPoint)
     .query({ thread_id: common.objectIds.threadId})
-    .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
+    .set("Authorization", `Bearer ${common.apiToken}`)
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
