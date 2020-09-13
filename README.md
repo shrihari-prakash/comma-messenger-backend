@@ -25,6 +25,10 @@ Open source messenger based on Express, MongoDB and Socket.IO
 GOOGLE_CLIENT_ID=YourGoogleClientID
 GOOGLE_CLIENT_SECRET=YourGoogleClientSecret
 
+GOOGLE_APPLICATION_CREDENTIALS=./google-credentials.json
+
+GOOGLE_BUCKET_NAME=gs://project-name.appspot.com/
+
 #express session secret
 SESSION_SECRET=YourSessionSecret
 
