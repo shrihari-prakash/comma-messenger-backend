@@ -203,7 +203,7 @@ localhost:26398/api/rest/v1/tabs/renameTab
 ### Lock/Unlock a tab:
 
 #### Request URL: 
-localhost:26398/api/rest/v1/threads/changeTabAuthStatus
+localhost:26398/api/rest/v1/tabs/changeTabAuthStatus
 
 #### Request Method: POST
 
