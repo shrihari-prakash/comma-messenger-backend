@@ -21,6 +21,8 @@ var profileObject = {
     }
 }
 
+common.user1.password = profileObject.change_tab_password.changed;
+
 it("Edit profile info with valid profile object.", function (done) {
   chai
     .request(server)
@@ -63,7 +65,7 @@ it("Change tab_password with invalid password", function (done) {
       });
   });
 
-it("Change tab auth status with invalid API key", function (done) {
+it("Edit profile info with invalid API key", function (done) {
   chai
     .request(server)
     .put(endPoint)

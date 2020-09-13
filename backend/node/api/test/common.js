@@ -13,6 +13,7 @@ var objectIds = {
 var user1 = {
   apiToken: null,
   email: null,
+  password: null,
   socketConnection: null
 }
 

@@ -28,21 +28,37 @@ it("Disable auth of a secured tab with valid password", function (done) {
 });
 
 it("Disable auth of a secured tab with invalid password", function (done) {
-    chai
-      .request(server)
-      .put(endPoint)
-      .send({
-        tab_id: common.objectIds.tabIds.withAuthentication,
-        require_authentication: false,
-        password: "0000",
-      })
-      .set("Authorization", `Bearer ${common.user1.apiToken}`)
-      .end((err, res) => {
-        expect(res).to.have.status(400);
-        res.body.should.be.a("object");
-        done();
-      });
-  });
+  chai
+    .request(server)
+    .put(endPoint)
+    .send({
+      tab_id: common.objectIds.tabIds.withAuthentication,
+      require_authentication: false,
+      password: "0000",
+    })
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
+    .end((err, res) => {
+      expect(res).to.have.status(400);
+      res.body.should.be.a("object");
+      done();
+    });
+});
+
+it("Enable auth of a secured tab", function (done) {
+  chai
+    .request(server)
+    .put(endPoint)
+    .send({
+      tab_id: common.objectIds.tabIds.withAuthentication,
+      require_authentication: true,
+    })
+    .set("Authorization", `Bearer ${common.user1.apiToken}`)
+    .end((err, res) => {
+      expect(res).to.have.status(200);
+      res.body.should.be.a("object");
+      done();
+    });
+});
 
 it("Change tab auth status with invalid API key", function (done) {
   chai
