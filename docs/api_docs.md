@@ -230,7 +230,7 @@ localhost:26398/api/rest/v1/tabs/changeTabAuthStatus
 ### Get all messages for a given tab:
 
 #### Request URL: 
-localhost:26398/api/rest/v1/threads/getMessages
+localhost:26398/api/rest/v1/messages/getMessages
 
 #### Request Method: GET
 
@@ -286,7 +286,7 @@ password: 0000 (Optional)
 ### Change profile info:
 
 #### Request URL: 
-localhost:26398/api/rest/v1/threads/editProfileInfo
+localhost:26398/api/rest/v1/profile/editProfileInfo
 
 #### Request Method: PUT
 
