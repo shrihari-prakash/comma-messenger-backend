@@ -31,6 +31,8 @@ SESSION_SECRET=YourSessionSecret
 
 #MongoDB
 MONGO_HOST=mongodb://localhost:27017
+MONGO_DB_NAME=comma
+MONGO_DB_NAME_TEST=comma_test
 
 #URL of client web page
 CLIENT_URL=http://127.0.0.1:5501
@@ -45,6 +47,10 @@ CRYPT_IV=YourEncryptionIV
 #vapidKeys for push notifications
 VAPID_PUBLIC_KEY=YourVapidPublicKey
 VAPID_PRIVATE_KEY=YourVapidPrivateKey
+
+#TEST
+API_PATH=/api/rest/v1
+MONGO_OBJECT_ID_LENGTH=24
 ```
 
 **API Documentation:**
