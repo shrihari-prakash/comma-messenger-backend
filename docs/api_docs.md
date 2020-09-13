@@ -178,7 +178,7 @@ localhost:26398/api/rest/v1/threads/newThread
 ### Rename tab:
 
 #### Request URL: 
-localhost:26398/api/rest/v1/threads/newThread
+localhost:26398/api/rest/v1/tabs/renameTab
 
 #### Request Method: PUT
 
