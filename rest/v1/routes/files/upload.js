@@ -112,7 +112,6 @@ async function upload(req, res) {
 
       uploadFile(dir + `/${fileName}`, cloudStorageDir + `/${fileName}`)
         .then(() => {
-
           // Remove file from local after uploading to cloud.
           fs.unlink(dir + `/${fileName}`, (err) => {
             if (err) throw err;
@@ -129,12 +128,14 @@ async function upload(req, res) {
             ],
           });
         })
-        .catch(() => {
+        .catch((e) => {
+          console.log(e);
           let error = new errorModel.errorResponse(errors.internal_error);
           return res.json(error);
         });
     });
   } catch (e) {
+    console.log(e);
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.json(error);
   }
@@ -163,7 +164,7 @@ async function uploadFile(filename, cloudStorageDir) {
 
       console.log(`${filename} uploaded to ${bucketName}.`);
     } catch (e) {
-      reject(false);
+      reject(e);
     }
   });
 }
