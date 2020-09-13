@@ -161,7 +161,7 @@ localhost:26398/api/rest/v1/threads/newThread
 {
     "thread_id": "thread_1",
     "tab_name": "new_tab",
-    "is_secured": true
+    "require_authentication": true
 }
 ```
 
