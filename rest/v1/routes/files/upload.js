@@ -3,6 +3,10 @@ const router = express.Router();
 var fs = require("fs");
 const { ObjectId } = require("mongodb");
 
+const { Storage } = require("@google-cloud/storage");
+// Creates a storage client
+const storage = new Storage();
+
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
 
@@ -93,30 +97,75 @@ async function upload(req, res) {
     // The name of the input field (i.e. "attachment") is used to retrieve the uploaded file
     let file = req.files.attachment;
     let fileName = new Date().valueOf() + "_" + file.name;
-    var dir = `${__dirname }/../../../../user-content/${req.body.tab_id}`;
+    var dir = `${__dirname}/../../../../user-content/${req.body.tab_id}`;
+    var cloudStorageDir = `user-content/${req.body.tab_id}`;
 
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, {recursive: true}, err => {console.log(err)});
+      fs.mkdirSync(dir, { recursive: true }, (err) => {
+        console.log(err);
+      });
     }
 
     // Use the mv() method to place the file somewhere on your server
     file.mv(dir + `/${fileName}`, function (err) {
       if (err) return res.status(500).send(err);
 
-      return res.status(200).json({
-        status: 200,
-        message: "File uploaded.",
-        data: [
-          {
-            file_name: fileName,
-          },
-        ],
-      });
+      uploadFile(dir + `/${fileName}`, cloudStorageDir + `/${fileName}`)
+        .then(() => {
+
+          // Remove file from local after uploading to cloud.
+          fs.unlink(dir + `/${fileName}`, (err) => {
+            if (err) throw err;
+            console.log(dir + `/${fileName} was removed from temp`);
+          });
+
+          return res.status(200).json({
+            status: 200,
+            message: "File uploaded.",
+            data: [
+              {
+                file_name: fileName,
+              },
+            ],
+          });
+        })
+        .catch(() => {
+          let error = new errorModel.errorResponse(errors.internal_error);
+          return res.json(error);
+        });
     });
   } catch (e) {
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.json(error);
   }
+}
+
+async function uploadFile(filename, cloudStorageDir) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let bucketName = process.env.GOOGLE_BUCKET_NAME;
+      // Uploads a local file to the bucket
+      await storage.bucket(bucketName).upload(filename, {
+        destination: cloudStorageDir,
+        // Support for HTTP requests made with `Accept-Encoding: gzip`
+        gzip: true,
+        // By setting the option `destination`, you can change the name of the
+        // object you are uploading to a bucket.
+        metadata: {
+          // Enable long-lived HTTP caching headers
+          // Use only if the contents of the file will never change
+          // (If the contents will change, use cacheControl: 'no-cache')
+          cacheControl: "public, max-age=31536000",
+        },
+      });
+
+      resolve(true);
+
+      console.log(`${filename} uploaded to ${bucketName}.`);
+    } catch (e) {
+      reject(false);
+    }
+  });
 }
 
 module.exports = router;

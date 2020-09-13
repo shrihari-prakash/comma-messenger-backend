@@ -7,3 +7,4 @@ node_modules/
 #custom files and folders
 master-key.txt
 user-content
+google-credentials.json

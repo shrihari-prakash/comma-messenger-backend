@@ -1,8 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
-const path = require("path")
+const path = require("path");
 var ObjectId = require("mongodb").ObjectID;
+
+const { Storage } = require("@google-cloud/storage");
+// Creates a storage client
+const storage = new Storage();
 
 const tokenMgr = require("../../../../utils/tokenManager");
 const tokenManager = new tokenMgr.tokenManager();
@@ -117,9 +121,7 @@ async function download(req, res) {
 
     if (!tabObject || !tabObject[0]) {
       let error = new errorModel.errorResponse(
-        errors.not_found.withDetails(
-          "No tab exists for the provided `tab_id`"
-        )
+        errors.not_found.withDetails("No tab exists for the provided `tab_id`")
       );
       return res.status(404).json(error);
     }
@@ -144,8 +146,22 @@ async function download(req, res) {
       }
     }
 
-    res.sendFile(path.join(__dirname, `/../../../../user-content/${req.query.tab_id}/`) + req.query.file_name);
-
+    getSignedURL(`user-content/${req.query.tab_id}/${req.query.file_name}`)
+      .then((fileURL) => {
+        return res.status(200).json({
+          status: 200,
+          message: "File retrieved.",
+          data: [
+            {
+              presigned_url: fileURL,
+            },
+          ],
+        });
+      })
+      .catch(() => {
+        let error = new errorModel.errorResponse(errors.internal_error);
+        return res.json(error);
+      });
   } catch (e) {
     console.log(e);
     let error = new errorModel.errorResponse(errors.internal_error);
@@ -155,6 +171,33 @@ async function download(req, res) {
 
 function isEmptyOrSpaces(str) {
   return str === null || str.match(/^ *$/) !== null;
+}
+
+function getSignedURL(fileName) {
+  return new Promise((resolve, reject) => {
+    let bucketName = process.env.GOOGLE_BUCKET_NAME;
+    //Initialize file.
+    const file = storage.bucket(bucketName).file(fileName);
+    //Get a signed URL that expires in one day.
+    return file
+      .getSignedUrl({
+        action: "read",
+        expires: getExpiry(),
+      })
+      .then((signedUrls) => {
+        resolve(signedUrls[0]);
+      })
+      .catch((e) => {
+        console.log(e);
+        reject(false);
+      });
+  });
+}
+
+function getExpiry() {
+  return new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
 }
 
 module.exports = router;
