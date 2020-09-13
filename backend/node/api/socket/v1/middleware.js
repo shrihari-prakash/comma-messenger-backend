@@ -51,6 +51,9 @@ const socketHandler = (io) => {
         /* socket.id = userAuthResult.data; */
         socket.userId = userAuthResult.data;
         connectionMap[socket.userId] = socket;
+        socket.emit("_connect", {
+          ok: 1,
+        });
       } else {
         console.log("Unauthenticated user.");
         socket.disconnect();

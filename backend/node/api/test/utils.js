@@ -22,12 +22,14 @@ module.exports = {
         const userOne = await insertUser(db, user1);
         common.user1.apiToken = userOne[1];
         common.user1.email = userOne[0].email;
+        common.user1._id = userOne[0]._id;
 
         //set email for other user in the system to test chats.
         const user2 = createFakeUser();
         const userTwo = await insertUser(db, user2);
         common.user2.apiToken = userTwo[1];
         common.user2.email = userTwo[0].email;
+        common.user2._id = userTwo[0]._id;
 
         resolve(true);
       });

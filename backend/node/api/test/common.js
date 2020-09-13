@@ -1,6 +1,6 @@
 const chai = require("chai");
 
-var server = require("../app");
+var server = require("../app").server;
 
 var objectIds = {
   threadId: null,
@@ -12,12 +12,14 @@ var objectIds = {
 
 var user1 = {
   apiToken: null,
-  email: null
+  email: null,
+  socketConnection: null
 }
 
 var user2 = {
   apiToken: null,
-  email: null
+  email: null,
+  socketConnection: null
 }
 
 exports.server = server;
