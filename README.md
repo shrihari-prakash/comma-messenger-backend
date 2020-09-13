@@ -55,7 +55,7 @@ MONGO_OBJECT_ID_LENGTH=24
 
 **API Documentation:**
 
-The REST and Socket API documentation can be found **[HERE](backend/node/api/docs/api_docs.md)**
+The REST and Socket API documentation can be found **[HERE](docs/api_docs.md)**
 
 **Samples:**
 * Sample frontend implementations for important pieces of backend can be found in the `demos` folder.
