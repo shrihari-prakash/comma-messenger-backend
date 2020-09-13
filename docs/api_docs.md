@@ -386,7 +386,15 @@ file_name: "12345678.jpg"
 #### Sample Response: 
 
 ```
-FILE_OBJECT
+{
+    "status": 200,
+    "message": "File retrieved.",
+    "data": [
+        {
+            "presigned_url": "https://storage.googleapis.com/....."
+        }
+    ]
+}
 ```
 
 ## Realtime Messaging:
