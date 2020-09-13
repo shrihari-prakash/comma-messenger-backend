@@ -66,16 +66,16 @@ app.use((err, req, res, next) => {
   return next(err); // if it's not a 400, let the default error handling do it.
 });
 
-app.use(fileUpload());
-
-app.use(passport.initialize());
-app.use(passport.session());
-
 app.use(require('cookie-session')({
   keys: [process.env.SESSION_SECRET],
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
+
+app.use(fileUpload());
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 //Abstract express headers from end consumer.
 app.disable('x-powered-by');
