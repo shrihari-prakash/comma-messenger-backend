@@ -14,9 +14,8 @@ Open source messenger based on Express, MongoDB and Socket.IO
 **How to Run?**
 
 **Backend:**
-* `cd backend\node\api\`
 * Install all the dependencies by running `npm install`.
-* Execute command `npm start app.js`.
+* Execute command `npm start`.
 * Comma JS server should now be running on port `26398`.
 
 **Sample `.env` file:**
