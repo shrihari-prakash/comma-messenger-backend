@@ -71,6 +71,7 @@ async function getThreads(req, res) {
                 from: "users",
                 let: {
                   participants: "$thread_participants",
+                  tabs: "$tabs",
                 },
                 pipeline: [
                   {
@@ -86,7 +87,7 @@ async function getThreads(req, res) {
                       email: 1,
                       name: 1,
                       display_picture: 1,
-                      number_of_tabs: { $size: "$tabs" },
+                      number_of_tabs: { $size: "$$tabs" },
                     },
                   },
                 ],
