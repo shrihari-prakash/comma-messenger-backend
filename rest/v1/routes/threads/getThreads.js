@@ -98,6 +98,7 @@ async function getThreads(req, res) {
           ]) //Joining both 'users' and 'threads' collection since the thread list view usually requires the name of everyone who is involved in that thread.
           .toArray(function (err, result) {
             if (err) {
+              console.log(err)
               let error = new errorModel.errorResponse(errors.internal_error);
               return res.json(error);
             }
