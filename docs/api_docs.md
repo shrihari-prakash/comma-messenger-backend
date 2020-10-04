@@ -161,7 +161,7 @@ localhost:26398/api/rest/v1/threads/newThread
 {
     "thread_id": "thread_1",
     "tab_name": "new_tab",
-    "is_secured": true
+    "require_authentication": true
 }
 ```
 
@@ -178,7 +178,7 @@ localhost:26398/api/rest/v1/threads/newThread
 ### Rename tab:
 
 #### Request URL: 
-localhost:26398/api/rest/v1/threads/newThread
+localhost:26398/api/rest/v1/tabs/renameTab
 
 #### Request Method: PUT
 
@@ -203,7 +203,7 @@ localhost:26398/api/rest/v1/threads/newThread
 ### Lock/Unlock a tab:
 
 #### Request URL: 
-localhost:26398/api/rest/v1/threads/changeTabAuthStatus
+localhost:26398/api/rest/v1/tabs/changeTabAuthStatus
 
 #### Request Method: POST
 
@@ -230,7 +230,7 @@ localhost:26398/api/rest/v1/threads/changeTabAuthStatus
 ### Get all messages for a given tab:
 
 #### Request URL: 
-localhost:26398/api/rest/v1/threads/getMessages
+localhost:26398/api/rest/v1/messages/getMessages
 
 #### Request Method: GET
 
@@ -286,7 +286,7 @@ password: 0000 (Optional)
 ### Change profile info:
 
 #### Request URL: 
-localhost:26398/api/rest/v1/threads/editProfileInfo
+localhost:26398/api/rest/v1/profile/editProfileInfo
 
 #### Request Method: PUT
 
@@ -386,7 +386,15 @@ file_name: "12345678.jpg"
 #### Sample Response: 
 
 ```
-FILE_OBJECT
+{
+    "status": 200,
+    "message": "File retrieved.",
+    "data": [
+        {
+            "presigned_url": "https://storage.googleapis.com/....."
+        }
+    ]
+}
 ```
 
 ## Realtime Messaging:
