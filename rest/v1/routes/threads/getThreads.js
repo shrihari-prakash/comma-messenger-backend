@@ -85,6 +85,7 @@ async function getThreads(req, res) {
                       _id: 1,
                       email: 1,
                       name: 1,
+                      profile_picture: 1,
                     },
                   },
                 ],
