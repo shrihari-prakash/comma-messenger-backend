@@ -106,10 +106,7 @@ module.exports = {
           //If any user of the thread is online send it to the respective socket else push it into their unread.
           let newForArray = [];
           threadObject.thread_participants.forEach((receiverId) => {
-            if (connectionMap[receiverId] && !receiverId.equals(socket.userId))
-              connectionMap[receiverId].emit("_messageIn", messageObject);
-            else if (!receiverId.equals(socket.userId))
-              newForArray.push(receiverId);
+            if (!receiverId.equals(socket.userId)) newForArray.push(receiverId);
           });
 
           var tabUpdateResult = await db.collection("tabs").updateOne(
@@ -131,6 +128,11 @@ module.exports = {
           messageObject.thread_id = threadObject._id;
           messageObject.tab_id = message.tab_id;
           messageObject.content = message.content;
+
+          threadObject.thread_participants.forEach((receiverId) => {
+            if (connectionMap[receiverId] && !receiverId.equals(socket.userId))
+              connectionMap[receiverId].emit("_messageIn", messageObject);
+          });
 
           db.collection("threads").updateOne(
             { _id: ObjectId(threadObject._id) },
