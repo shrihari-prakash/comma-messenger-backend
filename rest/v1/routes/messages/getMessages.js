@@ -175,7 +175,7 @@ async function getThreads(req, res) {
     if (parseInt(req.query.offset) === 0)
       tabUpdateQuery.$set = {
         "seen_status.$.last_read_message_id": ObjectId(
-          tabObject.messages[tabObject.messages.length]
+          tabObject.messages[tabObject.messages.length - 1]
         ),
       };
 
