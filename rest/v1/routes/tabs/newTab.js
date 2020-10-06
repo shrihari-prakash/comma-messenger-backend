@@ -98,6 +98,7 @@ async function createThread(req, res) {
       tab_name: tabDetails.tab_name,
       thread_id: ObjectId(tabDetails.thread_id),
       messages: [],
+      new_for: [],
       secured_for: [],
       date_created: new Date(),
       seen_status: [],
