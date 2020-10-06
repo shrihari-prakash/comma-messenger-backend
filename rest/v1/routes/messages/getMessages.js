@@ -100,7 +100,7 @@ async function getThreads(req, res) {
       return res.status(401).json(error);
     }
 
-    var tabObject = await db
+    /* var tabObject = await db
       .collection("tabs")
       .find({
         _id: ObjectId(req.query.tab_id),
@@ -121,6 +121,28 @@ async function getThreads(req, res) {
         thread_id: 0,
         date_created: 0,
       })
+      .toArray(); */
+
+    var tabObject = await db
+      .getCollection("tabs")
+      .aggregate([
+        { $match: { _id: ObjectId(req.query.tab_id) } },
+        {
+          $project: {
+            reverseMessages: {
+              $slice: [
+                { $reverseArray: "$messages" },
+                parseInt(req.query.offset),
+                parseInt(req.query.limit),
+              ],
+            },
+            _id: 0,
+            tab_name: 0,
+            thread_id: 0,
+            date_created: 0,
+          },
+        },
+      ])
       .toArray();
 
     if (!tabObject || !tabObject[0])
