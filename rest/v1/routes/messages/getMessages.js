@@ -100,6 +100,7 @@ async function getThreads(req, res) {
       return res.status(401).json(error);
     }
 
+    //Retrieve messages.
     var tabObject = await db
       .collection("tabs")
       .aggregate([
@@ -141,6 +142,8 @@ async function getThreads(req, res) {
     var isTabSecured = tabObject.secured_for.some(function (participantId) {
       return participantId.equals(loggedInUserId);
     });
+    
+    //If tab is protected, check for password.
     if (isTabSecured == true) {
       var userObject = await db
         .collection("users")
@@ -171,7 +174,7 @@ async function getThreads(req, res) {
         new_for: { $in: [ObjectId(loggedInUserId)] },
       },
     };
-    //If user is requesting the most recent set of messages.
+    //If user is requesting the most recent set of messages mark the mast message of tab as read.
     if (parseInt(req.query.offset) === 0)
       tabUpdateQuery.$set = {
         "seen_status.$.last_read_message_id": ObjectId(
