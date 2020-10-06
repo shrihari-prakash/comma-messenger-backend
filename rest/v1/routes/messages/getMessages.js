@@ -107,10 +107,13 @@ async function getThreads(req, res) {
       })
       .project({
         messages: {
+          $slice: [parseInt(req.query.offset), parseInt(req.query.limit)],
+        },
+        reverseMessages: {
           $slice: [
             { $reverseArray: "$messages" },
             parseInt(req.query.offset),
-            parseInt(req.query.limit), // I guess you want to fetch return latest n messages, where n is a limit from query
+            parseInt(req.query.limit),
           ],
         },
         _id: 0,
