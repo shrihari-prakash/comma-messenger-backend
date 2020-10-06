@@ -129,7 +129,7 @@ async function getThreads(req, res) {
         { $match: { _id: ObjectId(req.query.tab_id) } },
         {
           $project: {
-            reverseMessages: {
+            messages: {
               $slice: [
                 { $reverseArray: "$messages" },
                 parseInt(req.query.offset),
