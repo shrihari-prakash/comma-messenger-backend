@@ -136,10 +136,8 @@ async function getThreads(req, res) {
                 parseInt(req.query.limit),
               ],
             },
-            _id: 0,
-            tab_name: 0,
-            thread_id: 0,
-            date_created: 0,
+            _id: 1,
+            seen_status: 1,
           },
         },
       ])
