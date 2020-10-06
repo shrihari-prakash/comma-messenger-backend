@@ -131,10 +131,10 @@ async function getThreads(req, res) {
           $project: {
             messages: {
               $slice: [
-                { $reverseArray: "$messages" },
+                "$messages",
                 parseInt(req.query.offset),
-                parseInt(req.query.limit),
-              ],
+                parseInt(req.query.limit) * -1
+              ]
             },
             seen_status: 1,
             secured_for: 1,
