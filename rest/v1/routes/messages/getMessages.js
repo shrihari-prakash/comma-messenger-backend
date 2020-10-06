@@ -165,6 +165,37 @@ async function getThreads(req, res) {
 
     delete tabObject.secured_for;
 
+    //Remove new_for tag for current user when messages are read.
+    let tabUpdateQuery = {
+      $pull: {
+        new_for: { $in: [ObjectId(loggedInUserId)] },
+      },
+    };
+    //If user is requesting the most recent set of messages.
+    if (parseInt(req.query.offset) === 0)
+      tabUpdateQuery.$set = {
+        "seen_status.$.last_read_message_id": ObjectId(
+          tabObject.messages[tabObject.messages.length]
+        ),
+      };
+
+    await db.collection("tabs").updateOne({
+      _id: tabObject._id,
+      "seen_status.user_id": ObjectId(loggedInUserId),
+    });
+
+    //Remove new_for tag for current user when messages are read.
+    await db.collection("threads").updateOne(
+      {
+        _id: threadObject._id,
+      },
+      {
+        $pull: {
+          new_for: { $in: [ObjectId(loggedInUserId)] },
+        },
+      }
+    );
+
     return res.status(200).json({
       status: 200,
       message: "Messages Retrieved.",

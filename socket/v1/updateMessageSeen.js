@@ -85,7 +85,7 @@ module.exports = {
           }
 
           //Remove new_for tag for current user when messages are read.
-          var threadUpdateResult = await db.collection("tabs").updateOne(
+          var threadUpdateResult = await db.collection("threads").updateOne(
             {
               _id: ObjectId(seenStatus.thread_id),
             },
