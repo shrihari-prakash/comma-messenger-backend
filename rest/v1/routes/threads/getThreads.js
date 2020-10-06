@@ -95,6 +95,7 @@ async function getThreads(req, res) {
             { $skip: parseInt(req.query.offset) },
             { $limit: parseInt(req.query.limit) },
           ]) //Joining both 'users' and 'threads' collection since the thread list view usually requires the name of everyone who is involved in that thread.
+          .sort({ date_updated: -1 })
           .toArray(function (err, result) {
             if (err) {
               console.log(err);
