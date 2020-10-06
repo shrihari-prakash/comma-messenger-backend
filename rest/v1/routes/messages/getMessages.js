@@ -124,7 +124,7 @@ async function getThreads(req, res) {
       .toArray(); */
 
     var tabObject = await db
-      .getCollection("tabs")
+      .collection("tabs")
       .aggregate([
         { $match: { _id: ObjectId(req.query.tab_id) } },
         {
