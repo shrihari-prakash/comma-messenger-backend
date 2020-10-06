@@ -179,10 +179,13 @@ async function getThreads(req, res) {
         ),
       };
 
-    await db.collection("tabs").updateOne({
-      _id: tabObject._id,
-      "seen_status.user_id": ObjectId(loggedInUserId),
-    });
+    await db.collection("tabs").updateOne(
+      {
+        _id: tabObject._id,
+        "seen_status.user_id": ObjectId(loggedInUserId),
+      },
+      tabUpdateQuery
+    );
 
     //Remove new_for tag for current user when messages are read.
     await db.collection("threads").updateOne(
