@@ -5,7 +5,13 @@ const { ObjectId } = require("mongodb");
 const crypt = new cryptUtil.crypt();
 
 module.exports = {
-  updateMessageSeen: function (db, socket, connectionMap, seenStatus, userAuthResult) {
+  updateMessageSeen: function (
+    db,
+    socket,
+    connectionMap,
+    seenStatus,
+    userAuthResult
+  ) {
     return new Promise(async function (resolve, reject) {
       try {
         if (!seenStatus.last_read_message_id) {
@@ -56,6 +62,7 @@ module.exports = {
         }
 
         if (hasAccess) {
+          //Remove new_for tag for current user when messages are read.
           var tabUpdateResult = await db.collection("tabs").updateOne(
             {
               _id: ObjectId(seenStatus.tab_id),
@@ -67,10 +74,32 @@ module.exports = {
                   seenStatus.last_read_message_id
                 ),
               },
+              $pull: {
+                new_for: { $in: [ObjectId(userAuthResult)] },
+              },
             }
           );
 
           if (tabUpdateResult.result.ok != 1) {
+            return reject({ ok: 0, reason: "DATABASE_WRITE_ERROR" });
+          }
+
+          //Remove new_for tag for current user when messages are read.
+          var threadUpdateResult = await db.collection("tabs").updateOne(
+            {
+              _id: ObjectId(seenStatus.thread_id),
+            },
+            {
+              $pull: {
+                new_for: { $in: [ObjectId(userAuthResult)] },
+              },
+            }
+          );
+
+          if (
+            tabUpdateResult.result.ok != 1 ||
+            threadUpdateResult.result.ok != 1
+          ) {
             return reject({ ok: 0, reason: "DATABASE_WRITE_ERROR" });
           }
           resolve({ ok: 1 });
@@ -85,7 +114,6 @@ module.exports = {
             if (connectionMap[receiverId] && !receiverId.equals(socket.userId))
               connectionMap[receiverId].emit("_messageSeen", emitObject);
           });
-
         } else return reject({ ok: 0, reason: "NO_ACCESS" });
       } catch (e) {
         console.log(e);
