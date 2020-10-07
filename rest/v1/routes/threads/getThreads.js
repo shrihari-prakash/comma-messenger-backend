@@ -100,7 +100,7 @@ async function getThreads(req, res) {
             if (err) {
               console.log(err);
               let error = new errorModel.errorResponse(errors.internal_error);
-              return res.json(error);
+              return res.status(500).json(error);
             }
             if (!result) {
               return res.status(200).json({
@@ -120,7 +120,7 @@ async function getThreads(req, res) {
   } catch (e) {
     console.log(e);
     let error = new errorModel.errorResponse(errors.internal_error);
-    return res.json(error);
+    return res.status(500).json(error);
   }
 }
 

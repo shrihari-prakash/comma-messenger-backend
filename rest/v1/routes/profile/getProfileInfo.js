@@ -52,7 +52,7 @@ async function getThreads(req, res) {
     });
   } catch (e) {
     let error = new errorModel.errorResponse(errors.internal_error);
-    return res.json(error);
+    return res.status(500).json(error);
   }
 }
 

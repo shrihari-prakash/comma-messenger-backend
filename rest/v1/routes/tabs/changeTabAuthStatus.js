@@ -124,7 +124,7 @@ async function changeAuthStatus(req, res) {
 
     if (tabUpdateResult.result.ok != 1) {
       let error = new errorModel.errorResponse(errors.internal_error);
-      return res.json(error);
+      return res.status(500).json(error);
     }
 
     return res.status(200).json({
@@ -134,7 +134,7 @@ async function changeAuthStatus(req, res) {
   } catch (e) {
     console.log(e)
     let error = new errorModel.errorResponse(errors.internal_error);
-    return res.json(error);
+    return res.status(500).json(error);
   }
 }
 

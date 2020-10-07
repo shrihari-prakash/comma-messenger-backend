@@ -57,7 +57,7 @@ async function subscribeUser(req, res) {
   } catch (e) {
     console.log(e);
     let error = new errorModel.errorResponse(errors.internal_error);
-    return res.json(error);
+    return res.status(500).json(error);
   }
 }
 

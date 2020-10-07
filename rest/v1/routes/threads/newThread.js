@@ -38,10 +38,8 @@ async function createThread(req, res) {
 
   let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
   if (!loggedInUserId) {
-    let error = new errorModel.errorResponse(
-      errors.not_found.withDetails("No user exists for the session")
-    );
-    return res.status(404).json(error);
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
   }
 
   if (!req.query.email || !validateEmail(req.query.email)) {
@@ -78,7 +76,7 @@ async function createThread(req, res) {
 
         if (threadInsertResult.result.ok != 1) {
           let error = new errorModel.errorResponse(errors.internal_error);
-          return res.json(error);
+          return res.status(500).json(error);
         }
 
         let insertedThreadId = threadObject._id;
@@ -92,7 +90,7 @@ async function createThread(req, res) {
 
         if (userUpdateResult.result.ok != 1) {
           let error = new errorModel.errorResponse(errors.internal_error);
-          return res.json(error);
+          return res.status(500).json(error);
         }
 
         return res.status(200).json({
@@ -102,7 +100,7 @@ async function createThread(req, res) {
         });
       } catch (e) {
         let error = new errorModel.errorResponse(errors.internal_error);
-        return res.json(error);
+        return res.status(500).json(error);
       }
     }
   });
