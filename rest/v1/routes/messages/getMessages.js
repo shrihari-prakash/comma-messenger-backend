@@ -114,6 +114,7 @@ async function getThreads(req, res) {
                 parseInt(req.query.limit),
               ],
             },
+            total_messages: { $size: "$messages" },
             seen_status: 1,
             secured_for: 1,
           },
