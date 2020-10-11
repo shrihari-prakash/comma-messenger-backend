@@ -159,6 +159,7 @@ module.exports = {
               participant._id != ObjectId(userAuthResult)
             ) {
               participant.notification_subscriptions.forEach((subscription) => {
+                console.log(subscription)
                 push.sendNotification(
                   subscription,
                   JSON.stringify(notificationPayload)
