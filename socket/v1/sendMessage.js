@@ -161,7 +161,7 @@ module.exports = {
               participant.notification_subscriptions.forEach((subscription) => {
                 console.log(subscription)
                 push.sendNotification(
-                  subscription,
+                  subscription.subscription,
                   JSON.stringify(notificationPayload)
                 );
               });
