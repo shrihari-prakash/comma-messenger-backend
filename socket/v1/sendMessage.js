@@ -159,11 +159,15 @@ module.exports = {
               participant._id != ObjectId(userAuthResult)
             ) {
               participant.notification_subscriptions.forEach((subscription) => {
-                console.log(subscription)
-                push.sendNotification(
-                  subscription.subscription,
-                  JSON.stringify(notificationPayload)
-                );
+                console.log(subscription);
+                try {
+                  push.sendNotification(
+                    subscription.subscription,
+                    JSON.stringify(notificationPayload)
+                  );
+                } catch (e) {
+                  console.log("Push notification error:", e);
+                }
               });
             }
           });
