@@ -31,6 +31,17 @@ mongoConnector.connectToServer(function (err, client) {
 
 //we need to allow requests from outside our own domain.
 app.all("*", function (req, res, next) {
+  const allowedOrigins = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:5000",
+    "http://localhost:5000", //Development
+    process.env.CLIENT_URL, //Production
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.header("Access-Control-Allow-Origin", process.env.CLIENT_URL);
   res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -66,11 +77,13 @@ app.use((err, req, res, next) => {
   return next(err); // if it's not a 400, let the default error handling do it.
 });
 
-app.use(require('cookie-session')({
-  keys: [process.env.SESSION_SECRET],
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}));
+app.use(
+  require("cookie-session")({
+    keys: [process.env.SESSION_SECRET],
+    // Cookie Options
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  })
+);
 
 app.use(fileUpload());
 
@@ -78,7 +91,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 //Abstract express headers from end consumer.
-app.disable('x-powered-by');
+app.disable("x-powered-by");
 
 //API v1 routes.
 
@@ -86,7 +99,7 @@ app.use("/api/rest/v1", RESTv1);
 
 //404 routes.
 
-app.use(function(req, res) {
+app.use(function (req, res) {
   let error = new errorModel.errorResponse(
     errors.not_found.withDetails(
       "The API endpoint you tried to hit is invalid, please refer to the API documentation here: https://github.com/Shrihari-Prakash/comma-js/blob/master/backend/node/api/docs/api_docs.md"
