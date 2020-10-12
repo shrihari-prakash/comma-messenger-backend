@@ -154,9 +154,14 @@ module.exports = {
           };
 
           participants.forEach((participant) => {
+            console.log(
+              participant._id,
+              userAuthResult,
+              participant._id.equals(userAuthResult)
+            );
             if (
               participant.notification_subscriptions &&
-              participant._id != ObjectId(userAuthResult)
+              !participant._id.equals(userAuthResult)
             ) {
               participant.notification_subscriptions.forEach((subscription) => {
                 console.log(subscription);
