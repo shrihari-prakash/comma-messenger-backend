@@ -1,7 +1,11 @@
 var errors = {};
 var util = require("util");
 
-function ApiError(httpCode /* #Number */, httpMessage /* "String" */, description /* "String" */) {
+function ApiError(
+  httpCode /* #Number */,
+  httpMessage /* "String" */,
+  description /* "String" */
+) {
   this.httpCode = httpCode;
   this.httpMessage = httpMessage;
   this.description = description;
@@ -96,5 +100,10 @@ errors.could_not_get_access_token = new ApiError(
   403,
   "INVALID_OPERATION",
   "Error in getting access token from auth0"
+);
+errors.duplicate_entity = new ApiError(
+  400,
+  "DUPLICATE_ENTITY",
+  "The provided entity already exists."
 );
 errors.bad_request = new ApiError(403, "INVALID_OPERATION", "Bad Request");

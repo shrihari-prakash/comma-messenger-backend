@@ -61,6 +61,21 @@ async function createThread(req, res) {
       );
       return res.status(404).json(error);
     } else {
+      var existingThread = await db.collection("threads").findOne({
+        thread_participants: {
+          $all: [ObjectId(loggedInUserId), receiver._id],
+        },
+      });
+
+      if (existingThread) {
+        let error = new errorModel.errorResponse(
+          errors.duplicate_entity.withDetails(
+            "User has already started conversation with the given recepient."
+          )
+        );
+        return res.status(400).json(error);
+      }
+
       let threadObject = {
         thread_participants: [ObjectId(loggedInUserId), receiver._id],
         tabs: [],
