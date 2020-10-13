@@ -107,14 +107,6 @@ async function getThreads(req, res) {
         { $match: { _id: ObjectId(req.query.tab_id) } },
         {
           $project: {
-            messages: {
-              $slice: [
-                { $reverseArray: "$messages" },
-                parseInt(req.query.offset),
-                parseInt(req.query.limit),
-              ],
-            },
-            total_messages: { $size: "$messages" },
             seen_status: 1,
             secured_for: 1,
           },
@@ -122,21 +114,41 @@ async function getThreads(req, res) {
       ])
       .toArray();
 
-    if (!tabObject || !tabObject[0])
+    console.log(tabObject);
+    if (!tabObject || !tabObject[0]) {
+      let error = new errorModel.errorResponse(
+        errors.invalid_input.withDetails(
+          "No valid `tab_id` was sent along with the request."
+        )
+      );
+      return res.status(400).json(error);
+    }
+
+    tabObject = tabObject[0];
+
+    var dbMessages = await db
+      .collection("messages")
+      .aggregate([
+        { $match: { tab_id: ObjectId(req.query.tab_id) } },
+        { $sort: { date_created: -1 } },
+        { $skip: parseInt(req.query.offset) },
+        { $limit: parseInt(req.query.limit) },
+      ])
+      .toArray();
+
+    if (!dbMessages || !dbMessages[0])
       return res.status(200).json({
         status: 200,
         message: "No messages to retrieve.",
         result: [],
       });
 
-    tabObject = tabObject[0];
-
-    if (tabObject.messages)
+    if (dbMessages.length > 0)
       //After the tab is retrieved successfully, loop through the messages and decrypt everything to send to client.
-      tabObject.messages.forEach((messageObject, index) => {
+      dbMessages.forEach((messageObject, index) => {
         if (messageObject.content) {
           let decrypted = crypt.decrypt(messageObject.content);
-          tabObject.messages[index].content = decrypted;
+          dbMessages[index].content = decrypted;
         }
       });
 
@@ -178,11 +190,11 @@ async function getThreads(req, res) {
     //If user is requesting the most recent set of messages mark the mast message of tab as read.
     if (
       parseInt(req.query.offset) === 0 &&
-      tabObject.messages.length /*Make sure messages array is not empty.*/
+      dbMessages.length > 0 /*Make sure messages array is not empty.*/
     )
       tabUpdateQuery.$set = {
         "seen_status.$.last_read_message_id": ObjectId(
-          tabObject.messages[tabObject.messages.length - 1]._id
+          dbMessages[dbMessages.length - 1]._id
         ),
       };
 
@@ -209,7 +221,7 @@ async function getThreads(req, res) {
     return res.status(200).json({
       status: 200,
       message: "Messages Retrieved.",
-      result: tabObject,
+      result: dbMessages,
     });
   } catch (e) {
     console.log(e);

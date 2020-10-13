@@ -68,10 +68,10 @@ module.exports = {
             return reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
 
           let messageObject = {
-            _id: new ObjectId(),
             sender: ObjectId(socket.userId),
             type: message.type,
             date_created: new Date(),
+            tab_id: ObjectId(message.tab_id),
           };
 
           switch (message.type) {
@@ -109,15 +109,13 @@ module.exports = {
             if (!receiverId.equals(socket.userId)) newForArray.push(receiverId);
           });
 
-          var tabUpdateResult = await db.collection("tabs").updateOne(
-            { _id: ObjectId(message.tab_id) },
-            {
-              $push: { messages: messageObject },
-              $addToSet: { new_for: { $each: newForArray } },
-            }
-          );
+          var messagesInsertResult = await db
+            .collection("messages")
+            .insertOne(messageObject, {
+              w: 1,
+            });
 
-          if (tabUpdateResult.result.ok != 1) {
+          if (messagesInsertResult.result.ok != 1) {
             return reject({ ok: 0, reason: "DATABASE_WRITE_ERROR" });
           }
 

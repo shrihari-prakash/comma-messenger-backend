@@ -35,9 +35,9 @@ it("Create thread with invalid API key", function (done) {
     .query({ email: common.user2.email })
     .set("Authorization", `Bearer SOME_API_KEY`)
     .end((err, res) => {
-      expect(res).to.have.status(404);
+      expect(res).to.have.status(403);
       res.body.should.be.a("object");
-      res.body.error.should.be.eql("NOT_FOUND");
+      res.body.error.should.be.eql("INVALID_API_KEY");
       done();
     });
 });
