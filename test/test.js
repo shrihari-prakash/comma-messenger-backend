@@ -71,6 +71,6 @@ describe("Chat Events", function () {
     //Restore logs.
     console.log = log;
     console.log("Test suite execution complete.");
-    /* testUtils.truncateDatabase(); */
+    testUtils.truncateDatabase();
   });
 });

@@ -116,7 +116,13 @@ const socketHandler = (io) => {
           "is trying to update read status."
         );
         updateMessageSeen
-          .updateMessageSeen(db, socket, connectionMap, seenStatus, userAuthResult.data)
+          .updateMessageSeen(
+            db,
+            socket,
+            connectionMap,
+            seenStatus,
+            userAuthResult.data
+          )
           .then((result) => {
             if (result.ok === 1) {
               socket.emit("_success", {
@@ -167,4 +173,4 @@ async function verifyUser(authToken) {
   return { ok: 1, data: loggedInUserId };
 }
 
-module.exports = socketHandler;
+module.exports = { socketHandler: socketHandler, connectionMap: connectionMap };
