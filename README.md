@@ -1,3 +1,6 @@
+**Frontend Repo:**
+**[comma-js-frontend](https://github.com/ronaldlanton/comma-js-frontend)**
+
 # comma-js-server
 ![Comma JS Logo](/branding-assets/logo.png)
 
@@ -63,6 +66,3 @@ The REST and Socket API documentation can be found **[HERE](docs/api_docs.md)**
 **Samples:**
 * Sample frontend implementations for important pieces of backend can be found in the `demos` folder.
 * Run the demo files on `live server` exstension for VS Code or any other server that runs on port 5501.
-
-**Frontend:**
-**[comma-js-frontend](https://github.com/ronaldlanton/comma-js-frontend)**
