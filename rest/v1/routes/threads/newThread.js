@@ -108,20 +108,22 @@ async function createThread(req, res) {
           return res.status(500).json(error);
         }
 
-        getThreadInfo(threadObject._id, db).then(
-          (threadObjectWithUserDetails) => {
-            //Send newly created thread to other member if they are online.
-            let connectionMap = req.app.get("connectionMap");
-            if (
-              connectionMap[receiver._id] &&
-              !receiver._id.equals(loggedInUserId)
-            )
-              connectionMap[receiver._id].emit(
-                "_newThread",
-                threadObjectWithUserDetails
-              );
-          }
+        //No need to check for null or false because this user is guaranteed to exist since he is the once logged in.
+        let sender = await userManager.getUserById(
+          db,
+          ObjectId(loggedInUserId)
         );
+
+        deleteSensitiveData(sender);
+        deleteSensitiveData(receiver);
+
+        threadObject.thread_participants[0] = sender;
+        threadObject.thread_participants[1] = receiver;
+
+        //Send newly created thread to other member if they are online.
+        let connectionMap = req.app.get("connectionMap");
+        if (connectionMap[receiver._id] && !receiver._id.equals(loggedInUserId))
+          connectionMap[receiver._id].emit("_newThread", threadObject);
 
         return res.status(200).json({
           status: 200,
@@ -142,51 +144,11 @@ function validateEmail(email) {
   return re.test(String(email).toLowerCase());
 }
 
-async function getThreadInfo(threadId, db) {
-  try {
-    let threadObject = await db
-      .collection("threads")
-      .aggregate([
-        {
-          $match: {
-            _id: threadId,
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            let: {
-              participants: "$thread_participants",
-            },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $in: ["$_id", "$$participants"],
-                  },
-                },
-              },
-              {
-                $project: {
-                  _id: 1,
-                  email: 1,
-                  name: 1,
-                  display_picture: 1,
-                },
-              },
-            ],
-            as: "thread_participants",
-          },
-        },
-        { $limit: 1 },
-      ])
-      .toArray(); //Joining both 'users' and 'threads' collection since the thread list view usually requires the name of everyone who is involved in that thread.
-    if (threadObject.length > 0) return threadObject[0];
-    else return null;
-  } catch (e) {
-    console.log(e);
-    return null;
-  }
+function deleteSensitiveData(user) {
+  delete user.tab_password;
+  delete user.master_password;
+  delete user.threads;
+  return true;
 }
 
 module.exports = router;

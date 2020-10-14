@@ -13,6 +13,20 @@ function userManager() {
       });
     });
   };
+  this.getUserById = function (db, id /* :ObjectId */) {
+    return new Promise((resolve, reject) => {
+      db.collection("users").findOne({ _id: id }, function (err, user) {
+        if (err) reject(err);
+        else {
+          if (!user) {
+            resolve(false);
+          } else {
+            resolve(user);
+          }
+        }
+      });
+    });
+  };
 }
 
 module.exports = new userManager();
