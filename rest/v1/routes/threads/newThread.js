@@ -128,7 +128,7 @@ async function createThread(req, res) {
         return res.status(200).json({
           status: 200,
           message: "Thread created.",
-          thread_id: insertedThreadId,
+          result: threadObject,
         });
       } catch (e) {
         console.log(e);

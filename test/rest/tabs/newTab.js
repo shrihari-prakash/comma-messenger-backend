@@ -27,12 +27,9 @@ it("Create tab with valid thread id and authentication", function (done) {
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
-      res.body.should.have.property("tab_id").which.is.an("string");
-      res.body.tab_id.length.should.be.eql(
-        parseInt(process.env.MONGO_OBJECT_ID_LENGTH)
-      );
+      res.body.should.have.property("result").which.is.an("object");
 
-      common.objectIds.tabIds.withAuthentication = res.body.tab_id;
+      common.objectIds.tabIds.withAuthentication = res.body.result._id;
       done();
     });
 });
@@ -49,12 +46,9 @@ it("Create tab with valid thread id and no authentication", function (done) {
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
-      res.body.should.have.property("tab_id").which.is.an("string");
-      res.body.tab_id.length.should.be.eql(
-        parseInt(process.env.MONGO_OBJECT_ID_LENGTH)
-      );
+      res.body.should.have.property("result").which.is.an("object");
 
-      common.objectIds.tabIds.withoutAuthentication = res.body.tab_id;
+      common.objectIds.tabIds.withoutAuthentication = res.body.result._id;
       done();
     });
 });

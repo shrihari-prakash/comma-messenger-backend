@@ -17,13 +17,9 @@ it("Create thread with valid email id", function (done) {
     .query({ email: common.user2.email })
     .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .end((err, res) => {
-      expect(res).to.have.status(200);
       res.body.should.be.a("object");
-      res.body.should.have.property("thread_id").which.is.an("string");
-      res.body.thread_id.length.should.be.eql(
-        parseInt(process.env.MONGO_OBJECT_ID_LENGTH)
-      ); //24 is the MongoDB object id length.
-      common.objectIds.threadId = res.body.thread_id;
+      res.body.should.have.property("result").which.is.an("object");
+      common.objectIds.threadId = res.body.result._id;
       done();
     });
 });

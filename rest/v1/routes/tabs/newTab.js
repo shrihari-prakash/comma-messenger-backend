@@ -142,7 +142,7 @@ async function createThread(req, res) {
     return res.status(200).json({
       status: 200,
       message: "Tab created.",
-      tab_id: insertedTabId,
+      result: tabObject
     });
   } catch (e) {
     console.log(e);
