@@ -56,6 +56,10 @@ const socketHandler = (io) => {
         });
       } else {
         console.log("Unauthenticated user.");
+        socket.emit("_connect", {
+          ok: 0,
+          reason: "INVALID_USER",
+        });
         socket.disconnect();
         socket.conn.close();
       }
