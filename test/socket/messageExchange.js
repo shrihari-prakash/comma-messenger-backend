@@ -44,7 +44,7 @@ it("Connect to message exchange, send a text, receive it on the other side and u
       expect(msg.tab_id).to.equal(common.objectIds.tabIds.withAuthentication);
 
       const seenObject = {
-        token: "Bearer " + common.user1.apiToken,
+        token: "Bearer " + common.user2.apiToken,
         user_id: common.user2._id,
         tab_id: msg.tab_id,
         last_read_message_id: msg._id,

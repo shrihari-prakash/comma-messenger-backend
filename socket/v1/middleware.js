@@ -113,7 +113,7 @@ const socketHandler = (io) => {
       }
     });
 
-    socket.on("_updateMessageSeen", async (seenStatus) => {
+    socket.on("_updateMessageSeen", async (seenStatus) => { 
       let userAuthResult = await verifyUser(
         seenStatus.token,
         seenStatus.user_id
@@ -183,6 +183,7 @@ async function verifyUser(authToken, userId) {
     authToken,
     cacheManager
   );
+  console.log(loggedInUserId)
   if (!loggedInUserId) return { ok: 0, reason: "INVALID_API_KEY" };
 
   return { ok: 1, data: loggedInUserId };

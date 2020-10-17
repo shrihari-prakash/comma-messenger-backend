@@ -26,14 +26,17 @@ function tokenManager() {
         result
       ) {
         if (err) reject(err);
-        cacheManager.putUserToken(insertToken + ":" + tokenObject._id, userId);
+
+        cacheManager.putUserToken(
+          userId,
+          insertToken + ":" + tokenObject._id.toString() //Cache token format - token:token_id
+        );
         resolve(insertToken);
       });
     });
   };
 
   this.verify = async (db, userId, token, cacheManager) => {
-    console.log(userId, token);
     return new Promise(async (resolve, reject) => {
       let now = new Date();
       let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
@@ -47,11 +50,11 @@ function tokenManager() {
         );
         //If the token validation is success, we bump up the token expiry time to one more day so that the user stays logged in.
         db.collection("tokens").updateOne(
-          { _id: cacheToken.split(":")[1] }, //Cache token format - token:token_id
+          { _id: ObjectId(cacheToken.split(":")[1]) }, //Cache token format - token:token_id
           { $set: { date_expiry: tomorrow } }
         );
 
-        return resolve(true);
+        return resolve(userId);
       } else {
         if (ObjectId.isValid(userId) === false) return resolve(false);
 
@@ -67,15 +70,15 @@ function tokenManager() {
 
         //Because an user might have multiple sessions active in multiple devices.
         let tokenObject;
-        try {
-          tokenObject = tokenObjects.find((tokenObj) => {
-            console.log("Token Object:", tokenObj);
-            return crypt.decrypt(tokenObj.token.slice(3)); //Remove 'CM_' before decrypting.
-          });
-        } catch (e) {
-          console.log(e);
-          return resolve(false);
-        }
+
+        tokenObject = tokenObjects.find((tokenObj) => {
+          try {
+            return token === crypt.decrypt(tokenObj.token.slice(3)); //Remove 'CM_' before decrypting.
+          } catch (e) {
+            console.log(e);
+            return false;
+          }
+        });
 
         if (!tokenObject) return resolve(false);
 
@@ -94,8 +97,8 @@ function tokenManager() {
             "'s token has been verified from database."
         );
         cacheManager.putUserToken(
-          token + ":" + tokenObject._id,
-          tokenObject.user_id.toString()
+          tokenObject.user_id.toString(),
+          token + ":" + tokenObject._id.toString()
         );
         resolve(tokenObject.user_id.toString());
       }
