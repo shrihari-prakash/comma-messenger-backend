@@ -77,6 +77,8 @@ function tokenManager() {
           return resolve(false);
         }
 
+        console.log(tokenObject);
+
         if (!tokenObject) return resolve(false);
 
         if (tokenObject.date_expiry < new Date()) return resolve(false);
