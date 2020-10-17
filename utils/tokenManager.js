@@ -53,6 +53,8 @@ function tokenManager() {
 
         return resolve(true);
       } else {
+        if (ObjectId.isValid("userId") === false) return resolve(false);
+
         let tokenObjects = await db
           .collection("tokens")
           .find({ user_id: ObjectId(userId) })
@@ -64,10 +66,16 @@ function tokenManager() {
         }
 
         //Because an user might have multiple sessions active in multiple devices.
-        let tokenObject = tokenObjects.find((tokenObj) => {
-          console.log("Token Object:", tokenObj);
-          return crypt.decrypt(tokenObj.token.slice(3)); //Remove 'CM_' before decrypting.
-        });
+        let tokenObject;
+        try {
+          tokenObject = tokenObjects.find((tokenObj) => {
+            console.log("Token Object:", tokenObj);
+            return crypt.decrypt(tokenObj.token.slice(3)); //Remove 'CM_' before decrypting.
+          });
+        } catch (e) {
+          console.log(e);
+          return resolve(false);
+        }
 
         if (!tokenObject) return resolve(false);
 
