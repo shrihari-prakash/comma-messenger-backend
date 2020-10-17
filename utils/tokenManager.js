@@ -65,6 +65,7 @@ function tokenManager() {
 
         //Because an user might have multiple sessions active in multiple devices.
         let tokenObject = tokenObjects.find((tokenObj) => {
+          console.log("Token Object:", tokenObj);
           return crypt.decrypt(tokenObj.token.slice(3)); //Remove 'CM_' before decrypting.
         });
 
