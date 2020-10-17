@@ -13,16 +13,16 @@ function cacheManager() {
     }
   };
 
-  this.putUserToken = (token, userId) => {
-    userTokenCache.put(token, userId, 21600000, function (key, value) {
+  this.putUserToken = (userId, token) => {
+    userTokenCache.put(userId, token, 21600000, function (key, value) {
       console.log("Cache data `" + key + " : " + value + "` has expired.");
     }); //Expiry time in ms
     return true;
   };
 
-  this.getUserIdFromToken = (token) => {
-    let userId = userTokenCache.get(token);
-    return userId;
+  this.getTokenFromUserId = (userId) => {
+    let token = userTokenCache.get(userId);
+    return token;
   };
 }
 

@@ -16,6 +16,7 @@ it("Get all threads of current user.", function (done) {
     .get(endPoint)
     .query({ limit: 100, offset: 0 })
     .set("Authorization", `Bearer ${common.user1.apiToken}`)
+    .set("x-cm-user-id", common.user1._id)
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
@@ -87,6 +88,7 @@ it("Get threads without limit.", function (done) {
     .get(endPoint)
     .query({ offset: 0 })
     .set("Authorization", `Bearer ${common.user1.apiToken}`)
+    .set("x-cm-user-id", common.user1._id)
     .end((err, res) => {
       expect(res).to.have.status(400);
       res.body.should.be.a("object");
@@ -101,6 +103,7 @@ it("Get threads without offset.", function (done) {
     .get(endPoint)
     .query({ limit: 100 })
     .set("Authorization", `Bearer ${common.user1.apiToken}`)
+    .set("x-cm-user-id", common.user1._id)
     .end((err, res) => {
       expect(res).to.have.status(400);
       res.body.should.be.a("object");

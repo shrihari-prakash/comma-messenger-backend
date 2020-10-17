@@ -16,6 +16,7 @@ it("Create thread with valid email id", function (done) {
     .get(endPoint)
     .query({ email: common.user2.email })
     .set("Authorization", `Bearer ${common.user1.apiToken}`)
+    .set("x-cm-user-id", common.user1._id)
     .end((err, res) => {
       res.body.should.be.a("object");
       res.body.should.have.property("result").which.is.an("object");
@@ -44,6 +45,7 @@ it("Create thread with non-existant email id", function (done) {
     .get(endPoint)
     .query({ email: "johndoe@example.com" })
     .set("Authorization", `Bearer ${common.user1.apiToken}`)
+    .set("x-cm-user-id", common.user1._id)
     .end((err, res) => {
       expect(res).to.have.status(404);
       res.body.should.be.a("object");
@@ -57,6 +59,7 @@ it("Create thread without sending an email id", function (done) {
     .request(server)
     .get(endPoint)
     .set("Authorization", `Bearer ${common.user1.apiToken}`)
+    .set("x-cm-user-id", common.user1._id)
     .end((err, res) => {
       expect(res).to.have.status(400);
       res.body.should.be.a("object");

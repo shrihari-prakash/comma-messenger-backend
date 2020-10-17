@@ -29,11 +29,23 @@ async function getThreads(req, res) {
     return res.status(403).json(error);
   }
 
+  let headerUserId = req.header("x-cm-user-id");
+
+  if (!headerUserId) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
+
   let cacheManager = req.app.get("cacheManager");
 
   let db = req.app.get("mongoInstance");
 
-  let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
+  let loggedInUserId = await tokenManager.verify(
+    db,
+    headerUserId,
+    authToken,
+    cacheManager
+  );
 
   if (!loggedInUserId) {
     let error = new errorModel.errorResponse(errors.invalid_key);
@@ -42,9 +54,14 @@ async function getThreads(req, res) {
   //End of input validation.
 
   try {
-    var userObject = await db.collection("users").findOne({
-      _id: ObjectId(loggedInUserId),
-    }, { projection: { _id: 0, threads: 0, master_password: 0, tab_password: 0 } });
+    var userObject = await db.collection("users").findOne(
+      {
+        _id: ObjectId(loggedInUserId),
+      },
+      {
+        projection: { _id: 0, threads: 0, master_password: 0, tab_password: 0 },
+      }
+    );
     return res.status(200).json({
       status: 200,
       message: "User Profile Retrieved.",

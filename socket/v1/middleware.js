@@ -44,7 +44,10 @@ var connectionMap = {};
 const socketHandler = (io) => {
   io.on("connection", (socket) => {
     socket.on("_connect", async (initObject) => {
-      let userAuthResult = await verifyUser(initObject.token);
+      let userAuthResult = await verifyUser(
+        initObject.token,
+        initObject.user_id
+      );
 
       if (userAuthResult.ok != 0) {
         console.log("User", userAuthResult.data, "is online.");
@@ -66,7 +69,7 @@ const socketHandler = (io) => {
     });
 
     socket.on("_messageOut", async (message) => {
-      let userAuthResult = await verifyUser(message.token, socket);
+      let userAuthResult = await verifyUser(message.token, message.user_id);
       let messageId = message.id;
 
       if (userAuthResult.ok != 0) {
@@ -111,7 +114,10 @@ const socketHandler = (io) => {
     });
 
     socket.on("_updateMessageSeen", async (seenStatus) => {
-      let userAuthResult = await verifyUser(seenStatus.token);
+      let userAuthResult = await verifyUser(
+        seenStatus.token,
+        seenStatus.user_id
+      );
 
       if (userAuthResult.ok != 0) {
         console.log(
@@ -166,12 +172,17 @@ const socketHandler = (io) => {
   });
 };
 
-async function verifyUser(authToken) {
+async function verifyUser(authToken, userId) {
   if (!authToken) return { ok: 0, reason: "INVALID_API_KEY" };
 
   authToken = authToken.slice(7, authToken.length).trimLeft();
 
-  let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
+  let loggedInUserId = await tokenManager.verify(
+    db,
+    userId,
+    authToken,
+    cacheManager
+  );
   if (!loggedInUserId) return { ok: 0, reason: "INVALID_API_KEY" };
 
   return { ok: 1, data: loggedInUserId };

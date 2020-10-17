@@ -11,17 +11,19 @@ var objectIds = {
 };
 
 var user1 = {
+  _id: null,
   apiToken: null,
   email: null,
   password: null,
-  socketConnection: null
-}
+  socketConnection: null,
+};
 
 var user2 = {
+  _id: null,
   apiToken: null,
   email: null,
-  socketConnection: null
-}
+  socketConnection: null,
+};
 
 exports.server = server;
 exports.chai = chai;

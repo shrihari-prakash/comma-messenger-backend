@@ -32,11 +32,24 @@ async function createThread(req, res) {
     return res.status(403).json(error);
   }
 
+  let headerUserId = req.header("x-cm-user-id");
+
+  if (!headerUserId) {
+    let error = new errorModel.errorResponse(errors.invalid_key);
+    return res.status(403).json(error);
+  }
+
   let cacheManager = req.app.get("cacheManager");
 
   let db = req.app.get("mongoInstance");
 
-  let loggedInUserId = await tokenManager.verify(db, authToken, cacheManager);
+  let loggedInUserId = await tokenManager.verify(
+    db,
+    headerUserId,
+    authToken,
+    cacheManager
+  );
+
   if (!loggedInUserId) {
     let error = new errorModel.errorResponse(errors.invalid_key);
     return res.status(403).json(error);

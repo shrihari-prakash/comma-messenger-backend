@@ -20,6 +20,7 @@ it("Rename a secured tab with valid password", function (done) {
       password: "1234",
     })
     .set("Authorization", `Bearer ${common.user1.apiToken}`)
+    .set("x-cm-user-id", common.user1._id)
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
