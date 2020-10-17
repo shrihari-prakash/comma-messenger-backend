@@ -53,7 +53,7 @@ function tokenManager() {
 
         return resolve(true);
       } else {
-        if (ObjectId.isValid("userId") === false) return resolve(false);
+        if (ObjectId.isValid(userId) === false) return resolve(false);
 
         let tokenObjects = await db
           .collection("tokens")
@@ -76,8 +76,6 @@ function tokenManager() {
           console.log(e);
           return resolve(false);
         }
-
-        console.log(tokenObject);
 
         if (!tokenObject) return resolve(false);
 
