@@ -147,6 +147,7 @@ module.exports = {
             payload: {
               tab_name: tabObject.tab_name,
               type: message.type,
+              sender: socket.userId,
               content: messageObject.content || "Sent an image",
               icon: userObject.display_picture,
             },
