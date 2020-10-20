@@ -142,13 +142,14 @@ module.exports = {
             .collection("users")
             .find({ _id: { $in: threadObject.thread_participants } });
 
-          let notificationPayload = {
-            title: "New Message on " + tabObject.tab_name,
-            description:
-              userObject.name.givenName +
-              ": " +
-              (messageObject.content || "Sent an image"),
-            icon: userObject.display_picture,
+          let notificationObject = {
+            event: "message_in",
+            payload: {
+              tab_name: tabObject.tab_name,
+              type: message.type,
+              content: messageObject.content || "Sent an image",
+              icon: userObject.display_picture,
+            },
           };
 
           participants.forEach((participant) => {
@@ -166,7 +167,7 @@ module.exports = {
                 try {
                   push.sendNotification(
                     subscription.subscription,
-                    JSON.stringify(notificationPayload)
+                    JSON.stringify(notificationObject)
                   );
                 } catch (e) {
                   console.log("Push notification error:", e);
