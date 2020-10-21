@@ -10,7 +10,7 @@ Open source messenger based on Express, MongoDB and Socket.IO
 
 **Ok it's not that, so how does it standout?**
 * Integrated Google Single Sign On for one-click user creation and login.💻
-* Mini-Conversations inside threads - This means users have the ability have sub conversations inside threads. Think of a conversation like a browser window with multiple tabs open! 💭
+* Splits - This means users have the ability have sub conversations inside threads. Think of a conversation like a browser window with multiple tabs open! 💭
 * Lock parts of conversations instead of locking the whole application! Each tab in a thread are renamable and password-protectable! 🔐
 * Notifications support. 🔔
 
