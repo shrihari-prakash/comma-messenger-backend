@@ -8,6 +8,7 @@ const messagesMiddleware = require("./routes/messages/messagesMiddleware");
 const profileMiddleware = require("./routes/profile/profileMiddleware");
 const filesMiddleware = require("./routes/files/filesMiddleware");
 const notificationsMiddleware = require("./routes/notifications/notificationsMiddleware");
+const spotifyMiddleware = require("./routes/spotify/spotifyMiddleware");
 
 /* Here's how it works: Each user is a part of multiple threads which have different people. Once the user goes into a thread,
 it has different tabs just like a browser window, each tab can contain messages on different topics. */
@@ -32,5 +33,7 @@ router.use("/profile", profileMiddleware);
 router.use("/files", filesMiddleware);
 
 router.use("/notifications", notificationsMiddleware);
+
+router.use("/spotify", spotifyMiddleware);
 
 module.exports = router;
