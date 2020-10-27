@@ -13,6 +13,7 @@ Open source messenger based on Express, MongoDB and Socket.IO
 * Splits - This means users have the ability have sub conversations inside threads. Think of a conversation like a browser window with multiple tabs open! 💭
 * Lock parts of conversations instead of locking the whole application! Each tab in a thread are renamable and password-protectable! 🔐
 * Notifications support. 🔔
+* Spotify integration to preview song links send in chat. 🎧
 
 **How to Run?**
 
