@@ -75,7 +75,7 @@ MONGO_OBJECT_ID_LENGTH=24
    let vapidKeys = push.generateVAPIDKeys();
    console.log(vapidKeys);
    ```
-4. Spotify: Instructions here: https://developer.spotify.com/documentation/general/guides/app-settings/
+4. **Spotify:** Instructions here: https://developer.spotify.com/documentation/general/guides/app-settings/
 
 **API Documentation:**
 
