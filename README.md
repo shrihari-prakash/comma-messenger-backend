@@ -66,9 +66,9 @@ MONGO_OBJECT_ID_LENGTH=24
 
 **Where to get the env variables?**
 
-1. Google App credentials: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_APPLICATION_CREDENTIALS` can be acquired from https://console.developers.google.com/, `GOOGLE_BUCKET_NAME` can be acquired by creating a new bucket on https://console.firebase.google.com/
-2. Encryption: `CRYPT_KEY` and `CRYPT_IV` can be acquired by running `preReq-CryptKeygen.js` in the root of the project.
-3. vapidKeys: The following snippet can be used to generate `vapidKeys`:
+1. **Google App credentials:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_APPLICATION_CREDENTIALS` can be acquired from https://console.developers.google.com/, `GOOGLE_BUCKET_NAME` can be acquired by creating a new bucket on https://console.firebase.google.com/
+2. **Encryption:** `CRYPT_KEY` and `CRYPT_IV` can be acquired by running `preReq-CryptKeygen.js` in the root of the project.
+3. **vapidKeys:** The following snippet can be used to generate `vapidKeys`:
    ```
    const push = require("web-push");
    
