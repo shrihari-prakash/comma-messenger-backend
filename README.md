@@ -1,7 +1,7 @@
 **Frontend Repo:**
 **[comma-js-frontend](https://github.com/ronaldlanton/comma-js-frontend)**
 
-# comma-js-server
+# Comma Messenger (Server)
 ![Comma JS Logo](/branding-assets/logo.png)
 
 Open source messenger based on Express, MongoDB and Socket.IO
