@@ -14,7 +14,10 @@ module.exports = {
   ) {
     return new Promise(async function (resolve, reject) {
       try {
-        if (!seenStatus.last_read_message_id) {
+        if (!seenStatus.payload)
+          return reject({ ok: 0, reason: "EMPTY_PAYLOAD" });
+
+        if (!seenStatus.payload.last_read_message_id) {
           reject({ ok: 0, reason: "LAST_READ_MESSAGE_NOT_MARKED" });
         }
         var userObject = await db
@@ -29,7 +32,7 @@ module.exports = {
 
         var threadObject = await db
           .collection("threads")
-          .findOne({ tabs: { $in: [ObjectId(seenStatus.tab_id)] } });
+          .findOne({ tabs: { $in: [ObjectId(seenStatus.payload.tab_id)] } });
 
         //Make sure some random user is not trying to update seen status on a thread to which he doesn't even belong.
         var hasAccess = threadObject.thread_participants.some(function (
@@ -40,19 +43,19 @@ module.exports = {
 
         var tabObject = await db
           .collection("tabs")
-          .findOne({ _id: ObjectId(seenStatus.tab_id) });
+          .findOne({ _id: ObjectId(seenStatus.payload.tab_id) });
 
         var isTabSecured = tabObject.secured_for.some(function (participantId) {
           return participantId.equals(socket.userId);
         });
         if (isTabSecured == true) {
           if (dbPassword != null) {
-            if (!seenStatus.password) {
+            if (!seenStatus.payload.password) {
               return reject({ ok: 0, reason: "INVALID_PASSWORD" });
             }
 
             let passwordVerified = bcrypt.compareSync(
-              seenStatus.password,
+              seenStatus.payload.password,
               dbPassword
             );
             if (passwordVerified !== true) {
@@ -65,13 +68,13 @@ module.exports = {
           //Remove new_for tag for current user when messages are read.
           var tabUpdateResult = await db.collection("tabs").updateOne(
             {
-              _id: ObjectId(seenStatus.tab_id),
+              _id: ObjectId(seenStatus.payload.tab_id),
               "seen_status.user_id": ObjectId(userAuthResult),
             },
             {
               $set: {
                 "seen_status.$.last_read_message_id": ObjectId(
-                  seenStatus.last_read_message_id
+                  seenStatus.payload.last_read_message_id
                 ),
               },
               $pull: {
@@ -87,7 +90,7 @@ module.exports = {
           //Remove new_for tag for current user when messages are read.
           var threadUpdateResult = await db.collection("threads").updateOne(
             {
-              _id: ObjectId(seenStatus.thread_id),
+              _id: ObjectId(seenStatus.payload.thread_id),
             },
             {
               $pull: {
@@ -105,9 +108,9 @@ module.exports = {
           resolve({ ok: 1 });
 
           emitObject = {
-            tab_id: seenStatus.tab_id,
+            tab_id: seenStatus.payload.tab_id,
             thread_id: threadObject._id,
-            last_read_message_id: seenStatus.last_read_message_id,
+            last_read_message_id: seenStatus.payload.last_read_message_id,
           };
 
           threadObject.thread_participants.forEach((receiverId) => {

@@ -17,6 +17,8 @@ module.exports = {
     return new Promise(async function (resolve, reject) {
       var isHardFail = true;
       try {
+        if (!message.payload) return reject({ ok: 0, reason: "EMPTY_PAYLOAD" });
+
         var userObject = await db
           .collection("users")
           .findOne({ _id: ObjectId(userAuthResult) });
@@ -31,7 +33,7 @@ module.exports = {
 
         var threadObject = await db
           .collection("threads")
-          .findOne({ tabs: { $in: [ObjectId(message.tab_id)] } });
+          .findOne({ tabs: { $in: [ObjectId(message.payload.tab_id)] } });
 
         //Make sure some random user is not sending messages to a thread to which he doesn't even belong.
         var hasAccess = threadObject.thread_participants.some(function (
@@ -42,19 +44,19 @@ module.exports = {
 
         var tabObject = await db
           .collection("tabs")
-          .findOne({ _id: ObjectId(message.tab_id) });
+          .findOne({ _id: ObjectId(message.payload.tab_id) });
 
         var isTabSecured = tabObject.secured_for.some(function (participantId) {
           return participantId.equals(socket.userId);
         });
         if (isTabSecured == true) {
           if (dbPassword != null) {
-            if (!message.password) {
+            if (!message.payload.password) {
               return reject({ ok: 0, reason: "INVALID_PASSWORD" });
             }
 
             let passwordVerified = bcrypt.compareSync(
-              message.password,
+              message.payload.password,
               dbPassword
             );
             if (passwordVerified !== true) {
@@ -64,27 +66,27 @@ module.exports = {
         }
 
         if (hasAccess) {
-          if (!["text", "image"].includes(message.type))
+          if (!["text", "image"].includes(message.payload.type))
             return reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
 
           let messageObject = {
             sender: ObjectId(socket.userId),
-            type: message.type,
+            type: message.payload.type,
             date_created: new Date(),
-            tab_id: ObjectId(message.tab_id),
+            tab_id: ObjectId(message.payload.tab_id),
           };
 
-          switch (message.type) {
+          switch (message.payload.type) {
             case "text":
-              if (!message.content)
+              if (!message.payload.content)
                 return reject({ ok: 0, reason: "EMPTY_MESSAGE_CONTENT" });
-              messageObject.content = crypt.encrypt(message.content);
+              messageObject.content = crypt.encrypt(message.payload.content);
               break;
 
             case "image":
-              if (!message.file_name)
+              if (!message.payload.file_name)
                 return reject({ ok: 0, reason: "EMPTY_FILE_NAME" });
-              messageObject.file_name = message.file_name;
+              messageObject.file_name = message.payload.file_name;
               break;
 
             default:
@@ -124,8 +126,8 @@ module.exports = {
           //From this point, any failure doesn't really count as a message not sent since the message is written to the Database and
           //the user is guaranteed to recieve that message when getMessages API is hit.
           messageObject.thread_id = threadObject._id;
-          messageObject.tab_id = message.tab_id;
-          messageObject.content = message.content;
+          messageObject.tab_id = message.payload.tab_id;
+          messageObject.content = message.payload.content;
 
           threadObject.thread_participants.forEach((receiverId) => {
             if (connectionMap[receiverId] && !receiverId.equals(socket.userId))
@@ -146,7 +148,7 @@ module.exports = {
             event: "message_in",
             payload: {
               tab_name: tabObject.tab_name,
-              type: message.type,
+              type: message.payload.type,
               sender: socket.userId,
               content: messageObject.content || "Sent an image",
               icon: userObject.display_picture,

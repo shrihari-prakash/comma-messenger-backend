@@ -44,9 +44,15 @@ var connectionMap = {};
 const socketHandler = (io) => {
   io.on("connection", (socket) => {
     socket.on("_connect", async (initObject) => {
+      if (checkHeaders(initObject) === false)
+        return socket.emit("_connect", {
+          ok: 0,
+          reason: "INVALID_USER",
+        });
+
       let userAuthResult = await verifyUser(
-        initObject.token,
-        initObject.user_id
+        initObject.headers.token,
+        initObject.headers.user_id
       );
 
       if (userAuthResult.ok != 0) {
@@ -69,7 +75,16 @@ const socketHandler = (io) => {
     });
 
     socket.on("_messageOut", async (message) => {
-      let userAuthResult = await verifyUser(message.token, message.user_id);
+      if (checkHeaders(message) === false)
+        return socket.emit("_connect", {
+          ok: 0,
+          reason: "INVALID_USER",
+        });
+
+      let userAuthResult = await verifyUser(
+        message.headers.token,
+        message.headers.user_id
+      );
       let messageId = message.id;
 
       if (userAuthResult.ok != 0) {
@@ -113,10 +128,16 @@ const socketHandler = (io) => {
       }
     });
 
-    socket.on("_updateMessageSeen", async (seenStatus) => { 
+    socket.on("_updateMessageSeen", async (seenStatus) => {
+      if (checkHeaders(seenStatus) === false)
+        return socket.emit("_connect", {
+          ok: 0,
+          reason: "INVALID_USER",
+        });
+
       let userAuthResult = await verifyUser(
-        seenStatus.token,
-        seenStatus.user_id
+        seenStatus.headers.token,
+        seenStatus.headers.user_id
       );
 
       if (userAuthResult.ok != 0) {
@@ -183,10 +204,22 @@ async function verifyUser(authToken, userId) {
     authToken,
     cacheManager
   );
-  console.log(loggedInUserId)
+  console.log(loggedInUserId);
   if (!loggedInUserId) return { ok: 0, reason: "INVALID_API_KEY" };
 
   return { ok: 1, data: loggedInUserId };
+}
+
+function checkHeaders(request) {
+  console.log(request)
+  if (
+    !request ||
+    !request.headers ||
+    !request.headers.token ||
+    !request.headers.user_id
+  )
+    return false;
+  return true;
 }
 
 module.exports = { socketHandler: socketHandler, connectionMap: connectionMap };
