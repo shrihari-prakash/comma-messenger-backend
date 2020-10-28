@@ -62,7 +62,6 @@ SPOTIFY_CLIENT_SECRET=YourSpotifyClientSecret
 #TEST
 API_PATH=/api/rest/v1
 MONGO_OBJECT_ID_LENGTH=24
-TEST_RECEIVER_EMAIL=johndoe@example.com
 ```
 
 **API Documentation:**

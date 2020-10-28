@@ -67,7 +67,10 @@ it("Change tab auth status with invalid API key", function (done) {
   chai
     .request(server)
     .put(endPoint)
-    .send({ email: process.env.TEST_RECEIVER_EMAIL })
+    .send({
+      tab_id: common.objectIds.tabIds.withAuthentication,
+      require_authentication: false,
+    })
     .set("Authorization", `Bearer SOME_API_KEY`)
     .end((err, res) => {
       expect(res).to.have.status(403);

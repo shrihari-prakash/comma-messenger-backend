@@ -32,7 +32,11 @@ it("Rename tab with invalid API key", function (done) {
   chai
     .request(server)
     .put(endPoint)
-    .send({ email: process.env.TEST_RECEIVER_EMAIL })
+    .send({
+      tab_id: common.objectIds.tabIds.withAuthentication,
+      name: "test_tab_renamed",
+      password: "1234",
+    })
     .set("Authorization", `Bearer SOME_API_KEY`)
     .end((err, res) => {
       expect(res).to.have.status(403);
