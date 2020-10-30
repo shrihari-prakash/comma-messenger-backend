@@ -228,10 +228,23 @@ async function getThreads(req, res) {
       }
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       status: 200,
       message: "Messages Retrieved.",
       result: dbMessages,
+    });
+
+    //Send seen status to the other member if they are online.
+    emitObject = {
+      tab_id: tabObject._id,
+      thread_id: threadObject._id,
+      last_read_message_id: dbMessages[0]._id,
+    };
+
+    let connectionMap = req.app.get("connectionMap");
+    return threadObject.thread_participants.forEach((receiverId) => {
+      if (connectionMap[receiverId] && !receiverId.equals(loggedInUserId))
+        connectionMap[receiverId].emit("_messageSeen", emitObject);
     });
   } catch (e) {
     console.log(e);
