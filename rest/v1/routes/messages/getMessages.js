@@ -205,9 +205,7 @@ async function getThreads(req, res) {
       dbMessages.length > 0 /*Make sure messages array is not empty.*/
     )
       tabUpdateQuery.$set = {
-        "seen_status.$.last_read_message_id": ObjectId(
-          dbMessages[dbMessages.length - 1]._id
-        ),
+        "seen_status.$.last_read_message_id": ObjectId(dbMessages[0]._id),
       };
 
     await db.collection("tabs").updateOne(
