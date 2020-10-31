@@ -136,6 +136,11 @@ module.exports = {
 
           db.collection("threads").updateOne(
             { _id: ObjectId(threadObject._id) },
+            { $addToSet: { new_for: { $each: newForArray } } } //Mark thread as having unread message for participants if it is not already having an unread status.
+          );
+
+          db.collection("tabs").updateOne(
+            { _id: ObjectId(tabObject._id) },
             { $addToSet: { new_for: { $each: newForArray } } } //Mark tab as having unread message for participants if it is not already having an unread status.
           );
 
