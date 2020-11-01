@@ -4,9 +4,9 @@
 # Comma Messenger (Server)
 ![Comma JS Logo](/branding-assets/logo.png)
 
-Open source messenger based on Express, MongoDB and Socket.IO
+An open source messenger based on Express, MongoDB and Socket.IO
 
-**Is this another 'chat' application built based on YouTube examples? NO**
+**Is this another 'chat' app built based on YouTube examples? NO**
 
 **Ok it's not that, so how does it standout?**
 * Integrated Google Single Sign On for one-click user creation and login.💻
