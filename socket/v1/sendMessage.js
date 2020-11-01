@@ -183,7 +183,11 @@ module.exports = {
               });
             }
           });
-          resolve({ ok: 1, inserted_id: messageObject._id });
+          resolve({
+            ok: 1,
+            inserted_id: messageObject._id,
+            type: messageObject.type,
+          });
         } else return reject({ ok: 0, reason: "NO_ACCESS" });
       } catch (e) {
         console.log(e);

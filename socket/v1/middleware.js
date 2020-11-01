@@ -104,6 +104,7 @@ const socketHandler = (io) => {
                 event: "_messageOut",
                 message_id: messageId,
                 inserted_id: result.inserted_id,
+                type: result.type,
               });
             }
           })
@@ -211,7 +212,7 @@ async function verifyUser(authToken, userId) {
 }
 
 function checkHeaders(request) {
-  console.log(request)
+  console.log(request);
   if (
     !request ||
     !request.headers ||
