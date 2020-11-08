@@ -85,7 +85,7 @@ async function createThread(req, res) {
   try {
     var tabCount = await db
       .collection("threads")
-      .find({ _id: ObjectId(tabDetails.thread_id) })
+      .find({ thread_id: ObjectId(tabDetails.thread_id) })
       .count();
 
     if (tabCount >= 3) {
