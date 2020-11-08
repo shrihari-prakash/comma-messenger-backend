@@ -106,4 +106,9 @@ errors.duplicate_entity = new ApiError(
   "DUPLICATE_ENTITY",
   "The provided entity already exists."
 );
+errors.max_tab_limit = new ApiError(
+  400,
+  "MAXIMUM_TAB_LIMIT_REACHED",
+  "The request input is not as expected by API. Please provide valid input."
+);
 errors.bad_request = new ApiError(403, "INVALID_OPERATION", "Bad Request");

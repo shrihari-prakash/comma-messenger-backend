@@ -83,6 +83,18 @@ async function createThread(req, res) {
   //End of input validation.
 
   try {
+    var tabCount = await db
+      .collection("threads")
+      .find({ _id: ObjectId(tabDetails.thread_id) })
+      .count();
+
+    if (tabCount >= 3) {
+      let error = new errorModel.errorResponse(
+        errors.max_tab_limit.withDetails("Maximum tab limit reached")
+      );
+      return res.status(400).json(error);
+    }
+
     var threadObject = await db
       .collection("threads")
       .findOne({ _id: ObjectId(tabDetails.thread_id) });
