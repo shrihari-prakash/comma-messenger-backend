@@ -88,6 +88,8 @@ async function createThread(req, res) {
       .find({ thread_id: ObjectId(tabDetails.thread_id) })
       .count();
 
+    console.log("Current tab count:", tabCount);
+
     if (tabCount >= 3) {
       let error = new errorModel.errorResponse(
         errors.max_tab_limit.withDetails("Maximum tab limit reached")
