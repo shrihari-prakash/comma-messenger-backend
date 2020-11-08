@@ -421,12 +421,17 @@ The connection will be accepted or rejected based on the API token sent.
 ```
     function sendMessage() {
       socket.emit("_messageOut", {
-        id: "Current unix timestamp recommended. This id will be sent back on callback to let the front end know if the message was delivered or rejected.",
-        token: "Bearer API_TOKEN",
-        type: "text",
-        tab_id: "tab_1",
-        content: "Hello",
-        password: "1234",
+        headers: {
+          user_id: "xxxxxxxxxxxxxxxxxxxxxxxx",
+          token: "Bearer API_TOKEN"
+        },
+        payload: {
+          id: +new Date(),
+          type: "text",
+          tab_id: "tab_1",
+          content: "Hello",
+          password: "1234",
+        },
       });
     }
 ```
@@ -435,11 +440,16 @@ The connection will be accepted or rejected based on the API token sent.
 ```
     function updateSeen(messageId) {
       socket.emit("_updateMessageSeen", {
-        id: "Database ID of the message",
-        token: "Bearer API_TOKEN",
-        tab_id: "tab_1",
-        last_read_message_id: "message_1",
-        password: "1234",
+        headers: {
+          user_id: "xxxxxxxxxxxxxxxxxxxxxxxx",
+          token: "Bearer API_TOKEN"
+        },
+        payload: {
+          tab_id: "tab_1",,
+          thread_id: "thread_1",
+          last_read_message_id: "Database ID of the message",
+          password: "1234",
+        },
       });
     }
 ```
