@@ -32,7 +32,8 @@ _This login token must be stored in a cookie or local storage and should be sent
 
 ### Subsequent Header Format:
 
-`authorization`: `Bearer API_TOKEN`
+`Authorization`: `Bearer API_TOKEN`
+`x-cm-user-id` : `xxxxxxxxxxxxxxxxxxxxxxxx`
 
 ## Threads
 ### List all user threads:
