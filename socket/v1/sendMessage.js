@@ -188,6 +188,7 @@ module.exports = {
           });
           resolve({
             ok: 1,
+            original_message_id: message.payload.id,
             inserted_id: messageObject._id,
             type: messageObject.type,
           });
