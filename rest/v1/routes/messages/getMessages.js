@@ -243,8 +243,13 @@ async function getThreads(req, res) {
 
     let connectionMap = req.app.get("connectionMap");
     return threadObject.thread_participants.forEach((receiverId) => {
-      if (connectionMap[receiverId] && !receiverId.equals(loggedInUserId))
-        connectionMap[receiverId].emit("_messageSeen", emitObject);
+      if (
+        Array.isArray(connectionMap[receiverId]) &&
+        !receiverId.equals(loggedInUserId)
+      )
+        connectionMap[receiverId].forEach((socketConnection) => {
+          socketConnection.emit("_messageSeen", emitObject);
+        });
     });
   } catch (e) {
     console.log(e);
