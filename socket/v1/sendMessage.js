@@ -131,12 +131,10 @@ module.exports = {
 
           threadObject.thread_participants.forEach((receiverId) => {
             console.log(connectionMap[receiverId]);
-            if (
-              Array.isArray(connectionMap[receiverId]) &&
-              !receiverId.equals(socket.userId)
-            )
+            if (Array.isArray(connectionMap[receiverId]))
               connectionMap[receiverId].forEach((socketConnection) => {
-                socketConnection.emit("_messageIn", messageObject);
+                if (socketConnection.id !== socket.id)
+                  socketConnection.emit("_messageIn", messageObject);
               });
           });
 

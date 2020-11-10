@@ -114,12 +114,10 @@ module.exports = {
           };
 
           threadObject.thread_participants.forEach((receiverId) => {
-            if (
-              Array.isArray(connectionMap[receiverId]) &&
-              !receiverId.equals(socket.userId)
-            )
+            if (Array.isArray(connectionMap[receiverId]))
               connectionMap[receiverId].forEach((socketConnection) => {
-                socketConnection.emit("_messageSeen", emitObject);
+                if (socketConnection.id !== socket.id)
+                  socketConnection.emit("_messageSeen", emitObject);
               });
           });
         } else return reject({ ok: 0, reason: "NO_ACCESS" });
