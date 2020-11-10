@@ -88,7 +88,7 @@ const socketHandler = (io) => {
         message.headers.token,
         message.headers.user_id
       );
-      let messageId = message.id;
+      let messageId = message.payload.id;
 
       if (userAuthResult.ok != 0) {
         sender
