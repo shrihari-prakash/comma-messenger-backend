@@ -130,7 +130,6 @@ module.exports = {
           messageObject.content = message.payload.content;
 
           threadObject.thread_participants.forEach((receiverId) => {
-            console.log(connectionMap[receiverId]);
             if (Array.isArray(connectionMap[receiverId]))
               connectionMap[receiverId].forEach((socketConnection) => {
                 if (socketConnection.id !== socket.id)
