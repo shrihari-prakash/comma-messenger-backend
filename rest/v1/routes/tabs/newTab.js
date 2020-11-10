@@ -161,8 +161,13 @@ async function createThread(req, res) {
     //Send newly created tab to other member if they are online.
     let connectionMap = req.app.get("connectionMap");
     threadObject.thread_participants.forEach((receiverId) => {
-      if (connectionMap[receiverId] && !receiverId.equals(loggedInUserId))
-        connectionMap[receiverId].emit("_newTab", tabObject);
+      if (
+        Array.isArray(connectionMap[receiverId]) &&
+        !receiverId.equals(loggedInUserId)
+      )
+        connectionMap[receiverId].forEach((socketConnection) => {
+          socketConnection.emit("_newTab", tabObject);
+        });
     });
 
     return res.status(200).json({

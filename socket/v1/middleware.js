@@ -57,9 +57,12 @@ const socketHandler = (io) => {
 
       if (userAuthResult.ok != 0) {
         console.log("User", userAuthResult.data, "is online.");
-        /* socket.id = userAuthResult.data; */
         socket.userId = userAuthResult.data;
-        connectionMap[socket.userId] = socket;
+
+        Array.isArray(connectionMap[socket.userId])
+          ? connectionMap[socket.userId].push(socket)
+          : (connectionMap[socket.userId] = [socket]);
+
         socket.emit("_connect", {
           ok: 1,
         });
@@ -76,7 +79,7 @@ const socketHandler = (io) => {
 
     socket.on("_messageOut", async (message) => {
       if (checkHeaders(message) === false)
-        return socket.emit("_connect", {
+        return socket.emit("_messageOut", {
           ok: 0,
           reason: "INVALID_USER",
         });
@@ -189,7 +192,11 @@ const socketHandler = (io) => {
 
     socket.on("disconnect", (message) => {
       console.log("User", socket.userId, "has disconnected.");
-      delete connectionMap[socket.userId];
+
+      if (Array.isArray(connectionMap[socket.userId]))
+        connectionMap[socket.userId] = connectionMap[socket.userId].filter(
+          (socketConnection) => socketConnection.id !== socket.id
+        );
     });
   });
 };

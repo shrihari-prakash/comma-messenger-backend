@@ -135,8 +135,13 @@ async function createThread(req, res) {
 
         //Send newly created thread to other member if they are online.
         let connectionMap = req.app.get("connectionMap");
-        if (connectionMap[receiver._id] && !receiver._id.equals(loggedInUserId))
-          connectionMap[receiver._id].emit("_newThread", threadObject);
+        if (
+          Array.isArray(connectionMap[receiver._id]) &&
+          !receiver._id.equals(loggedInUserId)
+        )
+          connectionMap[receiver._id].forEach((socketConnection) => {
+            socketConnection.emit("_newThread", threadObject);
+          });
 
         return res.status(200).json({
           status: 200,

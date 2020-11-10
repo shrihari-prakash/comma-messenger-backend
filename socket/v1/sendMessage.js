@@ -130,8 +130,14 @@ module.exports = {
           messageObject.content = message.payload.content;
 
           threadObject.thread_participants.forEach((receiverId) => {
-            if (connectionMap[receiverId] && !receiverId.equals(socket.userId))
-              connectionMap[receiverId].emit("_messageIn", messageObject);
+            console.log(connectionMap[receiverId]);
+            if (
+              Array.isArray(connectionMap[receiverId]) &&
+              !receiverId.equals(socket.userId)
+            )
+              connectionMap[receiverId].forEach((socketConnection) => {
+                socketConnection.emit("_messageIn", messageObject);
+              });
           });
 
           db.collection("threads").updateOne(
