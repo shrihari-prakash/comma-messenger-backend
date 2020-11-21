@@ -125,6 +125,18 @@ async function postAuthenticate(req, res) {
                   )}&token=${insertToken}`
                 )
             );
+            
+            //Update user's profile picture on database on login.
+            await db.collection("users").updateOne(
+              {
+                _id: existingUser._id,
+              },
+              {
+                $set: {
+                  display_picture: displayPictureURL,
+                },
+              }
+            );
           });
       }
     })
