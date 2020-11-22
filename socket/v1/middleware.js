@@ -9,6 +9,7 @@ const cacheManager = new cache.cacheManager();
 
 const sender = require("./sendMessage");
 const updateMessageSeen = require("./updateMessageSeen");
+const updateTypingStatus = require("./updateTypingStatus");
 
 //uncomment to generate new vapidKeys.
 
@@ -208,8 +209,8 @@ const socketHandler = (io) => {
           userAuthResult.data,
           "is trying to update read status."
         );
-        updateMessageSeen
-          .updateMessageSeen(
+        updateTypingStatus
+          .updateTypingStatus(
             db,
             socket,
             connectionMap,
