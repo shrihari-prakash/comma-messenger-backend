@@ -190,6 +190,64 @@ const socketHandler = (io) => {
       }
     });
 
+    socket.on("_updateTypingStatusSeen", async (typingStatus) => {
+      if (checkHeaders(typingStatus) === false)
+        return socket.emit("_updateTypingStatusSeen", {
+          ok: 0,
+          reason: "INVALID_USER",
+        });
+
+      let userAuthResult = await verifyUser(
+        typingStatus.headers.token,
+        typingStatus.headers.user_id
+      );
+
+      if (userAuthResult.ok != 0) {
+        console.log(
+          "User",
+          userAuthResult.data,
+          "is trying to update read status."
+        );
+        updateMessageSeen
+          .updateMessageSeen(
+            db,
+            socket,
+            connectionMap,
+            typingStatus,
+            userAuthResult.data
+          )
+          .then((result) => {
+            if (result.ok === 1) {
+              socket.emit("_success", {
+                ok: 1,
+                event: "_updateTypingStatusSeen",
+                message_id: typingStatus.status,
+              });
+            } else {
+              socket.emit("_error", {
+                ok: 0,
+                event: "_updateTypingStatusSeen",
+                reason: result.reason,
+              });
+            }
+          })
+          .catch(function (rej) {
+            socket.emit("_error", {
+              ok: 0,
+              event: "_updateTypingStatusSeen",
+              reason: rej.reason,
+            });
+            console.log(rej);
+          });
+      } else {
+        socket.emit("_error", {
+          ok: 0,
+          event: "_updateTypingStatusSeen",
+          reason: userAuthResult.reason,
+        });
+      }
+    });
+
     socket.on("disconnect", (message) => {
       console.log("User", socket.userId, "has disconnected.");
 
