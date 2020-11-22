@@ -191,9 +191,9 @@ const socketHandler = (io) => {
       }
     });
 
-    socket.on("_updateTypingStatusSeen", async (typingStatus) => {
+    socket.on("_updateTypingStatus", async (typingStatus) => {
       if (checkHeaders(typingStatus) === false)
-        return socket.emit("_updateTypingStatusSeen", {
+        return socket.emit("_updateTypingStatus", {
           ok: 0,
           reason: "INVALID_USER",
         });
@@ -221,13 +221,13 @@ const socketHandler = (io) => {
             if (result.ok === 1) {
               socket.emit("_success", {
                 ok: 1,
-                event: "_updateTypingStatusSeen",
+                event: "_updateTypingStatus",
                 message_id: typingStatus.status,
               });
             } else {
               socket.emit("_error", {
                 ok: 0,
-                event: "_updateTypingStatusSeen",
+                event: "_updateTypingStatus",
                 reason: result.reason,
               });
             }
@@ -235,7 +235,7 @@ const socketHandler = (io) => {
           .catch(function (rej) {
             socket.emit("_error", {
               ok: 0,
-              event: "_updateTypingStatusSeen",
+              event: "_updateTypingStatus",
               reason: rej.reason,
             });
             console.log(rej);
@@ -243,7 +243,7 @@ const socketHandler = (io) => {
       } else {
         socket.emit("_error", {
           ok: 0,
-          event: "_updateTypingStatusSeen",
+          event: "_updateTypingStatus",
           reason: userAuthResult.reason,
         });
       }
