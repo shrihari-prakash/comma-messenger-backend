@@ -77,7 +77,7 @@ module.exports = {
               !receiverId.equals(socket.userId)
             )
               connectionMap[receiverId].forEach((socketConnection) => {
-                socketConnection.emit("_messageSeen", emitObject);
+                socketConnection.emit("_typingStatus", emitObject);
               });
           });
         } else return reject({ ok: 0, reason: "NO_ACCESS" });
