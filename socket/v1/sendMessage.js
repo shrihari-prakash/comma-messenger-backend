@@ -147,6 +147,24 @@ module.exports = {
             { $addToSet: { new_for: { $each: newForArray } } } //Mark tab as having unread message for participants if it is not already having an unread status.
           );
 
+          //Mark message as seen since he is the one sending the message.
+          await db.collection("tabs").updateOne(
+            {
+              _id: ObjectId(tabObject._id),
+              "seen_status.user_id": ObjectId(userAuthResult),
+            },
+            {
+              $set: {
+                "seen_status.$.last_read_message_id": ObjectId(
+                  messageObject._id
+                ),
+              },
+              $pull: {
+                new_for: { $in: [ObjectId(userAuthResult)] },
+              },
+            }
+          );
+
           //Send notification to all the participants except the one who sent the message.
           let participants = await db
             .collection("users")
