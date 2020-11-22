@@ -17,7 +17,10 @@ module.exports = {
         if (!typingStatus.payload)
           return reject({ ok: 0, reason: "EMPTY_PAYLOAD" });
 
-        if (!typingStatus.payload.status) {
+        if (
+          typingStatus.payload.status === null ||
+          typeof typingStatus.payload.status === "undefined"
+        ) {
           reject({ ok: 0, reason: "TYPING_STATUS_NOT_MARKED" });
         }
         var userObject = await db
