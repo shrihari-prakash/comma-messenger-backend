@@ -207,7 +207,7 @@ const socketHandler = (io) => {
         console.log(
           "User",
           userAuthResult.data,
-          "is trying to update read status."
+          "is trying to update typing status."
         );
         updateTypingStatus
           .updateTypingStatus(
