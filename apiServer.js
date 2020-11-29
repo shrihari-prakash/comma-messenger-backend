@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const fileUpload = require("express-fileupload");
 const rateLimit = require("express-rate-limit");
 const passport = require("passport");
+const cron = require("node-cron");
 
 const errors = require("./utils/errors");
 const errorModel = require("./utils/errorResponse");
@@ -12,6 +13,9 @@ const errorModel = require("./utils/errorResponse");
 const RESTv1 = require("./rest/v1/middleware");
 const cache = require("./utils/cacheManager");
 const cacheManager = new cache.cacheManager();
+
+const messageHistoryCleanUp = require("./utils/cleanUpUtils/messageHistoryCleanUp");
+const tokenCleanUp = require("./utils/cleanUpUtils/tokenCleanUp");
 
 cacheManager.init();
 
@@ -27,7 +31,15 @@ mongoConnector.connectToServer(function (err, client) {
   let mongoClient = mongoConnector.getClient();
   app.set("mongoInstance", db);
   app.set("mongoClient", mongoClient);
+  startCleanUpCron(db);
 });
+
+const startCleanUpCron = (db) => {
+  //cron.schedule("0 */30 * * * *", () => {
+  //  messageHistoryCleanUp(db);
+  //  tokenCleanUp(db);
+  //});
+};
 
 //we need to allow requests from outside our own domain.
 app.all("*", function (req, res, next) {
