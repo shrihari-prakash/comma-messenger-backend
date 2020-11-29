@@ -35,10 +35,10 @@ mongoConnector.connectToServer(function (err, client) {
 });
 
 const startCleanUpCron = (db) => {
-  //cron.schedule("0 */30 * * * *", () => {
-  //  messageHistoryCleanUp(db);
-  //  tokenCleanUp(db);
-  //});
+  cron.schedule("0 */30 * * * *", () => {
+    //messageHistoryCleanUp(db);
+    tokenCleanUp(db);
+  });
 };
 
 //we need to allow requests from outside our own domain.
