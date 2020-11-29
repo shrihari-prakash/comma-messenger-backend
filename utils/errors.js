@@ -111,4 +111,5 @@ errors.max_tab_limit = new ApiError(
   "MAXIMUM_TAB_LIMIT_REACHED",
   "The request input is not as expected by API. Please provide valid input."
 );
+errors.self_add = new ApiError(400, "SELF_ADD", "You cannot add yourself.");
 errors.bad_request = new ApiError(403, "INVALID_OPERATION", "Bad Request");

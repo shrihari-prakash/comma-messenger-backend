@@ -74,6 +74,11 @@ async function createThread(req, res) {
       );
       return res.status(404).json(error);
     } else {
+      if (ObjectId(loggedInUserId).equals(receiver._id)) {
+        let error = new errorModel.errorResponse(errors.self_add);
+        return res.status(400).json(error);
+      }
+
       var existingThread = await db.collection("threads").findOne({
         thread_participants: {
           $all: [ObjectId(loggedInUserId), receiver._id],
