@@ -203,7 +203,7 @@ module.exports = {
 
                 try {
                   push.sendNotification(
-                    subscription.subscription,
+                    subscription.subscription_object.subscription,
                     JSON.stringify(notificationObject)
                   );
                 } catch (e) {
