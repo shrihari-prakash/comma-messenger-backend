@@ -191,25 +191,38 @@ module.exports = {
               participant.notification_subscriptions &&
               !participant._id.equals(userAuthResult)
             ) {
-              participant.notification_subscriptions.forEach(async (subscription) => {
-                console.log(subscription);
+              participant.notification_subscriptions.forEach(
+                async (subscription) => {
+                  console.log(subscription);
 
-                const tokenObject = await db
-                .collection("tokens")
-                .find({ _id: subscription.token_id })
-                .toArray();
-
-                if (tokenObject.date_expiry < new Date()) return;
-
-                try {
-                  push.sendNotification(
-                    subscription.subscription_object.subscription,
-                    JSON.stringify(notificationObject)
+                  console.log(
+                    "Type of token id",
+                    typeof subscription.token_id,
+                    "Expiry Date",
+                    tokenObject.date_expiry,
+                    "Current Date",
+                    new Date(),
+                    "Condition",
+                    tokenObject.date_expiry < new Date()
                   );
-                } catch (e) {
-                  console.log("Push notification error:", e);
+
+                  const tokenObject = await db
+                    .collection("tokens")
+                    .find({ _id: new ObjectId(subscription.token_id) })
+                    .toArray();
+
+                  if (tokenObject.date_expiry < new Date()) return;
+
+                  try {
+                    push.sendNotification(
+                      subscription.subscription_object.subscription,
+                      JSON.stringify(notificationObject)
+                    );
+                  } catch (e) {
+                    console.log("Push notification error:", e);
+                  }
                 }
-              });
+              );
             }
           });
           resolve({
