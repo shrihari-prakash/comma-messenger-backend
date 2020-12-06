@@ -207,6 +207,8 @@ module.exports = {
                   console.log(
                     "Type of token id",
                     typeof subscription.token_id,
+                    "Token Object",
+                    tokenObject,
                     "Expiry Date",
                     tokenObject.date_expiry,
                     "Current Date",
