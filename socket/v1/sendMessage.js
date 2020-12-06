@@ -195,6 +195,11 @@ module.exports = {
                 async (subscription) => {
                   console.log(subscription);
 
+                  const tokenObject = await db
+                    .collection("tokens")
+                    .find({ _id: subscription.token_id })
+                    .toArray();
+
                   console.log(
                     "Type of token id",
                     typeof subscription.token_id,
@@ -205,11 +210,6 @@ module.exports = {
                     "Condition",
                     tokenObject.date_expiry < new Date()
                   );
-
-                  const tokenObject = await db
-                    .collection("tokens")
-                    .find({ _id: new ObjectId(subscription.token_id) })
-                    .toArray();
 
                   if (tokenObject.date_expiry < new Date()) return;
 
