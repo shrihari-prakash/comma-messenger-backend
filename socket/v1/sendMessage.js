@@ -201,8 +201,7 @@ module.exports = {
 
                   const tokenObject = await db
                     .collection("tokens")
-                    .find({ _id: subscription.token_id })
-                    .toArray();
+                    .findOne({ _id: subscription.token_id });
 
                   console.log(
                     "Type of token id",
