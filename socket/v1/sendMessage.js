@@ -193,7 +193,11 @@ module.exports = {
             ) {
               participant.notification_subscriptions.forEach(
                 async (subscription) => {
-                  console.log(subscription);
+                  console.log(
+                    subscription,
+                    "Type of token id",
+                    typeof subscription.token_id
+                  );
 
                   const tokenObject = await db
                     .collection("tokens")
