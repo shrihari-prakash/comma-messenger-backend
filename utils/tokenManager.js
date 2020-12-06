@@ -21,18 +21,19 @@ function tokenManager() {
         date_expiry: tomorrow,
       };
 
-      db.collection("tokens").insertOne(tokenObject, { w: 1 }, function (
-        err,
-        result
-      ) {
-        if (err) reject(err);
+      db.collection("tokens").insertOne(
+        tokenObject,
+        { w: 1 },
+        function (err, result) {
+          if (err) reject(err);
 
-        cacheManager.putUserToken(
-          userId,
-          insertToken + ":" + tokenObject._id.toString() //Cache token format - token:token_id
-        );
-        resolve(insertToken);
-      });
+          cacheManager.putUserToken(
+            userId,
+            insertToken + ":" + tokenObject._id.toString() //Cache token format - token:token_id
+          );
+          resolve(insertToken);
+        }
+      );
     });
   };
 
@@ -102,6 +103,38 @@ function tokenManager() {
         );
         resolve(tokenObject.user_id.toString());
       }
+    });
+  };
+
+  this.getIdFromToken = async (db, userId, token) => {
+    return new Promise(async (resolve, reject) => {
+      if (ObjectId.isValid(userId) === false) return resolve(false);
+
+      let tokenObjects = await db
+        .collection("tokens")
+        .find({ user_id: ObjectId(userId) })
+        .toArray();
+
+      if (!tokenObjects) {
+        console.log("No valid token was matched for the given request.");
+        return resolve(false);
+      }
+
+      //Because an user might have multiple sessions active in multiple devices.
+      let tokenObject;
+
+      tokenObject = tokenObjects.find((tokenObj) => {
+        try {
+          return token === crypt.decrypt(tokenObj.token.slice(3)); //Remove 'CM_' before decrypting.
+        } catch (e) {
+          console.log(e);
+          return false;
+        }
+      });
+
+      if (!tokenObject) return resolve(false);
+
+      resolve(tokenObject);
     });
   };
 }

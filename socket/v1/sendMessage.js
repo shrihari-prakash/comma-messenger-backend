@@ -191,8 +191,16 @@ module.exports = {
               participant.notification_subscriptions &&
               !participant._id.equals(userAuthResult)
             ) {
-              participant.notification_subscriptions.forEach((subscription) => {
+              participant.notification_subscriptions.forEach(async (subscription) => {
                 console.log(subscription);
+
+                const tokenObject = await db
+                .collection("tokens")
+                .find({ _id: subscription.token_id })
+                .toArray();
+
+                if (tokenObject.date_expiry < new Date()) return;
+
                 try {
                   push.sendNotification(
                     subscription.subscription,

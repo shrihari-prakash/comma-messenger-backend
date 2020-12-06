@@ -9,7 +9,6 @@ const tokenManager = new tokenMgr.tokenManager();
 const errors = require("../../../../utils/errors");
 const errorModel = require("../../../../utils/errorResponse");
 
-
 router.post("/", async function (req, res) {
   subscribeUser(req, res);
 });
@@ -55,9 +54,22 @@ async function subscribeUser(req, res) {
   let subscriptionDetails = req.body;
 
   try {
+    let tokenObject = await tokenManager.getIdFromToken(
+      db,
+      headerUserId,
+      authToken
+    );
+
     db.collection("users").updateOne(
       { _id: ObjectId(loggedInUserId) },
-      { $addToSet: { notification_subscriptions: subscriptionDetails } },
+      {
+        $addToSet: {
+          notification_subscriptions: {
+            token_id: tokenObject._id,
+            subscription_object: subscriptionDetails,
+          },
+        },
+      },
       function (err, result) {
         if (err) throw err;
         return res.status(200).json({
