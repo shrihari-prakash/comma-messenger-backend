@@ -182,39 +182,17 @@ module.exports = {
           };
 
           participants.forEach((participant) => {
-            console.log(
-              participant._id,
-              userAuthResult,
-              participant._id.equals(userAuthResult)
-            );
             if (
               participant.notification_subscriptions &&
               !participant._id.equals(userAuthResult)
             ) {
               participant.notification_subscriptions.forEach(
                 async (subscription) => {
-                  console.log(
-                    subscription,
-                    "Type of token id",
-                    typeof subscription.token_id
-                  );
-
+                  //Get token associated with the subscription object to check for expiry.
+                  //If token has already expired we should not send notifications to the user.
                   const tokenObject = await db
                     .collection("tokens")
                     .findOne({ _id: subscription.token_id });
-
-                  console.log(
-                    "Type of token id",
-                    typeof subscription.token_id,
-                    "Token Object",
-                    tokenObject,
-                    "Expiry Date",
-                    tokenObject.date_expiry,
-                    "Current Date",
-                    new Date(),
-                    "Condition",
-                    tokenObject.date_expiry < new Date()
-                  );
 
                   if (tokenObject.date_expiry < new Date()) return;
 
