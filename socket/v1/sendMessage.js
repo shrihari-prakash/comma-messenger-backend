@@ -47,7 +47,7 @@ module.exports = {
           .findOne({ _id: ObjectId(message.payload.tab_id) });
 
         var isTabSecured = tabObject.secured_for.some(function (participantId) {
-          return participantId.equals(socket.userId);
+          return participantId.equals(userObject._id);
         });
         if (isTabSecured == true) {
           if (dbPassword != null) {
@@ -70,7 +70,7 @@ module.exports = {
             return reject({ ok: 0, reason: "INVALID_CONTENT_TYPE" });
 
           let messageObject = {
-            sender: ObjectId(socket.userId),
+            sender: userObject._id,
             type: message.payload.type,
             date_created: new Date(),
             tab_id: ObjectId(message.payload.tab_id),
@@ -108,7 +108,8 @@ module.exports = {
           //If any user of the thread is online send it to the respective socket else push it into their unread.
           let newForArray = [];
           threadObject.thread_participants.forEach((receiverId) => {
-            if (!receiverId.equals(socket.userId)) newForArray.push(receiverId);
+            if (!receiverId.equals(userObject._id))
+              newForArray.push(receiverId);
           });
 
           var messagesInsertResult = await db
@@ -175,7 +176,7 @@ module.exports = {
             payload: {
               tab_name: tabObject.tab_name,
               type: message.payload.type,
-              sender: socket.userId,
+              sender: userObject._id.toString(),
               content: messageObject.content || "Sent an image",
               icon: userObject.display_picture,
             },
@@ -194,7 +195,8 @@ module.exports = {
                     .collection("tokens")
                     .findOne({ _id: subscription.token_id });
 
-                  if (tokenObject && tokenObject.date_expiry < new Date()) return;
+                  if (tokenObject && tokenObject.date_expiry < new Date())
+                    return;
 
                   try {
                     push.sendNotification(
