@@ -36,8 +36,8 @@ mongoConnector.connectToServer(function (err, client) {
 
 const startCleanUpCron = (db) => {
   cron.schedule("0 */30 * * * *", () => {
-    //messageHistoryCleanUp(db);
-    tokenCleanUp(db);
+    //messageHistoryCleanUp.runCleanUp(db);
+    tokenCleanUp.runCleanUp(db);
   });
 };
 
