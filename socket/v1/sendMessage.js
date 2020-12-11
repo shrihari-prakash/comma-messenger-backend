@@ -194,7 +194,7 @@ module.exports = {
                     .collection("tokens")
                     .findOne({ _id: subscription.token_id });
 
-                  if (tokenObject.date_expiry < new Date()) return;
+                  if (tokenObject && tokenObject.date_expiry < new Date()) return;
 
                   try {
                     push.sendNotification(
