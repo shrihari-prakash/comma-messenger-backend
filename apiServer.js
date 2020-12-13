@@ -48,7 +48,7 @@ app.all("*", function (req, res, next) {
     "http://localhost:3000",
     "http://127.0.0.1:5000",
     "http://localhost:5000", //Development
-    process.env.CLIENT_URL, //Production
+    ...process.env.CLIENT_URL.split(","), //Production
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
