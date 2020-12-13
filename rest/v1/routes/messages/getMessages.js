@@ -126,7 +126,6 @@ async function getThreads(req, res) {
       ])
       .toArray();
 
-    console.log(tabObject);
     if (!tabObject || !tabObject[0]) {
       let error = new errorModel.errorResponse(
         errors.invalid_input.withDetails(

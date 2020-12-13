@@ -46,9 +46,6 @@ function tokenManager() {
       let cacheToken = cacheManager.getTokenFromUserId(userId);
 
       if (cacheToken && cacheToken.split(":")[0] === token) {
-        console.log(
-          "User " + userId + "'s token has been verified from cache."
-        );
         //If the token validation is success, we bump up the token expiry time to one more day so that the user stays logged in.
         db.collection("tokens").updateOne(
           { _id: ObjectId(cacheToken.split(":")[1]) }, //Cache token format - token:token_id
@@ -92,11 +89,6 @@ function tokenManager() {
             { $set: { date_expiry: tomorrow } }
           );
 
-        console.log(
-          "User " +
-            tokenObject.user_id +
-            "'s token has been verified from database."
-        );
         cacheManager.putUserToken(
           tokenObject.user_id.toString(),
           token + ":" + tokenObject._id.toString()
