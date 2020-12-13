@@ -8,7 +8,7 @@ function tokenManager() {
     if (typeof userId === "object") {
       userId = userId.toString();
     }
-    console.log("Generating authentication token for user id: ", userId);
+    console.log("Generating authentication token for user: ", userId);
     return new Promise((resolve, reject) => {
       let now = new Date();
       let tomorrow = new Date(new Date().setDate(now.getDate() + 1));
@@ -76,7 +76,7 @@ function tokenManager() {
           try {
             return token === crypt.decrypt(tokenObj.token.slice(3)); //Remove 'CM_' before decrypting.
           } catch (e) {
-            console.log(e);
+            console.error(e);
             return false;
           }
         });

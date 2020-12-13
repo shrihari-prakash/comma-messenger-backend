@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 
 const cryptUtil = require("../../utils/crypt");
 const { ObjectId } = require("mongodb");
-const crypt = new cryptUtil.crypt();
 
 module.exports = {
   updateMessageSeen: function (
