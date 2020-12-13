@@ -21,7 +21,6 @@ function cacheManager() {
   };
 
   this.getTokenFromUserId = (userId) => {
-    console.log(userTokenCache._cache )
     let token = userTokenCache.get(userId);
     return token;
   };
