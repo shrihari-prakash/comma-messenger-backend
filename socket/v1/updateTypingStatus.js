@@ -49,7 +49,7 @@ module.exports = {
           .findOne({ _id: ObjectId(typingStatus.payload.tab_id) });
 
         var isTabSecured = tabObject.secured_for.some(function (participantId) {
-          return participantId.equals(socket.userId);
+          return participantId.equals(userObject._id);
         });
         if (isTabSecured == true) {
           if (dbPassword != null) {
@@ -77,7 +77,7 @@ module.exports = {
           threadObject.thread_participants.forEach((receiverId) => {
             if (
               Array.isArray(connectionMap[receiverId]) &&
-              !receiverId.equals(socket.userId)
+              !receiverId.equals(userObject._id)
             )
               connectionMap[receiverId].forEach((socketConnection) => {
                 socketConnection.emit("_typingStatus", emitObject);

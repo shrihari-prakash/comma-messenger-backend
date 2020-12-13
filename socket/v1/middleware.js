@@ -34,7 +34,7 @@ var ObjectId = require("mongodb").ObjectID;
 
 var db = null;
 mongoConnector.connectToServer(function (err, client) {
-  if (err) console.log(err);
+  if (err) console.error(err);
   db = mongoConnector.getDb();
 });
 
@@ -44,6 +44,7 @@ var connectionMap = {};
 
 const socketHandler = (io) => {
   io.on("connection", (socket) => {
+    //Authorize and add user to memory.
     socket.on("_connect", async (initObject) => {
       if (checkHeaders(initObject) === false)
         return socket.emit("_connect", {
@@ -78,6 +79,7 @@ const socketHandler = (io) => {
       }
     });
 
+    //Outgoing message
     socket.on("_messageOut", async (message) => {
       if (checkHeaders(message) === false)
         return socket.emit("_messageOut", {
@@ -133,6 +135,7 @@ const socketHandler = (io) => {
       }
     });
 
+    //Outgoing seen status
     socket.on("_updateMessageSeen", async (seenStatus) => {
       if (checkHeaders(seenStatus) === false)
         return socket.emit("_connect", {
@@ -191,6 +194,7 @@ const socketHandler = (io) => {
       }
     });
 
+    //Outgoing typing status
     socket.on("_updateTypingStatus", async (typingStatus) => {
       if (checkHeaders(typingStatus) === false)
         return socket.emit("_updateTypingStatus", {
@@ -271,14 +275,13 @@ async function verifyUser(authToken, userId) {
     authToken,
     cacheManager
   );
-  console.log(loggedInUserId);
+
   if (!loggedInUserId) return { ok: 0, reason: "INVALID_API_KEY" };
 
   return { ok: 1, data: loggedInUserId };
 }
 
 function checkHeaders(request) {
-  console.log(request);
   if (
     !request ||
     !request.headers ||

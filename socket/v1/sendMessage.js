@@ -27,8 +27,6 @@ module.exports = {
           return reject({ ok: 0, reason: "INVALID_USER" });
         }
 
-        console.log("New message exchange initiated by:", userObject._id);
-
         let dbPassword = userObject.tab_password;
 
         var threadObject = await db
