@@ -6,6 +6,10 @@
 
 An open source messenger based on Express, MongoDB and Socket.IO
 
+Conversations             |  Splits
+:-------------------------:|:-------------------------:
+![plot](./branding-assets/screenshots/conversation-list.png) | ![plot](./branding-assets/screenshots/conversation.png)
+
 **Is this another 'chat' app built based on YouTube examples? NO**
 
 **Ok it's not that, so how does it standout?**
