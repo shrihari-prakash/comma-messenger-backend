@@ -106,7 +106,7 @@ module.exports = {
           }
           resolve({ ok: 1 });
 
-          emitObject = {
+          let emitObject = {
             tab_id: seenStatus.payload.tab_id,
             thread_id: threadObject._id,
             last_read_message_id: seenStatus.payload.last_read_message_id,

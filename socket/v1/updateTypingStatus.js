@@ -67,7 +67,7 @@ module.exports = {
         }
 
         if (hasAccess) {
-          emitObject = {
+          let emitObject = {
             tab_id: typingStatus.payload.tab_id,
             thread_id: threadObject._id,
             status: typingStatus.payload.status,
