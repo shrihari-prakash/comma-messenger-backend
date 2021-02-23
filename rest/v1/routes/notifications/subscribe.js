@@ -14,42 +14,9 @@ router.post("/", async function (req, res) {
 });
 
 async function subscribeUser(req, res) {
-  if (!req.header("authorization")) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
-  let authToken = req
-    .header("authorization")
-    .slice(7, req.header("authorization").length)
-    .trimLeft();
-
-  if (!authToken) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
-
-  let headerUserId = req.header("x-cm-user-id");
-
-  if (!headerUserId) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
-
-  let cacheManager = req.app.get("cacheManager");
-
   let db = req.app.get("mongoInstance");
 
-  let loggedInUserId = await tokenManager.verify(
-    db,
-    headerUserId,
-    authToken,
-    cacheManager
-  );
-
-  if (!loggedInUserId) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
+  let loggedInUserId = req.header("x-cm-user-id");
 
   let subscriptionDetails = req.body;
 

@@ -3,9 +3,6 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 var ObjectId = require("mongodb").ObjectID;
 
-const tokenMgr = require("../../../../utils/tokenManager");
-const tokenManager = new tokenMgr.tokenManager();
-
 const cryptUtil = require("../../../../utils/crypt");
 const crypt = new cryptUtil.crypt();
 
@@ -18,43 +15,9 @@ router.get("/", async function (req, res) {
 
 async function getThreads(req, res) {
   //Start of input validation.
-  if (!req.header("authorization")) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
-
-  let authToken = req
-    .header("authorization")
-    .slice(7, req.header("authorization").length)
-    .trimLeft();
-
-  if (!authToken) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
-
-  let headerUserId = req.header("x-cm-user-id");
-
-  if (!headerUserId) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
-
-  let cacheManager = req.app.get("cacheManager");
-
   let db = req.app.get("mongoInstance");
 
-  let loggedInUserId = await tokenManager.verify(
-    db,
-    headerUserId,
-    authToken,
-    cacheManager
-  );
-
-  if (!loggedInUserId) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
+  let loggedInUserId = req.header("x-cm-user-id");
 
   if (!req.query.tab_id) {
     let error = new errorModel.errorResponse(
@@ -234,7 +197,7 @@ async function getThreads(req, res) {
     });
 
     //Send seen status to the other member if they are online.
-    emitObject = {
+    let emitObject = {
       tab_id: tabObject._id,
       thread_id: threadObject._id,
       last_read_message_id: dbMessages[0]._id,

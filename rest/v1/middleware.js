@@ -10,6 +10,8 @@ const filesMiddleware = require("./routes/files/filesMiddleware");
 const notificationsMiddleware = require("./routes/notifications/notificationsMiddleware");
 const spotifyMiddleware = require("./routes/spotify/spotifyMiddleware");
 
+const checkAuth = require("./interceptors/checkAuth");
+
 /* Here's how it works: Each user is a part of multiple threads which have different people. Once the user goes into a thread,
 it has different tabs just like a browser window, each tab can contain messages on different topics. */
 
@@ -22,18 +24,18 @@ router.get("/helloWorld", (req, res, next) => {
 
 router.use("/auth", authGoogle);
 
-router.use("/threads", threadsMiddleware);
+router.use("/threads", checkAuth, threadsMiddleware);
 
-router.use("/tabs", tabsMiddleware);
+router.use("/tabs", checkAuth, tabsMiddleware);
 
-router.use("/messages", messagesMiddleware);
+router.use("/messages", checkAuth, messagesMiddleware);
 
-router.use("/profile", profileMiddleware);
+router.use("/profile", checkAuth, profileMiddleware);
 
-router.use("/files", filesMiddleware);
+router.use("/files", checkAuth, filesMiddleware);
 
-router.use("/notifications", notificationsMiddleware);
+router.use("/notifications", checkAuth, notificationsMiddleware);
 
-router.use("/spotify", spotifyMiddleware);
+router.use("/spotify", checkAuth, spotifyMiddleware);
 
 module.exports = router;

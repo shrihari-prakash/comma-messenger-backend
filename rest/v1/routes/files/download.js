@@ -7,12 +7,6 @@ const { Storage } = require("@google-cloud/storage");
 // Creates a storage client
 const storage = new Storage();
 
-const tokenMgr = require("../../../../utils/tokenManager");
-const tokenManager = new tokenMgr.tokenManager();
-
-const cryptUtil = require("../../../../utils/crypt");
-const crypt = new cryptUtil.crypt();
-
 const errors = require("../../../../utils/errors");
 const errorModel = require("../../../../utils/errorResponse");
 
@@ -22,43 +16,9 @@ router.get("/", async function (req, res) {
 
 async function download(req, res) {
   //Start of input validation.
-  if (!req.header("authorization")) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
-
-  let authToken = req
-    .header("authorization")
-    .slice(7, req.header("authorization").length)
-    .trimLeft();
-
-  if (!authToken) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
-
-  let headerUserId = req.header("x-cm-user-id");
-
-  if (!headerUserId) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
-
-  let cacheManager = req.app.get("cacheManager");
-
   let db = req.app.get("mongoInstance");
 
-  let loggedInUserId = await tokenManager.verify(
-    db,
-    headerUserId,
-    authToken,
-    cacheManager
-  );
-
-  if (!loggedInUserId) {
-    let error = new errorModel.errorResponse(errors.invalid_key);
-    return res.status(403).json(error);
-  }
+  let loggedInUserId = req.header("x-cm-user-id");
 
   if (!req.query.tab_id) {
     let error = new errorModel.errorResponse(
