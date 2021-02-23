@@ -193,7 +193,10 @@ module.exports = {
                     .collection("tokens")
                     .findOne({ _id: subscription.token_id });
 
-                  if (tokenObject && tokenObject.date_expiry < new Date())
+                  if (
+                    !tokenObject ||
+                    (tokenObject && tokenObject.date_expiry < new Date())
+                  )
                     return;
 
                   try {
