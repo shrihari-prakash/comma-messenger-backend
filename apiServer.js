@@ -17,6 +17,8 @@ const cacheManager = new cache.cacheManager();
 const messageHistoryCleanUp = require("./utils/cleanUpUtils/messageHistoryCleanUp");
 const tokenCleanUp = require("./utils/cleanUpUtils/tokenCleanUp");
 
+const checkAuth = require("./rest/v1/interceptors/checkAuth");
+
 cacheManager.init();
 
 app.set("cacheManager", cacheManager);
@@ -66,6 +68,8 @@ app.all("*", function (req, res, next) {
 app.use(bodyParser.json({ limit: "3mb" }));
 
 app.use(bodyParser.urlencoded({ limit: "3mb", extended: true }));
+
+app.use(checkAuth);
 
 //Limit the number of requests sent to the server per minute to prevent DDOS.
 const apiLimiter = rateLimit({

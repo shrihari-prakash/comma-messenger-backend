@@ -5,6 +5,13 @@ const errors = require("../../../utils/errors");
 const errorModel = require("../../../utils/errorResponse");
 
 module.exports = async (req, res, next) => {
+  // dont run the middleware if the url is present in this array
+  const ignoredRoutes = ["/auth"];
+
+  if (ignoredRoutes.includes(req.path)) {
+    return next();
+  }
+
   try {
     //Start of input validation.
     if (!req.header("authorization")) {
