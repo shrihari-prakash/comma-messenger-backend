@@ -4,19 +4,14 @@ const tokenManager = new tokenMgr.tokenManager();
 const errors = require("../../../utils/errors");
 const errorModel = require("../../../utils/errorResponse");
 
-const express = require("express");
-const router = express.Router();
-
-router.all("/", async function (req, res) {
-  checkAuth(req, res);
-});
-
 const checkAuth = async (req, res, next) => {
   // dont run the middleware if the url is present in this array
   const ignoredRoutes = [
     "/api/rest/v1/auth/google",
     "/api/rest/v1/auth/google/callback",
   ];
+
+  /* console.log("Validating request...", req.header("authorization"), req.method); */
 
   if (ignoredRoutes.includes(req.path) || req.method === "OPTIONS") {
     return next();
@@ -69,4 +64,4 @@ const checkAuth = async (req, res, next) => {
   }
 };
 
-module.exports = router;
+module.exports = checkAuth;
