@@ -4,7 +4,7 @@ const tokenManager = new tokenMgr.tokenManager();
 const errors = require("../../../utils/errors");
 const errorModel = require("../../../utils/errorResponse");
 
-async function checkAuth(req, res, next) {
+module.exports = async (req, res, next) => {
   try {
     //Start of input validation.
     if (!req.header("authorization")) {
@@ -50,6 +50,4 @@ async function checkAuth(req, res, next) {
     let error = new errorModel.errorResponse(errors.internal_error);
     return res.status(500).json(error);
   }
-}
-
-module.exports = checkAuth;
+};
