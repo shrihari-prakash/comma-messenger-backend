@@ -23,7 +23,7 @@ async function subscribeUser(req, res) {
   try {
     let tokenObject = await tokenManager.getIdFromToken(
       db,
-      headerUserId,
+      loggedInUserId,
       authToken
     );
 
