@@ -18,6 +18,11 @@ async function subscribeUser(req, res) {
 
   let loggedInUserId = req.header("x-cm-user-id");
 
+  let authToken = req
+    .header("authorization")
+    .slice(7, req.header("authorization").length)
+    .trimLeft();
+
   let subscriptionDetails = req.body;
 
   try {
