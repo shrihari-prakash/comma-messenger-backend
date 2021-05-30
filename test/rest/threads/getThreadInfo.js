@@ -8,21 +8,20 @@ const should = chai.should();
 
 chai.use(chaiHttp);
 
-const endPoint = process.env.API_PATH + "/tabs/getTabs";
+const endPoint = process.env.API_PATH + "/threads/getThreadInfo";
 
-it("Get all tabs of a thread.", function (done) {
+it("Get thread info.", function (done) {
   chai
     .request(server)
     .get(endPoint)
-    .query({ thread_id: common.objectIds.threadId})
+    .query({ thread_id: common.objectIds.threadId })
     .set("Authorization", `Bearer ${common.user1.apiToken}`)
     .set("x-cm-user-id", common.user1._id)
     .end((err, res) => {
       expect(res).to.have.status(200);
       res.body.should.be.a("object");
       var result = res.body.result;
-      result.forEach((tab) => {
-
+      result.tabs.forEach((tab) => {
         //Verify each tab has a valid id.
         tab.should.have
           .property("_id")
@@ -35,7 +34,9 @@ it("Get all tabs of a thread.", function (done) {
           .to.have.length.above(0);
 
         //Verify thread_id is an object id.
-        tab.should.have.property("thread_id").with.lengthOf(process.env.MONGO_OBJECT_ID_LENGTH);
+        tab.should.have
+          .property("thread_id")
+          .with.lengthOf(process.env.MONGO_OBJECT_ID_LENGTH);
 
         //Verify date_created is a string.
         tab.should.have
@@ -53,7 +54,7 @@ it("Get all tabs of a thread.", function (done) {
     });
 });
 
-it("Get tabs with no API key", function (done) {
+it("Get thread info with no API key", function (done) {
   chai
     .request(server)
     .get(endPoint)
@@ -65,7 +66,7 @@ it("Get tabs with no API key", function (done) {
     });
 });
 
-it("Get tabs with invalid API key", function (done) {
+it("Get thread info with invalid API key", function (done) {
   chai
     .request(server)
     .get(endPoint)

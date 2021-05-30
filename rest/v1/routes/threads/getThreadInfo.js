@@ -28,9 +28,40 @@ async function getThreads(req, res) {
   try {
     var threadObject = await db
       .collection("threads")
-      .findOne({ _id: ObjectId(req.query.thread_id) });
+      .aggregate([
+        {
+          $match: { _id: ObjectId(req.query.thread_id) },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: {
+              participants: "$thread_participants",
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $in: ["$_id", "$$participants"],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  email: 1,
+                  name: 1,
+                  display_picture: 1,
+                },
+              },
+            ],
+            as: "thread_participants",
+          },
+        },
+      ])
+      .toArray();
 
-    if (!threadObject) {
+    if (!threadObject.length > 0) {
       let error = new errorModel.errorResponse(
         errors.not_found.withDetails(
           "No thread exists for the provided `thread_id`"
@@ -38,11 +69,16 @@ async function getThreads(req, res) {
       );
       return res.status(404).json(error);
     }
+
+    threadObject = threadObject[0];
+
     var hasAccess = threadObject.thread_participants.some(function (
-      participantId
+      participant
     ) {
-      return participantId.equals(ObjectId(loggedInUserId));
+      console.log(participant);
+      return participant._id.equals(ObjectId(loggedInUserId));
     });
+
     if (!hasAccess) {
       let error = new errorModel.errorResponse(errors.invalid_key);
       return res.status(403).json(error);
@@ -55,12 +91,6 @@ async function getThreads(req, res) {
       })
       .project({ messages: 0, password: 0 }) //Make sure we don't send all the messages that a tab has since this endpoint should just fetch a list of all tabs.
       .toArray();
-    if (!tabObject)
-      return res.status(200).json({
-        status: 200,
-        message: "No tabs to retrieve.",
-        result: [],
-      });
 
     tabObject.forEach((tab, index) => {
       let isSecured = tab.secured_for.some(function (participantId) {
@@ -70,10 +100,12 @@ async function getThreads(req, res) {
       delete tabObject[index].secured_for;
     });
 
+    threadObject.tabs = tabObject ? tabObject : [];
+
     return res.status(200).json({
       status: 200,
-      message: "Tabs Retrieved.",
-      result: tabObject,
+      message: "Thread Info Retrieved.",
+      result: threadObject,
     });
   } catch (e) {
     console.log(e);

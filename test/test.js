@@ -2,12 +2,12 @@ const runTest = (name, path) => {
   describe(name, function () {
     require(path);
   });
-}
+};
 
 const requireUncache = (module) => {
   delete require.cache[require.resolve(module)];
   return require(module);
-}
+};
 
 var testUtils = require("./utils");
 
@@ -26,30 +26,36 @@ describe("REST APIs", function () {
   runTest("Edit profile info:", "./rest/profile/editProfileInfo");
   runTest("Create new thread:", "./rest/threads/newThread");
   runTest("Get threads:", "./rest/threads/getThreads");
+  runTest("Get tabs:", "./rest/threads/getThreadInfo");
   runTest("Create new tab:", "./rest/tabs/newTab");
-  runTest("Get tabs:", "./rest/tabs/getTabs");
   runTest("Rename tab:", "./rest/tabs/renameTab");
   runTest("Change tab auth status:", "./rest/tabs/changeTabAuthStatus");
 });
 
 describe("Chat Events", function () {
   const common = require("./common");
-  
+
   const io = require("socket.io-client"),
     ioOptions = {
       path: "/api/socket/communicate",
       transports: ["websocket"],
-      forceNew: true
+      forceNew: true,
     };
 
   beforeEach(function (done) {
     this.timeout(60000);
     // connect two io clients
-    common.user1.socketConnection = io(`http://localhost:${process.env.PORT || 26398}/`, ioOptions);
-    common.user2.socketConnection = io(`http://localhost:${process.env.PORT || 26398}/`, ioOptions);
+    common.user1.socketConnection = io(
+      `http://localhost:${process.env.PORT || 26398}/`,
+      ioOptions
+    );
+    common.user2.socketConnection = io(
+      `http://localhost:${process.env.PORT || 26398}/`,
+      ioOptions
+    );
     console.error = (e) => {
-      console.log(e)
-    }
+      console.log(e);
+    };
     done();
   });
 

@@ -9,6 +9,8 @@ const checkAuth = async (req, res, next) => {
   const ignoredRoutes = [
     "/api/rest/v1/auth/google",
     "/api/rest/v1/auth/google/callback",
+    "/api/rest/v1/tabs/newTab",
+    "/api/rest/v1/threads/newThread",
   ];
 
   /* console.log("Validating request...", req.header("authorization"), req.method); */
