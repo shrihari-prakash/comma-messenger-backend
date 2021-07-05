@@ -40,7 +40,6 @@ async function getThreads(req, res) {
   }
   //End of input validation.
 
-  //Check if the given tab belongs to any thread.
   try {
     var threadObject;
 
@@ -93,7 +92,7 @@ async function getThreads(req, res) {
       );
       return res.status(404).json(error);
     }
-    //Even if the tab does belong to a valid thread, we still need to check if the current user is a part of the thread to which the tab belongs.
+    //Check if the current user is a part of the thread requested
     var hasAccess = threadObject.thread_participants.some(function (
       participantId
     ) {
@@ -141,8 +140,8 @@ async function getThreads(req, res) {
       },
     };
 
-    //If user is requesting the most recent set of messages mark the mast message of tab as read.
-    /* if (
+    //If user is requesting the most recent set of messages mark the last message of thread as read.
+    if (
       parseInt(req.query.offset) === 0 &&
       dbMessages.length > 0 //Make sure messages array is not empty.
     )
@@ -150,13 +149,18 @@ async function getThreads(req, res) {
         "seen_status.$.last_read_message_id": ObjectId(dbMessages[0]._id),
       };
 
-    //Remove new_for tag for current user when messages are read.
-    await db.collection("threads").updateOne(
-      {
-        _id: threadObject._id,
-      },
-      threadUpdateQuery
-    ); */
+    try {
+      //Remove new_for tag for current user when messages are read.
+      await db.collection("threads").updateOne(
+        {
+          _id: threadObject._id,
+        },
+        threadUpdateQuery
+      );
+    } catch (e) {
+      //It's okay for this to fail.
+      console.error(e);
+    }
 
     res.status(200).json({
       status: 200,
