@@ -74,7 +74,7 @@ async function getThreads(req, res) {
                   },
                 },
               ],
-              as: "thread_participants",
+              as: "thread_participants_info",
             },
           },
         ])
