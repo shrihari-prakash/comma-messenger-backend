@@ -79,7 +79,10 @@ async function getThreads(req, res) {
       return res.status(200).json({
         status: 200,
         message: "No messages to retrieve.",
-        result: [],
+        result: {
+          threadInfo: threadObject,
+          messages: [],
+        },
       });
 
     if (dbMessages.length > 0)
@@ -117,7 +120,10 @@ async function getThreads(req, res) {
     res.status(200).json({
       status: 200,
       message: "Messages Retrieved.",
-      result: dbMessages,
+      result: {
+        threadInfo: threadObject,
+        messages: dbMessages,
+      },
     });
 
     //Send seen status to the other member if they are online.
