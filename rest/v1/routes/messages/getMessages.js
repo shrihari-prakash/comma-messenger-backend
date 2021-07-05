@@ -42,41 +42,48 @@ async function getThreads(req, res) {
 
   //Check if the given tab belongs to any thread.
   try {
-    var threadObject = await db
-      .collection("threads")
-      .aggregate([
-        {
-          $match: { _id: ObjectId(req.query.thread_id) },
-        },
-        {
-          $lookup: {
-            from: "users",
-            let: {
-              participants: "$thread_participants",
-            },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $in: ["$_id", "$$participants"],
+    var threadObject;
+
+    if (parseInt(req.query.offset) === 0) {
+      threadObject = await db
+        .collection("threads")
+        .aggregate([
+          {
+            $match: { _id: ObjectId(req.query.thread_id) },
+          },
+          {
+            $lookup: {
+              from: "users",
+              let: {
+                participants: "$thread_participants",
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $in: ["$_id", "$$participants"],
+                    },
                   },
                 },
-              },
-              {
-                $project: {
-                  _id: 1,
-                  email: 1,
-                  name: 1,
-                  display_picture: 1,
+                {
+                  $project: {
+                    _id: 1,
+                    email: 1,
+                    name: 1,
+                    display_picture: 1,
+                  },
                 },
-              },
-            ],
-            as: "thread_participants",
+              ],
+              as: "thread_participants",
+            },
           },
-        },
-      ])
-      .toArray();
-    threadObject = threadObject[0];
+        ])
+        .toArray();
+      threadObject = threadObject[0];
+    } else
+      threadObject = await db
+        .collection("threads")
+        .findOne({ _id: { $in: [ObjectId(req.query.thread_id)] } });
 
     if (!threadObject) {
       let error = new errorModel.errorResponse(
@@ -133,6 +140,7 @@ async function getThreads(req, res) {
         new_for: { $in: [ObjectId(loggedInUserId)] },
       },
     };
+
     //If user is requesting the most recent set of messages mark the mast message of tab as read.
     /* if (
       parseInt(req.query.offset) === 0 &&
