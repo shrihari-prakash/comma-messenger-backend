@@ -44,7 +44,40 @@ async function getThreads(req, res) {
   try {
     var threadObject = await db
       .collection("threads")
-      .findOne({ _id: { $in: [ObjectId(req.query.thread_id)] } });
+      .aggregate([
+        {
+          $match: { _id: ObjectId(req.query.thread_id) },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: {
+              participants: "$thread_participants",
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $in: ["$_id", "$$participants"],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  email: 1,
+                  name: 1,
+                  display_picture: 1,
+                },
+              },
+            ],
+            as: "thread_participants",
+          },
+        },
+      ])
+      .toArray();
+    threadObject = threadObject[0];
+
     if (!threadObject) {
       let error = new errorModel.errorResponse(
         errors.not_found.withDetails(
