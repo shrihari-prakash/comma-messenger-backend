@@ -98,9 +98,9 @@ async function getThreads(req, res) {
       },
     };
     //If user is requesting the most recent set of messages mark the mast message of tab as read.
-    if (
+    /* if (
       parseInt(req.query.offset) === 0 &&
-      dbMessages.length > 0 /*Make sure messages array is not empty.*/
+      dbMessages.length > 0 //Make sure messages array is not empty.
     )
       threadUpdateQuery.$set = {
         "seen_status.$.last_read_message_id": ObjectId(dbMessages[0]._id),
@@ -112,7 +112,7 @@ async function getThreads(req, res) {
         _id: threadObject._id,
       },
       threadUpdateQuery
-    );
+    ); */
 
     res.status(200).json({
       status: 200,
