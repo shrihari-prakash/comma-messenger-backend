@@ -1,12 +1,8 @@
-const bcrypt = require("bcrypt");
-
-const cryptUtil = require("../../utils/crypt");
 const { ObjectId } = require("mongodb");
 
 module.exports = {
   updateTypingStatus: function (
     db,
-    socket,
     connectionMap,
     typingStatus,
     userAuthResult
@@ -30,8 +26,6 @@ module.exports = {
           return reject({ ok: 0, reason: "INVALID_USER" });
         }
 
-        let dbPassword = userObject.tab_password;
-
         var threadObject = await db
           .collection("threads")
           .findOne({ tabs: { $in: [ObjectId(typingStatus.payload.tab_id)] } });
@@ -43,33 +37,9 @@ module.exports = {
           return participantId.equals(userAuthResult);
         });
 
-        var tabObject = await db
-          .collection("tabs")
-          .findOne({ _id: ObjectId(typingStatus.payload.tab_id) });
-
-        var isTabSecured = tabObject.secured_for.some(function (participantId) {
-          return participantId.equals(userObject._id);
-        });
-        if (isTabSecured == true) {
-          if (dbPassword != null) {
-            if (!typingStatus.payload.password) {
-              return reject({ ok: 0, reason: "INVALID_PASSWORD" });
-            }
-
-            let passwordVerified = bcrypt.compareSync(
-              typingStatus.payload.password,
-              dbPassword
-            );
-            if (passwordVerified !== true) {
-              return reject({ ok: 0, reason: "INVALID_PASSWORD" });
-            }
-          }
-        }
-
         if (hasAccess) {
           let emitObject = {
-            tab_id: typingStatus.payload.tab_id,
-            thread_id: threadObject._id,
+            thread_id: typingStatus.payload.thread_id,
             status: typingStatus.payload.status,
           };
 

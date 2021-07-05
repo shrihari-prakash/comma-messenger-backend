@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcrypt");
 var ObjectId = require("mongodb").ObjectID;
 
 const cryptUtil = require("../../../../utils/crypt");
@@ -18,15 +17,6 @@ async function getThreads(req, res) {
   let db = req.app.get("mongoInstance");
 
   let loggedInUserId = req.header("x-cm-user-id");
-
-  if (!req.query.tab_id) {
-    let error = new errorModel.errorResponse(
-      errors.invalid_input.withDetails(
-        "No valid `tab_id` was sent along with the request."
-      )
-    );
-    return res.status(400).json(error);
-  }
 
   if (!req.query.limit || !req.query.offset) {
     let error = new errorModel.errorResponse(
@@ -54,7 +44,7 @@ async function getThreads(req, res) {
   try {
     var threadObject = await db
       .collection("threads")
-      .findOne({ tabs: { $in: [ObjectId(req.query.tab_id)] } });
+      .findOne({ _id: { $in: [ObjectId(req.query.thread_id)] } });
     if (!threadObject) {
       let error = new errorModel.errorResponse(
         errors.not_found.withDetails(
@@ -75,35 +65,10 @@ async function getThreads(req, res) {
       return res.status(401).json(error);
     }
 
-    //Retrieve messages.
-    var tabObject = await db
-      .collection("tabs")
-      .aggregate([
-        { $match: { _id: ObjectId(req.query.tab_id) } },
-        {
-          $project: {
-            seen_status: 1,
-            secured_for: 1,
-          },
-        },
-      ])
-      .toArray();
-
-    if (!tabObject || !tabObject[0]) {
-      let error = new errorModel.errorResponse(
-        errors.invalid_input.withDetails(
-          "No valid `tab_id` was sent along with the request."
-        )
-      );
-      return res.status(400).json(error);
-    }
-
-    tabObject = tabObject[0];
-
     var dbMessages = await db
       .collection("messages")
       .aggregate([
-        { $match: { tab_id: ObjectId(req.query.tab_id) } },
+        { $match: { thread_id: ObjectId(req.query.thread_id) } },
         { $sort: { date_created: -1 } },
         { $skip: parseInt(req.query.offset) },
         { $limit: parseInt(req.query.limit) },
@@ -118,7 +83,7 @@ async function getThreads(req, res) {
       });
 
     if (dbMessages.length > 0)
-      //After the tab is retrieved successfully, loop through the messages and decrypt everything to send to client.
+      //After the thread is retrieved successfully, loop through the messages and decrypt everything to send to client.
       dbMessages.forEach((messageObject, index) => {
         if (messageObject.content) {
           let decrypted = crypt.decrypt(messageObject.content);
@@ -126,37 +91,8 @@ async function getThreads(req, res) {
         }
       });
 
-    var isTabSecured = tabObject.secured_for.some(function (participantId) {
-      return participantId.equals(loggedInUserId);
-    });
-
-    //If tab is protected, check for password.
-    if (isTabSecured == true) {
-      var userObject = await db
-        .collection("users")
-        .findOne({ _id: ObjectId(loggedInUserId) });
-
-      let dbPassword = userObject.tab_password;
-      if (dbPassword != null) {
-        if (!req.query.password) {
-          let error = new errorModel.errorResponse(errors.invalid_access);
-          return res.status(401).json(error);
-        }
-        let passwordVerified = bcrypt.compareSync(
-          req.query.password,
-          dbPassword
-        );
-        if (passwordVerified !== true) {
-          let error = new errorModel.errorResponse(errors.invalid_access);
-          return res.status(401).json(error);
-        }
-      }
-    }
-
-    delete tabObject.secured_for;
-
     //Remove new_for tag for current user when messages are read.
-    let tabUpdateQuery = {
+    let threadUpdateQuery = {
       $pull: {
         new_for: { $in: [ObjectId(loggedInUserId)] },
       },
@@ -166,28 +102,16 @@ async function getThreads(req, res) {
       parseInt(req.query.offset) === 0 &&
       dbMessages.length > 0 /*Make sure messages array is not empty.*/
     )
-      tabUpdateQuery.$set = {
+      threadUpdateQuery.$set = {
         "seen_status.$.last_read_message_id": ObjectId(dbMessages[0]._id),
       };
-
-    await db.collection("tabs").updateOne(
-      {
-        _id: tabObject._id,
-        "seen_status.user_id": ObjectId(loggedInUserId),
-      },
-      tabUpdateQuery
-    );
 
     //Remove new_for tag for current user when messages are read.
     await db.collection("threads").updateOne(
       {
         _id: threadObject._id,
       },
-      {
-        $pull: {
-          new_for: { $in: [ObjectId(loggedInUserId)] },
-        },
-      }
+      threadUpdateQuery
     );
 
     res.status(200).json({
@@ -198,7 +122,6 @@ async function getThreads(req, res) {
 
     //Send seen status to the other member if they are online.
     let emitObject = {
-      tab_id: tabObject._id,
       thread_id: threadObject._id,
       last_read_message_id: dbMessages[0]._id,
     };

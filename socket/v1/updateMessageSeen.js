@@ -1,16 +1,7 @@
-const bcrypt = require("bcrypt");
-
-const cryptUtil = require("../../utils/crypt");
 const { ObjectId } = require("mongodb");
 
 module.exports = {
-  updateMessageSeen: function (
-    db,
-    socket,
-    connectionMap,
-    seenStatus,
-    userAuthResult
-  ) {
+  updateMessageSeen: function (db, connectionMap, seenStatus, userAuthResult) {
     return new Promise(async function (resolve, reject) {
       try {
         if (!seenStatus.payload)
@@ -27,11 +18,9 @@ module.exports = {
           return reject({ ok: 0, reason: "INVALID_USER" });
         }
 
-        let dbPassword = userObject.tab_password;
-
         var threadObject = await db
           .collection("threads")
-          .findOne({ tabs: { $in: [ObjectId(seenStatus.payload.tab_id)] } });
+          .findOne({ _id: { $in: [ObjectId(seenStatus.payload.thread_id)] } });
 
         //Make sure some random user is not trying to update seen status on a thread to which he doesn't even belong.
         var hasAccess = threadObject.thread_participants.some(function (
@@ -40,34 +29,11 @@ module.exports = {
           return participantId.equals(userAuthResult);
         });
 
-        var tabObject = await db
-          .collection("tabs")
-          .findOne({ _id: ObjectId(seenStatus.payload.tab_id) });
-
-        var isTabSecured = tabObject.secured_for.some(function (participantId) {
-          return participantId.equals(userObject._id);
-        });
-        if (isTabSecured == true) {
-          if (dbPassword != null) {
-            if (!seenStatus.payload.password) {
-              return reject({ ok: 0, reason: "INVALID_PASSWORD" });
-            }
-
-            let passwordVerified = bcrypt.compareSync(
-              seenStatus.payload.password,
-              dbPassword
-            );
-            if (passwordVerified !== true) {
-              return reject({ ok: 0, reason: "INVALID_PASSWORD" });
-            }
-          }
-        }
-
         if (hasAccess) {
           //Remove new_for tag for current user when messages are read.
-          var tabUpdateResult = await db.collection("tabs").updateOne(
+          var threadUpdateResult = await db.collection("threads").updateOne(
             {
-              _id: ObjectId(seenStatus.payload.tab_id),
+              _id: ObjectId(seenStatus.payload.thread_id),
               "seen_status.user_id": ObjectId(userAuthResult),
             },
             {
@@ -82,33 +48,13 @@ module.exports = {
             }
           );
 
-          if (tabUpdateResult.result.ok != 1) {
-            return reject({ ok: 0, reason: "DATABASE_WRITE_ERROR" });
-          }
-
-          //Remove new_for tag for current user when messages are read.
-          var threadUpdateResult = await db.collection("threads").updateOne(
-            {
-              _id: ObjectId(seenStatus.payload.thread_id),
-            },
-            {
-              $pull: {
-                new_for: { $in: [ObjectId(userAuthResult)] },
-              },
-            }
-          );
-
-          if (
-            tabUpdateResult.result.ok != 1 ||
-            threadUpdateResult.result.ok != 1
-          ) {
+          if (threadUpdateResult.result.ok != 1) {
             return reject({ ok: 0, reason: "DATABASE_WRITE_ERROR" });
           }
           resolve({ ok: 1 });
 
           let emitObject = {
-            tab_id: seenStatus.payload.tab_id,
-            thread_id: threadObject._id,
+            thread_id: seenStatus.payload.thread_id,
             last_read_message_id: seenStatus.payload.last_read_message_id,
           };
 
