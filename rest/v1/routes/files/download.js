@@ -76,7 +76,7 @@ async function download(req, res) {
       return res.status(401).json(error);
     }
 
-    getSignedURL(`user-content/${req.query.tab_id}/${req.query.file_name}`)
+    getSignedURL(`user-content/${req.query.thread_id}/${req.query.file_name}`)
       .then((fileURL) => {
         return res.status(200).json({
           status: 200,
