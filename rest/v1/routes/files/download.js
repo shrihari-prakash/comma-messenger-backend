@@ -55,11 +55,11 @@ async function download(req, res) {
   try {
     var threadObject = await db
       .collection("threads")
-      .findOne({ tabs: { $in: [ObjectId(req.query.tab_id)] } });
+      .findOne({ _id: ObjectId(req.query.thread_id) });
     if (!threadObject) {
       let error = new errorModel.errorResponse(
         errors.not_found.withDetails(
-          "No thread exists for the provided `tab_id`"
+          "No thread exists for the provided `thread_id`"
         )
       );
       return res.status(404).json(error);
@@ -74,47 +74,6 @@ async function download(req, res) {
     if (!hasAccess) {
       let error = new errorModel.errorResponse(errors.invalid_permission);
       return res.status(401).json(error);
-    }
-
-    var tabObject = await db
-      .collection("tabs")
-      .find({
-        _id: ObjectId(req.query.tab_id),
-      })
-      .project({
-        _id: 0,
-        tab_name: 0,
-        thread_id: 0,
-        messages: 0,
-        date_created: 0,
-      })
-      .toArray();
-
-    if (!tabObject || !tabObject[0]) {
-      let error = new errorModel.errorResponse(
-        errors.not_found.withDetails("No tab exists for the provided `tab_id`")
-      );
-      return res.status(404).json(error);
-    }
-
-    tabObject = tabObject[0];
-
-    if (tabObject.require_authentication == true) {
-      var userObject = await db
-        .collection("users")
-        .findOne({ _id: ObjectId(loggedInUserId) });
-
-      let dbPassword = userObject.tab_password;
-
-      if (!req.query.password) {
-        let error = new errorModel.errorResponse(errors.invalid_access);
-        return res.status(401).json(error);
-      }
-      let passwordVerified = bcrypt.compareSync(req.query.password, dbPassword);
-      if (passwordVerified !== true) {
-        let error = new errorModel.errorResponse(errors.invalid_access);
-        return res.status(401).json(error);
-      }
     }
 
     getSignedURL(`user-content/${req.query.tab_id}/${req.query.file_name}`)
