@@ -57,13 +57,24 @@ async function createThread(req, res) {
         return res.status(400).json(error);
       }
 
+      let threadParticipants = [ObjectId(loggedInUserId), receiver._id];
+
       let threadObject = {
-        thread_participants: [ObjectId(loggedInUserId), receiver._id],
+        thread_participants: threadParticipants,
         tabs: [],
         new_for: [],
+        seen_status: [],
         date_created: new Date(),
         date_updated: new Date(),
       };
+
+      threadParticipants.forEach((participantId) => {
+        threadObject.seen_status.push({
+          user_id: participantId, //Already of type ObjectId.
+          last_read_message_id: null,
+        });
+      });
+      
       try {
         //Insert into threads and push the inserted thread _id into array of threads in users.
         var threadInsertResult = await db
@@ -126,7 +137,8 @@ async function createThread(req, res) {
 }
 
 function validateEmail(email) {
-  const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const re =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 }
 
