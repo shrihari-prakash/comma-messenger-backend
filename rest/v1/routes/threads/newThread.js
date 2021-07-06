@@ -61,7 +61,6 @@ async function createThread(req, res) {
 
       let threadObject = {
         thread_participants: threadParticipants,
-        tabs: [],
         new_for: [],
         seen_status: [],
         date_created: new Date(),
@@ -74,7 +73,7 @@ async function createThread(req, res) {
           last_read_message_id: null,
         });
       });
-      
+
       try {
         //Insert into threads and push the inserted thread _id into array of threads in users.
         var threadInsertResult = await db
