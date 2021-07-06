@@ -26,10 +26,6 @@ describe("REST APIs", function () {
   runTest("Edit profile info:", "./rest/profile/editProfileInfo");
   runTest("Create new thread:", "./rest/threads/newThread");
   runTest("Get threads:", "./rest/threads/getThreads");
-  runTest("Get tabs:", "./rest/threads/getThreadInfo");
-  runTest("Create new tab:", "./rest/tabs/newTab");
-  runTest("Rename tab:", "./rest/tabs/renameTab");
-  runTest("Change tab auth status:", "./rest/tabs/changeTabAuthStatus");
 });
 
 describe("Chat Events", function () {

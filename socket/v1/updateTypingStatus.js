@@ -27,11 +27,9 @@ module.exports = {
             return reject({ ok: 0, reason: "INVALID_USER" });
           }
 
-          var threadObject = await db
-            .collection("threads")
-            .findOne({
-              tabs: { $in: [ObjectId(typingStatus.payload.tab_id)] },
-            });
+          var threadObject = await db.collection("threads").findOne({
+            _id: ObjectId(typingStatus.payload.tab_id),
+          });
 
           //Make sure some random user is not trying to update seen status on a thread to which he doesn't even belong.
           var hasAccess = threadObject.thread_participants.some(function (

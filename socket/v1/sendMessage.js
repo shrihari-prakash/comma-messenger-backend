@@ -30,7 +30,7 @@ module.exports = {
 
           var threadObject = await db
             .collection("threads")
-            .findOne({ _id: [ObjectId(message.payload.thread_id)] });
+            .findOne({ _id: ObjectId(message.payload.thread_id) });
 
           //Make sure some random user is not sending messages to a thread to which he doesn't even belong.
           var hasAccess = threadObject.thread_participants.some(function (

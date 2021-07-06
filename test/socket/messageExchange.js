@@ -35,7 +35,7 @@ it("Connect to message exchange, send a text, receive it on the other side and u
       payload: {
         id: Math.floor(Math.random() * 1000000 + 1),
         type: "text",
-        tab_id: common.objectIds.tabIds.withAuthentication,
+        thread_id: common.objectIds.threadId,
         content: "Hello!",
         password: common.user1.password,
       },
@@ -50,7 +50,6 @@ it("Connect to message exchange, send a text, receive it on the other side and u
       expect(msg.type).to.equal("text");
       expect(msg.date_created).to.be.a("String");
       expect(msg.thread_id).to.equal(common.objectIds.threadId);
-      expect(msg.tab_id).to.equal(common.objectIds.tabIds.withAuthentication);
 
       const seenObject = {
         headers: {
@@ -58,7 +57,7 @@ it("Connect to message exchange, send a text, receive it on the other side and u
           user_id: common.user2._id,
         },
         payload: {
-          tab_id: msg.tab_id,
+          thread_id: msg.thread_id,
           last_read_message_id: msg._id,
         },
       };
@@ -68,9 +67,6 @@ it("Connect to message exchange, send a text, receive it on the other side and u
 
       //Verify seen status.
       common.user1.socketConnection.on("_messageSeen", function (seenStatus) {
-        expect(seenStatus.tab_id).to.equal(
-          common.objectIds.tabIds.withAuthentication
-        );
         expect(seenStatus.thread_id).to.equal(common.objectIds.threadId);
         expect(seenStatus.last_read_message_id).to.equal(msg._id);
 

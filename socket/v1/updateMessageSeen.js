@@ -5,6 +5,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       (async () => {
         try {
+          console.log("ss", seenStatus);
           if (!seenStatus.payload)
             return reject({ ok: 0, reason: "EMPTY_PAYLOAD" });
 
@@ -20,7 +21,7 @@ module.exports = {
           }
 
           var threadObject = await db.collection("threads").findOne({
-            _id: { $in: [ObjectId(seenStatus.payload.thread_id)] },
+            _id: ObjectId(seenStatus.payload.thread_id),
           });
 
           //Make sure some random user is not trying to update seen status on a thread to which he doesn't even belong.
