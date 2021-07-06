@@ -20,10 +20,10 @@ async function download(req, res) {
 
   let loggedInUserId = req.header("x-cm-user-id");
 
-  if (!req.query.tab_id) {
+  if (!req.query.thread_id) {
     let error = new errorModel.errorResponse(
       errors.invalid_input.withDetails(
-        "No valid `tab_id` was sent along with the request."
+        "No valid `thread_id` was sent along with the request."
       )
     );
     return res.status(400).json(error);
