@@ -23,9 +23,9 @@ describe("REST APIs", function () {
   });
 
   beforeEach(function () {});
-  runTest("Edit profile info:", "./rest/profile/editProfileInfo");
-  runTest("Create new thread:", "./rest/threads/newThread");
-  runTest("Get threads:", "./rest/threads/getThreads");
+  runTest("Edit profile info:", "./rest/profile/editProfileInfo.spec");
+  runTest("Create new thread:", "./rest/threads/newThread.spec");
+  runTest("Get threads:", "./rest/threads/getThreads.spec");
 });
 
 describe("Chat Events", function () {
@@ -60,7 +60,7 @@ describe("Chat Events", function () {
     done();
   });
 
-  runTest("Message Exchange:", "./socket/messageExchange");
+  runTest("Message Exchange:", "./socket/messageExchange.spec");
 
   afterEach(function (done) {
     // disconnect io clients after each test
