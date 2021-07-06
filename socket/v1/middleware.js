@@ -1,4 +1,3 @@
-const bcrypt = require("bcrypt");
 const push = require("web-push");
 
 const tokenMgr = require("../../utils/tokenManager");
@@ -30,7 +29,6 @@ push.setVapidDetails(
 cacheManager.init();
 
 const mongoConnector = require("../../utils/dbUtils/mongoConnector");
-var ObjectId = require("mongodb").ObjectID;
 
 var db = null;
 mongoConnector.connectToServer(function (err, client) {
@@ -253,7 +251,7 @@ const socketHandler = (io) => {
       }
     });
 
-    socket.on("disconnect", (message) => {
+    socket.on("disconnect", () => {
       console.log("User", socket.userId, "has disconnected.");
 
       if (Array.isArray(connectionMap[socket.userId]))

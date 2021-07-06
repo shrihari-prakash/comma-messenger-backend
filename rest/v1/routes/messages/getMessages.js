@@ -154,6 +154,7 @@ async function getThreads(req, res) {
       await db.collection("threads").updateOne(
         {
           _id: threadObject._id,
+          "seen_status.user_id": ObjectId(loggedInUserId),
         },
         threadUpdateQuery
       );
