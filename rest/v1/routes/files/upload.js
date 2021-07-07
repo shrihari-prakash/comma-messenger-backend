@@ -35,10 +35,10 @@ async function upload(req, res) {
     return res.status(400).json(error);
   }
 
-  if (!req.body.tab_id) {
+  if (!req.body.thread_id) {
     let error = new errorModel.errorResponse(
       errors.invalid_input.withDetails(
-        "No valid `tab_id` was sent along with the request."
+        "No valid `thread_id` was sent along with the request."
       )
     );
     return res.status(400).json(error);
@@ -48,14 +48,14 @@ async function upload(req, res) {
   try {
     var threadObject = await db
       .collection("threads")
-      .findOne({ tabs: { $in: [ObjectId(req.body.tab_id)] } });
+      .findOne({ _id: ObjectId(req.body.tab_id) });
 
     console.log("thread", threadObject);
 
     if (!threadObject) {
       let error = new errorModel.errorResponse(
         errors.invalid_input.withDetails(
-          "No valid `tab_id` was sent along with the request."
+          "No valid `thread_id` was sent along with the request."
         )
       );
       return res.status(400).json(error);

@@ -28,7 +28,7 @@ module.exports = {
           }
 
           var threadObject = await db.collection("threads").findOne({
-            _id: ObjectId(typingStatus.payload.tab_id),
+            _id: ObjectId(typingStatus.payload.thread_id),
           });
 
           //Make sure some random user is not trying to update seen status on a thread to which he doesn't even belong.
