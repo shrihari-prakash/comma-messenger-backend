@@ -146,6 +146,7 @@ module.exports = {
                 sender: userObject._id.toString(),
                 content: messageObject.content || "Sent an image",
                 icon: userObject.display_picture,
+                thread_id: message.payload.thread_id,
                 username:
                   userObject.name.givenName + " " + userObject.name.familyName,
               },
