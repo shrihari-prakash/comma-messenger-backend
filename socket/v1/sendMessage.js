@@ -146,6 +146,8 @@ module.exports = {
                 sender: userObject._id.toString(),
                 content: messageObject.content || "Sent an image",
                 icon: userObject.display_picture,
+                username:
+                  userObject.name.givenName + " " + userObject.name.familyName,
               },
             };
 
