@@ -48,7 +48,7 @@ async function upload(req, res) {
   try {
     var threadObject = await db
       .collection("threads")
-      .findOne({ _id: ObjectId(req.body.tab_id) });
+      .findOne({ _id: ObjectId(req.body.thread_id) });
 
     console.log("thread", threadObject);
 
