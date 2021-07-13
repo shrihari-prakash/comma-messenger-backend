@@ -7,12 +7,6 @@ const { Storage } = require("@google-cloud/storage");
 // Creates a storage client
 const storage = new Storage();
 
-const tokenMgr = require("../../../../utils/tokenManager");
-const tokenManager = new tokenMgr.tokenManager();
-
-const userMgr = require("../../../../utils/dbUtils/userManager");
-const userManager = new userMgr.userManager();
-
 const errors = require("../../../../utils/errors");
 const errorModel = require("../../../../utils/errorResponse");
 
@@ -74,8 +68,8 @@ async function upload(req, res) {
     // The name of the input field (i.e. "attachment") is used to retrieve the uploaded file
     let file = req.files.attachment;
     let fileName = new Date().valueOf() + "_" + file.name;
-    var dir = `${__dirname}/../../../../user-content/${req.body.tab_id}`;
-    var cloudStorageDir = `user-content/${req.body.tab_id}`;
+    var dir = `${__dirname}/../../../../user-content/${req.body.thread_id}`;
+    var cloudStorageDir = `user-content/${req.body.thread_id}`;
 
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true }, (err) => {
