@@ -1,5 +1,5 @@
 **Frontend Repo:**
-**[comma-js-frontend](https://github.com/ronaldlanton/comma-js-frontend)**
+**[comma-js-frontend](https://github.com/Shrihari-Prakash/comma-messenger-frontend)**
 
 # Comma Messenger (Server)
 ![Comma JS Logo](/branding-assets/logo.png)
