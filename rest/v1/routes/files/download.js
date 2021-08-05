@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcrypt");
 var ObjectId = require("mongodb").ObjectID;
 
 const { Storage } = require("@google-cloud/storage");

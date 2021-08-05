@@ -9,9 +9,6 @@ const tokenManager = new tokenMgr.tokenManager();
 const userMgr = require("../../../../utils/dbUtils/userManager");
 const userManager = new userMgr.userManager();
 
-const errors = require("../../../../utils/errors");
-const errorModel = require("../../../../utils/errorResponse");
-
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
@@ -86,7 +83,7 @@ async function postAuthenticate(req, res) {
         db.collection("users").insertOne(
           user,
           { w: 1 },
-          function (err, result) {
+          function (err) {
             if (err) throw err;
             let insertedUserId = user._id;
 

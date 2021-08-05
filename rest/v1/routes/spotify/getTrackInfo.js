@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-var ObjectId = require("mongodb").ObjectID;
 
 const errors = require("../../../../utils/errors");
 const errorModel = require("../../../../utils/errorResponse");

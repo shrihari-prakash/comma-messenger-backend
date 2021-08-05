@@ -24,7 +24,7 @@ function tokenManager() {
       db.collection("tokens").insertOne(
         tokenObject,
         { w: 1 },
-        function (err, result) {
+        function (err) {
           if (err) reject(err);
 
           cacheManager.putUserToken(

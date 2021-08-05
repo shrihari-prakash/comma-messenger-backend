@@ -75,7 +75,7 @@ async function editProfileInfo(req, res) {
     db.collection("users").updateOne(
       { _id: ObjectId(loggedInUserId) },
       { $set: userDetails },
-      function (err, result) {
+      function (err) {
         if (err) throw err;
         return res.status(200).json({
           status: 200,
