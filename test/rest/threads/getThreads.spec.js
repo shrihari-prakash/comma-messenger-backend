@@ -33,9 +33,6 @@ it("Get all threads of current user.", function (done) {
           .that.is.a("array")
           .to.have.length.above(0);
 
-        //Verify tabs is an array.
-        thread.should.have.property("tabs").that.is.a("array");
-
         //Verify new_for is an array.
         thread.should.have.property("new_for").that.is.a("array");
 

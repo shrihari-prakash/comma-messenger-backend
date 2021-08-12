@@ -9,9 +9,6 @@ const tokenManager = new tokenMgr.tokenManager();
 const userMgr = require("../../../../utils/dbUtils/userManager");
 const userManager = new userMgr.userManager();
 
-const errors = require("../../../../utils/errors");
-const errorModel = require("../../../../utils/errorResponse");
-
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
@@ -41,14 +38,14 @@ router.get(
     req.session.returnTo = req.headers.referer;
     //Do not allow anonymous login when, like in cases where user requests a login by simply trying the url on a browser address bar.
     console.log("Return to URL: ", req.session.returnTo);
-    if (!req.session.returnTo) {
+    /* if (!req.session.returnTo) {
       let error = new errorModel.errorResponse(
         errors.invalid_input.withDetails(
           "The login request did not arrive from a trusted domain."
         )
       );
       return res.status(400).json(error);
-    }
+    } */
 
     next();
   },
@@ -86,24 +83,26 @@ async function postAuthenticate(req, res) {
         db.collection("users").insertOne(
           user,
           { w: 1 },
-          function (err, result) {
+          function (err) {
             if (err) throw err;
             let insertedUserId = user._id;
 
             tokenManager
               .generate(db, insertedUserId, req.app.get("cacheManager"))
               .then((insertToken) => {
-                delete user.threads;
-                delete user.master_password;
-                delete user.tab_password;
-                delete user.notification_subscriptions;
+                const responseUserObject = {
+                  _id: user._id,
+                  name: user.name,
+                  email: user.email,
+                  display_picture: user.display_picture,
+                };
                 //Redirect to the page from which the login request came from with the login details attached.
                 console.log("Returning control to: ", req.session);
                 res.redirect(
                   req.session.returnTo +
                     encodeURI(
-                      `?status="SUCCESS"&type="register"&user_data=${JSON.stringify(
-                        user
+                      `?status=SUCCESS&type=register&user_data=${JSON.stringify(
+                        responseUserObject
                       )}&token=${insertToken}`
                     )
                 );
@@ -114,15 +113,18 @@ async function postAuthenticate(req, res) {
         tokenManager
           .generate(db, existingUser._id, req.app.get("cacheManager"))
           .then(async (insertToken) => {
-            delete existingUser.threads;
-            delete existingUser.master_password;
-            delete existingUser.tab_password;
+            const responseUserObject = {
+              _id: existingUser._id,
+              name: existingUser.name,
+              email: existingUser.email,
+              display_picture: existingUser.display_picture,
+            };
             console.log("Returning control to: ", req.session.returnTo);
             res.redirect(
               req.session.returnTo +
                 encodeURI(
-                  `?status="SUCCESS"&type="login"&user_data=${JSON.stringify(
-                    existingUser
+                  `?status=SUCCESS&type=login&user_data=${JSON.stringify(
+                    responseUserObject
                   )}&token=${insertToken}`
                 )
             );
