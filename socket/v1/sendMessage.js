@@ -69,6 +69,8 @@ module.exports = {
 
             let notificationText = message.payload.content || "Sent an image";
 
+            messageObject.preview_text = notificationText;
+
             //Update the thread modified time so that while getting the list of threads we can sort by last active thread.
             var threadUpdateResult = await db.collection("threads").updateOne(
               { _id: ObjectId(threadObject._id) },
