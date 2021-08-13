@@ -67,13 +67,21 @@ module.exports = {
                 break;
             }
 
+            let notificationText = messageObject.content || "Sent an image";
+
             //Update the thread modified time so that while getting the list of threads we can sort by last active thread.
-            var threadUpdateResult = await db
-              .collection("threads")
-              .updateOne(
-                { _id: ObjectId(threadObject._id) },
-                { $set: { date_updated: new Date() } }
-              );
+            var threadUpdateResult = await db.collection("threads").updateOne(
+              { _id: ObjectId(threadObject._id) },
+              {
+                $set: {
+                  date_updated: new Date(),
+                  last_sent_message: {
+                    sent_by: userObject._id,
+                    message: notificationText,
+                  },
+                },
+              }
+            );
 
             if (threadUpdateResult.result.ok != 1) {
               return reject({ ok: 0, reason: "DATABASE_WRITE_ERROR" });
@@ -144,7 +152,7 @@ module.exports = {
               payload: {
                 type: message.payload.type,
                 sender: userObject._id.toString(),
-                content: messageObject.content || "Sent an image",
+                content: notificationText,
                 icon: userObject.display_picture,
                 thread_id: message.payload.thread_id,
                 username:

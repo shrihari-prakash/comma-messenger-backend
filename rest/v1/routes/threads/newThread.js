@@ -63,6 +63,10 @@ async function createThread(req, res) {
         thread_participants: threadParticipants,
         new_for: [],
         seen_status: [],
+        last_sent_message: {
+          sent_by: null,
+          message: null,
+        },
         date_created: new Date(),
         date_updated: new Date(),
       };
