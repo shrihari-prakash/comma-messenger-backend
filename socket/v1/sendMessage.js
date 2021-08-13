@@ -75,9 +75,9 @@ module.exports = {
               {
                 $set: {
                   date_updated: new Date(),
-                  last_sent_message: {
+                  message_preview: {
                     sent_by: userObject._id,
-                    message: notificationText,
+                    content: notificationText,
                   },
                 },
               }
