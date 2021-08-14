@@ -112,6 +112,8 @@ module.exports = {
             //the user is guaranteed to recieve that message when getMessages API is hit.
             messageObject.thread_id = threadObject._id;
             messageObject.content = message.payload.content;
+            messageObject.username =
+              userObject.name.givenName + " " + userObject.name.familyName;
 
             threadObject.thread_participants.forEach((receiverId) => {
               if (Array.isArray(connectionMap[receiverId]))
