@@ -6,7 +6,7 @@
 
 An open source messenger based on Express, MongoDB and Socket.IO
 
-Conversations             |  Splits
+Conversations             |  Chat Page
 :-------------------------:|:-------------------------:
 ![plot](./branding-assets/screenshots/conversation-list.png) | ![plot](./branding-assets/screenshots/conversation.png)
 
