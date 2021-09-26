@@ -29,6 +29,7 @@ push.setVapidDetails(
 cacheManager.init();
 
 const mongoConnector = require("../../utils/dbUtils/mongoConnector");
+const response = require("./response");
 
 var db = null;
 mongoConnector.connectToServer(function (err, client) {
@@ -79,169 +80,90 @@ const socketHandler = (io) => {
 
     //Outgoing message
     socket.on("_messageOut", async (message) => {
-      if (checkHeaders(message) === false)
-        return socket.emit("_messageOut", {
-          ok: 0,
-          reason: "INVALID_USER",
-        });
+      const event = "_messageOut";
+      const messageId = message.payload.id;
+      const authResult = await preHandler(socket, event, message, {
+        is_hard_fail: true,
+        message_id: messageId,
+      });
 
-      let userAuthResult = await verifyUser(
-        message.headers.token,
-        message.headers.user_id
-      );
-      let messageId = message.payload.id;
+      if (authResult === false) return;
 
-      if (userAuthResult.ok != 0) {
-        sender
-          .sendMessage(
-            db,
-            push,
-            socket,
-            message,
-            connectionMap,
-            userAuthResult.data
-          )
-          .then((result) => {
-            if (result.ok === 1) {
-              socket.emit("_success", {
-                ok: 1,
-                event: "_messageOut",
-                message_id: messageId,
-                inserted_id: result.inserted_id,
-                type: result.type,
-              });
-            }
-          })
-          .catch(function (rej) {
-            socket.emit("_error", {
-              ok: 0,
-              event: "_messageOut",
-              is_hard_fail: rej.is_hard_fail,
+      sender
+        .sendMessage(db, push, socket, message, connectionMap, authResult.data)
+        .then((result) => {
+          if (result.ok === 1) {
+            const payload = {
               message_id: messageId,
-              reason: rej.reason,
-            });
-            console.log(rej);
+              inserted_id: result.inserted_id,
+              type: result.type,
+            };
+
+            response.success(socket, event, payload);
+          }
+        })
+        .catch(function (error) {
+          console.error(error);
+          response.error(socket, event, error.reason, {
+            is_hard_fail: error.is_hard_fail,
+            message_id: messageId,
           });
-      } else {
-        socket.emit("_error", {
-          ok: 0,
-          event: "_messageOut",
-          is_hard_fail: true,
-          message_id: messageId,
-          reason: userAuthResult.reason,
         });
-      }
     });
 
     //Outgoing seen status
     socket.on("_updateMessageSeen", async (seenStatus) => {
-      if (checkHeaders(seenStatus) === false)
-        return socket.emit("_connect", {
-          ok: 0,
-          reason: "INVALID_USER",
-        });
+      const event = "_updateMessageSeen";
+      const authResult = await preHandler(socket, event, seenStatus);
 
-      let userAuthResult = await verifyUser(
-        seenStatus.headers.token,
-        seenStatus.headers.user_id
-      );
+      if (authResult === false) return;
 
-      if (userAuthResult.ok != 0) {
-        console.log(
-          "User",
-          userAuthResult.data,
-          "is trying to update read status."
-        );
-        updateMessageSeen
-          .updateMessageSeen(db, connectionMap, seenStatus, userAuthResult.data)
-          .then((result) => {
-            if (result.ok === 1) {
-              socket.emit("_success", {
-                ok: 1,
-                event: "_updateMessageSeen",
-                message_id: seenStatus.last_read_message_id,
-              });
-            } else {
-              socket.emit("_error", {
-                ok: 0,
-                event: "_updateMessageSeen",
-                reason: result.reason,
-              });
-            }
-          })
-          .catch(function (rej) {
-            socket.emit("_error", {
-              ok: 0,
-              event: "_updateMessageSeen",
-              reason: rej.reason,
+      console.log("User", authResult.data, "is trying to update read status.");
+
+      updateMessageSeen
+        .updateMessageSeen(db, connectionMap, seenStatus, authResult.data)
+        .then((result) => {
+          if (result.ok === 1) {
+            const payload = {
+              message_id: seenStatus.last_read_message_id,
+            };
+            response.success(socket, event, payload);
+          } else {
+            response.error(socket, event, result.reason, {
+              message_id: seenStatus.last_read_message_id,
             });
-            console.log(rej);
+          }
+        })
+        .catch(function (error) {
+          response.error(socket, event, error.reason, {
+            message_id: seenStatus.last_read_message_id,
           });
-      } else {
-        socket.emit("_error", {
-          ok: 0,
-          event: "_updateMessageSeen",
-          reason: userAuthResult.reason,
+          console.log(error);
         });
-      }
     });
 
     //Outgoing typing status
     socket.on("_updateTypingStatus", async (typingStatus) => {
-      if (checkHeaders(typingStatus) === false)
-        return socket.emit("_updateTypingStatus", {
-          ok: 0,
-          reason: "INVALID_USER",
-        });
+      const event = "_updateTypingStatus";
+      const authResult = await preHandler(socket, event, typingStatus);
 
-      let userAuthResult = await verifyUser(
-        typingStatus.headers.token,
-        typingStatus.headers.user_id
-      );
+      if (authResult === false) return;
 
-      if (userAuthResult.ok != 0) {
-        console.log(
-          "User",
-          userAuthResult.data,
-          "is trying to update typing status."
-        );
-        updateTypingStatus
-          .updateTypingStatus(
-            db,
-            connectionMap,
-            typingStatus,
-            userAuthResult.data
-          )
-          .then((result) => {
-            if (result.ok === 1) {
-              socket.emit("_success", {
-                ok: 1,
-                event: "_updateTypingStatus",
-                message_id: typingStatus.status,
-              });
-            } else {
-              socket.emit("_error", {
-                ok: 0,
-                event: "_updateTypingStatus",
-                reason: result.reason,
-              });
-            }
-          })
-          .catch(function (rej) {
-            socket.emit("_error", {
-              ok: 0,
-              event: "_updateTypingStatus",
-              reason: rej.reason,
-            });
-            console.log(rej);
-          });
-      } else {
-        socket.emit("_error", {
-          ok: 0,
-          event: "_updateTypingStatus",
-          reason: userAuthResult.reason,
+      console.log("User", authResult.data, "is changing typing status.");
+
+      updateTypingStatus
+        .updateTypingStatus(db, connectionMap, typingStatus, authResult.data)
+        .then((result) => {
+          if (result.ok === 1) {
+            response.success(socket, event);
+          } else {
+            response.error(socket, event, result.reason);
+          }
+        })
+        .catch(function (error) {
+          response.error(socket, event, error.reason);
+          console.log(error);
         });
-      }
     });
 
     socket.on("disconnect", () => {
@@ -254,6 +176,31 @@ const socketHandler = (io) => {
     });
   });
 };
+
+async function preHandler(socket, event, message, additionalPayload = {}) {
+  if (checkHeaders(message) === false) {
+    socket.emit(event, {
+      ok: 0,
+      reason: "INVALID_USER",
+      ...additionalPayload,
+    });
+
+    return false;
+  }
+
+  let userAuthResult = await verifyUser(
+    message.headers.token,
+    message.headers.user_id
+  );
+
+  if (userAuthResult.ok === 0) {
+    response.error(socket, event, userAuthResult.reason, additionalPayload);
+
+    return false;
+  }
+
+  return userAuthResult;
+}
 
 async function verifyUser(authToken, userId) {
   if (!authToken) return { ok: 0, reason: "INVALID_API_KEY" };
