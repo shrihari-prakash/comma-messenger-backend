@@ -89,26 +89,29 @@ const socketHandler = (io) => {
 
       if (authResult === false) return;
 
-      sender
-        .sendMessage(db, push, socket, message, connectionMap, authResult.data)
-        .then((result) => {
-          if (result.ok === 1) {
-            const payload = {
-              message_id: messageId,
-              inserted_id: result.inserted_id,
-              type: result.type,
-            };
+      try {
+        const result = await sender.sendMessage(
+          db,
+          push,
+          socket,
+          message,
+          connectionMap,
+          authResult.data
+        );
+        const payload = {
+          message_id: messageId,
+          inserted_id: result.inserted_id,
+          type: result.type,
+        };
 
-            response.success(socket, event, payload);
-          }
-        })
-        .catch(function (error) {
-          console.error(error);
-          response.error(socket, event, error.reason, {
-            is_hard_fail: error.is_hard_fail,
-            message_id: messageId,
-          });
+        response.success(socket, event, payload);
+      } catch (error) {
+        console.error(error);
+        response.error(socket, event, error.reason, {
+          is_hard_fail: error.is_hard_fail,
+          message_id: messageId,
         });
+      }
     });
 
     //Outgoing seen status
@@ -120,26 +123,23 @@ const socketHandler = (io) => {
 
       console.log("User", authResult.data, "is trying to update read status.");
 
-      updateMessageSeen
-        .updateMessageSeen(db, connectionMap, seenStatus, authResult.data)
-        .then((result) => {
-          if (result.ok === 1) {
-            const payload = {
-              message_id: seenStatus.last_read_message_id,
-            };
-            response.success(socket, event, payload);
-          } else {
-            response.error(socket, event, result.reason, {
-              message_id: seenStatus.last_read_message_id,
-            });
-          }
-        })
-        .catch(function (error) {
-          response.error(socket, event, error.reason, {
-            message_id: seenStatus.last_read_message_id,
-          });
-          console.log(error);
+      try {
+        await updateMessageSeen.updateMessageSeen(
+          db,
+          connectionMap,
+          seenStatus,
+          authResult.data
+        );
+        const payload = {
+          message_id: seenStatus.last_read_message_id,
+        };
+        response.success(socket, event, payload);
+      } catch (error) {
+        response.error(socket, event, error.reason, {
+          message_id: seenStatus.last_read_message_id,
         });
+        console.log(error);
+      }
     });
 
     //Outgoing typing status
@@ -151,19 +151,19 @@ const socketHandler = (io) => {
 
       console.log("User", authResult.data, "is changing typing status.");
 
-      updateTypingStatus
-        .updateTypingStatus(db, connectionMap, typingStatus, authResult.data)
-        .then((result) => {
-          if (result.ok === 1) {
-            response.success(socket, event);
-          } else {
-            response.error(socket, event, result.reason);
-          }
-        })
-        .catch(function (error) {
-          response.error(socket, event, error.reason);
-          console.log(error);
-        });
+      try {
+        await updateTypingStatus.updateTypingStatus(
+          db,
+          connectionMap,
+          typingStatus,
+          authResult.data
+        );
+
+        response.success(socket, event);
+      } catch (error) {
+        response.error(socket, event, error.reason);
+        console.log(error);
+      }
     });
 
     socket.on("disconnect", () => {
