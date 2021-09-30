@@ -50,7 +50,7 @@ module.exports = async function (
         message_id: likePayload.liked_message_id,
       });
 
-    if (messageObject.sent_by.equals(userAuthResult))
+    if (messageObject.sender.equals(userAuthResult))
       return response.error(socket, event, "CANNOT_LIKE_SELF_MESSAGE", {
         message_id: likePayload.liked_message_id,
       });
