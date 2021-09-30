@@ -41,7 +41,7 @@ module.exports = async function (
       return participantId.equals(userAuthResult);
     });
 
-    var messageObject = await db.collection("threads").findOne({
+    var messageObject = await db.collection("messages").findOne({
       _id: ObjectId(likePayload.payload.liked_message_id),
     });
 
