@@ -94,7 +94,7 @@ module.exports = async function (
           !receiverId.equals(userObject._id)
         )
           connectionMap[receiverId].forEach((socketConnection) => {
-            socketConnection.emit(event, emitObject);
+            socketConnection.emit("_messageLike", emitObject);
           });
       });
     } else
