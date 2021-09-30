@@ -84,6 +84,8 @@ module.exports = async function (
           break;
       }
 
+      let notificationText = message.payload.content || "Sent an image";
+
       //Update the thread modified time so that while getting the list of threads we can sort by last active thread.
       var threadUpdateResult = await db.collection("threads").updateOne(
         { _id: ObjectId(threadObject._id) },
@@ -128,7 +130,6 @@ module.exports = async function (
 
       //From this point, any failure doesn't really count as a message not sent since the message is written to the Database and
       //the user is guaranteed to recieve that message when getMessages API is hit.
-      let notificationText = message.payload.content || "Sent an image";
       messageObject.preview_text = notificationText;
       messageObject.thread_id = threadObject._id;
       messageObject.content = message.payload.content;
