@@ -67,10 +67,12 @@ module.exports = async function (
     }
 
     if (hasAccess) {
-      var messageUpdateResult = await db.collection("messages").updateOne({
-        _id: ObjectId(likePayload.payload.liked_message_id),
-        query,
-      });
+      var messageUpdateResult = await db.collection("messages").updateOne(
+        {
+          _id: ObjectId(likePayload.payload.liked_message_id),
+        },
+        query
+      );
 
       if (messageUpdateResult.result.ok != 1) {
         return response.error(socket, event, "DATABASE_WRITE_ERROR", {
