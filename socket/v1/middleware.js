@@ -128,6 +128,7 @@ const socketHandler = (io) => {
 
       await updateTypingStatus.updateTypingStatus(
         db,
+        socket,
         connectionMap,
         typingStatus,
         authResult.data
