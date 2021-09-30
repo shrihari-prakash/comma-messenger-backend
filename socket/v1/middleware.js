@@ -6,7 +6,7 @@ const tokenManager = new tokenMgr.tokenManager();
 const cache = require("../../utils/cacheManager");
 const cacheManager = new cache.cacheManager();
 
-const sender = require("./sendMessage");
+const sendMessage = require("./sendMessage");
 const updateMessageSeen = require("./updateMessageSeen");
 const updateTypingStatus = require("./updateTypingStatus");
 
@@ -30,6 +30,7 @@ cacheManager.init();
 
 const mongoConnector = require("../../utils/dbUtils/mongoConnector");
 const response = require("./response");
+const updateMessageLike = require("./updateMessageLike");
 
 var db = null;
 mongoConnector.connectToServer(function (err, client) {
@@ -89,14 +90,7 @@ const socketHandler = (io) => {
 
       if (authResult === false) return;
 
-      sender.sendMessage(
-        db,
-        push,
-        socket,
-        message,
-        connectionMap,
-        authResult.data
-      );
+      sendMessage(db, push, socket, message, connectionMap, authResult.data);
     });
 
     //Outgoing seen status
@@ -108,13 +102,7 @@ const socketHandler = (io) => {
 
       console.log("User", authResult.data, "is trying to update read status.");
 
-      updateMessageSeen.updateMessageSeen(
-        db,
-        socket,
-        connectionMap,
-        seenStatus,
-        authResult.data
-      );
+      updateMessageSeen(db, socket, connectionMap, seenStatus, authResult.data);
     });
 
     //Outgoing typing status
@@ -126,11 +114,26 @@ const socketHandler = (io) => {
 
       console.log("User", authResult.data, "is changing typing status.");
 
-      await updateTypingStatus.updateTypingStatus(
+      updateTypingStatus(
         db,
         socket,
         connectionMap,
         typingStatus,
+        authResult.data
+      );
+    });
+
+    socket.on("_updateMessageLike", async (likePayload) => {
+      const event = "_updateMessageLike";
+      const authResult = await preHandler(socket, event, likePayload);
+
+      if (authResult === false) return;
+
+      updateMessageLike(
+        db,
+        socket,
+        connectionMap,
+        likePayload,
         authResult.data
       );
     });
