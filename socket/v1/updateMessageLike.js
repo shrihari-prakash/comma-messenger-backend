@@ -56,14 +56,15 @@ module.exports = async function (
       });
 
     const query = {};
-    const subQuery = {
-      liked_by: { $in: [ObjectId(userAuthResult)] },
-    };
 
     if (likePayload.payload.status === "like") {
-      query.$push = subQuery;
+      query.$push = {
+        liked_by: ObjectId(userAuthResult),
+      };
     } else {
-      query.$pull = subQuery;
+      query.$pull = {
+        liked_by: { $in: [ObjectId(userAuthResult)] },
+      };
     }
 
     if (hasAccess) {
